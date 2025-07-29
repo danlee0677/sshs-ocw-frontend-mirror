@@ -7,7 +7,19 @@ function LectureAppshell({ children }: { children: React.ReactNode }) {
   return (
     <AppShell
       header={{ height: 60 }}
-      navbar={{ width: 300, breakpoint: 'md' }}
+      navbar={{ width: 300, breakpoint: 'sm' }}
+      styles={{
+        main: {
+          height: "calc(100vh - 60px)",
+          display: "flex",
+          flexDirection: "column"
+        },
+        navbar: {
+          height: "calc(100vh - 60px)",
+          display: "flex",
+          flexDirection: "column"
+        }
+      }}
     >
       <AppShell.Header h={60}>
         <Group h="100%" w="100%" gap="md">
@@ -26,7 +38,7 @@ function LectureAppshell({ children }: { children: React.ReactNode }) {
       </AppShell.Header>
 
       <AppShell.Navbar>
-
+        <Title order={1}>1</Title>
       </AppShell.Navbar>
 
       <AppShell.Main>
