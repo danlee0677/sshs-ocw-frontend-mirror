@@ -7,7 +7,6 @@ function VideoCard({src}: {src: string}) {
       <iframe
         src={src}
         title="Lecture"
-        style={{border: 0}}
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowFullScreen
       />
