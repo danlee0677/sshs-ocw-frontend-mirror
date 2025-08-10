@@ -1,8 +1,9 @@
 import React from "react";
 import LectureAppshell from "./LectureAppshell";
-import { Text, Flex, ScrollArea, Stack, Title } from "@mantine/core";
+import { Text, Flex, ScrollArea, Stack, Space } from "@mantine/core";
 import LectureParser from "./LectureParser";
 import { LectureComponent } from "../libs/types";
+import NavigateCard from "./card/NavigateCard";
 
 function Lecture() {
   const src: Array<LectureComponent> = [
@@ -29,10 +30,12 @@ function Lecture() {
 
   return (
     <LectureAppshell>
-      <ScrollArea h="100%" type="scroll" scrollbarSize={5}>
-        <Flex w="100%" justify="center">
+      <ScrollArea h="100%" type="auto" scrollbarSize={5}>
+        <Stack w="100%" gap="md" align="center">
+          <Space h="md"/>
+          <NavigateCard dir={"/info"} num={0} pageMin={0} pageMax={0} />
           {lecture}
-        </Flex>
+        </Stack>
       </ScrollArea>
       
     </LectureAppshell>

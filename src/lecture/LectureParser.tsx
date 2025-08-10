@@ -21,7 +21,6 @@ function LectureParser({src, w}: {src: Array<LectureComponent>, w: string}) {
   
   return (
     <Stack h="100%" w={w} align="flex-start" justify="center" gap="lg">
-      <Space h="xl" />
       {children}
     </Stack>
   )

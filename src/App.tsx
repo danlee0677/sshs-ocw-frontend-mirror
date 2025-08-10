@@ -10,7 +10,7 @@ function App() {
   });
 
   return (
-    <MantineProvider theme={theme}>
+    <MantineProvider theme={theme} >
       <BrowserRouter>
         <Router />
       </BrowserRouter>

@@ -10,8 +10,8 @@ function Router() {
       <Route index element = {<Main />} />
 
       <Route path="info">
-        <Route index element={<Lecture />}></Route>
-        <Route path=""></Route>
+        <Route index></Route>
+        <Route path="0" element={<Lecture />}></Route>
       </Route>
       <Route path="*" element={<Nonexistent />} />
     </Routes>

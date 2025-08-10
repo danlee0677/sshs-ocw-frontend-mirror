@@ -32,10 +32,12 @@ function LectureAppshell({ children }: { children: React.ReactNode }) {
               </Group>
             </Link>
           </Flex>
+          <Space h="sm" />
 
-          <Divider my="sm" size="md" />
+          <Divider size="xs" w="100%" />
+
           <Flex w="100%" direction="column" h="80vh">
-            <ScrollArea h="100%" type="scroll" scrollbarSize={5}>
+            <ScrollArea h="100%" type="auto" scrollbarSize={5}>
               <Stack gap="xl">
                 <Title order={2}>1</Title>
                 <Title order={2}>1</Title>
@@ -53,7 +55,7 @@ function LectureAppshell({ children }: { children: React.ReactNode }) {
             </ScrollArea>
           </Flex>
           
-          
+          <Divider size="xs" w="100%" />
 
           <Flex h="10%">Profile Page</Flex>
         </Stack>
