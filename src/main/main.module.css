@@ -1,0 +1,38 @@
+.Container1 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    height: 100vh;
+    vertical-align: middle;
+}
+
+.Container2 {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 50vh;
+    width: 30vw;
+    border: 1px solid black;
+    min-height: 200px;
+}
+
+.Vertical_align {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.flex1 {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.LoginInput {
+    margin: 10px 0 10px 0;
+    width: 60%;
+}
+
+.Text1 {
+    width: 70%;
+}
