@@ -1,11 +1,25 @@
 import React from "react";
 import '@mantine/core/styles.css'
 import classes from './main.module.css'
-import { Button, Table, Text, Title } from "@mantine/core";
+import { Button, Flex, Grid, Image, Table, Text, Title, UnstyledButton } from "@mantine/core";
 import MainPageHeader from "./MainPageAppshell";
 import { Link, useNavigate } from 'react-router';
+import { useEffect, useState } from 'react'
+
+const items = [
+  { src: '/img/math.png', alt: 'math' },
+  { src: '/img/physics.png', alt: 'physics' },
+  { src: '/img/chemistry.png', alt: 'chemistry' },
+  { src: '/img/biology.png', alt: 'biology' },
+  { src: '/img/geology.png', alt: 'earth-science' },
+  { src: '/img/coding.png', alt: 'etc' },
+];
 
 function Main() {
+  const [toggled, setToggled] = useState(Array(items.length).fill(false));
+    const toggle = (i:Number) =>
+    setToggled((prev) => prev.map((v, idx) => (idx === i ? !v : v)));
+
   return (
     <div className={classes.Container1}>
       <div className={classes.flex1}>
@@ -18,12 +32,25 @@ function Main() {
       </div>
       <div className={classes.Vertical_align}>
         <div className={classes.Container2}>
-          <form className={classes.flex1}>
-            <input className={classes.LoginInput} placeholder="아이디"></input>
-            <input className={classes.LoginInput} placeholder="비밀번호"></input>
-            <Button>로그인</Button>
-            <p>회원이 아니신가요? <Link to="/">회원가입 하기</Link></p>
-          </form>
+          <Flex direction="column" align="center">
+            <Text size="xl" className={classes.Title2}>관심 있는 분야가 무엇인가요?</Text>
+            <Grid gutter={'xs'}>
+              {items.map((item, i) => (
+                <Grid.Col key={i} span={4}>
+                  <UnstyledButton
+                    onClick={() => toggle(i)}
+                    aria-pressed={toggled[i]}
+                    className={`${classes.selectBox} ${classes.Vertical_align} ${toggled[i] ? classes.selected : ''}`}
+                  >
+                    <Image src={item.src} alt={item.alt} w="80%" />
+                  </UnstyledButton>
+                </Grid.Col>
+              ))}
+            </Grid>
+            <br></br>
+            <Button>시작하기</Button>
+            <Text className={classes.Text2}>이미 계정이 있으신가요? <Link to="/" className={classes.Li}>로그인 하기</Link></Text>
+          </Flex>
         </div>
       </div>
     </div>
