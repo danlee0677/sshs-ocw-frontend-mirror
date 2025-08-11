@@ -27,6 +27,8 @@ const EditorShell = ({children}: {children: React.ReactNode}) => {
     Image,
     Math,
   ]
+
+  const content = "<p>Hello</p>"
   
   return (
     <EditorProvider extensions={extensions} content={content}>
