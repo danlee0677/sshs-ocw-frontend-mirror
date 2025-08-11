@@ -5,22 +5,6 @@
     font-style: normal;
 }
 
-.Container1 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    height: 100vh;
-    vertical-align: middle;
-}
-
-.Container2 {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    height: 50vh;
-    width: 30vw;
-    min-height: 200px;
-}
-
 .Vertical_align {
     display: flex;
     align-items: center;
@@ -57,13 +41,23 @@
 }
 
 .selectBox {
-    transition: transform 0.2s ease;
+    position: relative;
+    transition: transform 0.2s ease, background-color 0.5s ease, border-bottom 0.5s ease;
     border: 3px black solid;
     border-bottom: 9px green solid;
     background-color: lightgreen;
     border-radius: 10%;
     width: 100px;
     height: 100px;
+    -webkit-user-drag: none !important;
+    -khtml-user-drag: none !important;
+    -moz-user-drag: none !important;
+    -o-user-drag: none !important;
+}
+
+.selectBox:hover {
+    background-color: rgb(77, 111, 77);
+    border-bottom: 9px rgb(29, 42, 29) solid;
 }
 
 .selected {
@@ -72,6 +66,44 @@
     transform: translateY(2px);
 }
 
+.selected:hover {
+    background-color: rgb(77, 111, 77);
+    border-bottom: 6px rgb(29, 42, 29) solid;
+}
+
 .Title2 {
     font-family: 'JalnanGothic';
+}
+
+.UndraggableImage {
+    -webkit-user-drag: none !important;
+    -khtml-user-drag: none !important;
+    -moz-user-drag: none !important;
+    -o-user-drag: none !important;
+    user-select: none !important;
+    pointer-events: none; /* 클릭까지 막고 싶으면 */
+}
+
+.ButtonText {
+    color: black;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    font-size: 20px;
+    transform: translate(-50%, -40%);
+    pointer-events: none;
+    z-index: 1;             
+    opacity: 0;             
+    transition: 0.3s ease;
+    font-family: 'JalnanGothic';
+    -webkit-user-select: none; /* 크롬, 사파리 */
+    -moz-user-select: none;    /* 파이어폭스 */
+    -ms-user-select: none;     /* 구버전 IE/Edge */
+    user-select: none; 
+    user-select: none;
+}
+
+.selectBox:hover .ButtonText {
+    opacity: 1;
+    color: white;
 }

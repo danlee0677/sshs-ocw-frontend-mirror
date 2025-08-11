@@ -3,12 +3,13 @@ import { Routes, Route } from "react-router";
 import Main from "./main/Main";
 import Nonexistent from "./nonexistent/Nonexistent";
 import Lecture from "./lecture/Lecture";
+import Login from "./main/Login"
 
 function Router() {
   return (
     <Routes>
       <Route index element = {<Main />} />
-
+      <Route path="login" element={<Login></Login>}></Route> 
       <Route path="info">
         <Route index element={<Lecture />}></Route>
         <Route path=""></Route>
