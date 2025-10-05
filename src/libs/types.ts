@@ -17,3 +17,7 @@ export interface LectureVideo {
 export interface LectureBody {
   type: 'body';
 }
+
+export interface User {
+  name: string;
+}
