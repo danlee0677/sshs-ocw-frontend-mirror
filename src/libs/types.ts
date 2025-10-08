@@ -21,3 +21,7 @@ export interface LectureBody {
 export interface User {
   name: string;
 }
+
+export interface GoogleResponse {
+  
+}
