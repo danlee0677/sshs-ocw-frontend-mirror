@@ -1,4 +1,3 @@
-import 'dotenv/config'
 import React from 'react';
 import { useState } from 'react';
 import '@mantine/core/styles.css';
