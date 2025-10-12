@@ -11,8 +11,6 @@ function Router({user} : {user: User | null}) {
   return (
     <Routes>
       <Route index element = {<Main />} />
-      <Route path="login" element={<Login />} />
-      {/* <Route path="join" element={<Join />}/> */}
       <Route path="info">
         <Route index></Route>
         <Route path="0" element={<Lecture />}></Route>

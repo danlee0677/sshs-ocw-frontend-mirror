@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { useMediaQuery } from '@mantine/hooks'
 import NewUser from "./NewUser";
 import Join from "./Join"
+import Login from "./Login"
 
 const items = [
     { src: '/img/math.png', alt: 'math', sub: '수학' },
@@ -23,25 +24,14 @@ const course = [
     { sub: '그 외' }
 ]
 
-const types = [
-    { sub: '영상 위주' },
-    { sub: '글 위주' },
-    { sub: '퀴즈 위주' },
-    { sub: '혼합' },
-    { sub: '그 외' },
-]
-
 function Main() {
     const [toggled, setToggled] = useState(Array(items.length).fill(false));
     const [courseToggled, setCourseToggled] = useState(Array(course.length).fill(false));
-    const [typeToggled, setTypeToggled] = useState(Array(types.length).fill(false));
 
     const courseToggle = (i: Number) => {
         setCourseToggled((prev) => prev.map((v, idx) => (idx === i ? !v : v)))
     }
-    const typeToggle = (i: Number) => {
-        setTypeToggled((prev) => prev.map((v, idx) => (idx === i ? !v : v)))
-    }
+
     const toggle = (i: Number) =>
         setToggled((prev) => prev.map((v, idx) => (idx === i ? !v : v)));
     
@@ -55,8 +45,10 @@ function Main() {
         {
             step === 0 ? (
                 NewUser(toggle, setToggled, toggled, step, setStep, isMobile)
+            ) : step === 1 ? (
+                Join(courseToggled, setCourseToggled, courseToggle, step, setStep)
             ) : (
-                Join(courseToggled, setCourseToggled, courseToggle, typeToggled, setTypeToggled, typeToggle, step, setStep)
+                Login(step, setStep)
             )
         }
         </>

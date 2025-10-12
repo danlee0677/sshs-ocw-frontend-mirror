@@ -10,8 +10,8 @@
     text-align: center;
     transition: transform 0.2s ease, background-color 0.5s ease, border-bottom 0.5s ease;
     border: 3px black solid;
-    border-bottom: 9px green solid;
-    background-color: lightgreen;
+    border-bottom: 9px rgb(42, 141, 222) solid;
+    background-color: lightskyblue;
     border-radius: 5px;
     width: 100%;
     font-family: 'JalnanGothic';
@@ -24,19 +24,19 @@
 }
 
 .longSelectBox:hover {
-    background-color: rgb(77, 111, 77);
-    border-bottom: 9px rgb(29, 42, 29) solid;
+    background-color: rgb(74, 118, 176);
+    border-bottom: 9px rgb(40, 40, 105) solid;
 }
 
 .selected {
-    background-color: rgb(18, 177, 18);
-    border-bottom: 6px darkgreen solid;
+    background-color: rgb(69, 135, 220);
+    border-bottom: 6px navy solid;
     transform: translateY(2px);
 }
 
 .selected:hover {
-    background-color: rgb(77, 111, 77);
-    border-bottom: 6px rgb(29, 42, 29) solid;
+    background-color: rgb(74, 118, 176);
+    border-bottom: 6px rgb(40, 40, 105) solid;
 }
 
 .Title {

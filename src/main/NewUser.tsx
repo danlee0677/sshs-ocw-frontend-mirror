@@ -48,8 +48,15 @@ function NewUser(toggle: Function, setToggled: Function, toggled: any, step: num
                                             </UnstyledButton>
                                         ))}
                                     </SimpleGrid>
-                                    <Button>시작하기</Button>
-                                    <Text className={classes.Text2}>이미 계정이 있으신가요? <Link to="/login" className={classes.Link}>로그인 하러 가기</Link></Text>
+                                    <Button onClick={() =>{
+                                        if (toggled.every((v: Boolean) => !v)) {
+                                            alert("한 개 이상 선택해 주세요!")
+                                        }
+                                        else {
+                                            setStep(step + 1)
+                                        }
+                                    } }>시작하기</Button>
+                                    <Text className={classes.Text2}>이미 계정이 있으신가요? <Text onClick={() => {setStep(-1)}} className={classes.Link}>로그인 하러 가기</Text></Text>
                                 </Stack>
                             </Flex>
                         </Stack>
@@ -86,8 +93,15 @@ function NewUser(toggle: Function, setToggled: Function, toggled: any, step: num
                                             </UnstyledButton>
                                         ))}
                                     </SimpleGrid>
-                                    <Button onClick={() => setStep(step + 1)}>시작하기</Button>
-                                    <Text className={classes.Text2}>이미 계정이 있으신가요? <Link to="/login" className={classes.Link}>로그인 하러 가기</Link></Text>
+                                    <Button onClick={() =>{
+                                        if (toggled.every((v: Boolean) => !v)) {
+                                            alert("한 개 이상 선택해 주세요!")
+                                        }
+                                        else {
+                                            setStep(step + 1)
+                                        }
+                                    } }>시작하기</Button>
+                                    <Text className={classes.Text2}>이미 계정이 있으신가요? <Text onClick={() => {setStep(-1)}} className={classes.Link}>로그인 하러 가기</Text></Text>
                                 </Stack>
                             </Flex>
                         </Group>
