@@ -29,5 +29,5 @@ Create two files: .env.production and .env.development.
 both of the .env structure should have API_URL as below.
 
 ```ini
-API_URL="Your Backend Base URL"
+REACT_APP_API_URL="Your Backend Base URL"
 ```

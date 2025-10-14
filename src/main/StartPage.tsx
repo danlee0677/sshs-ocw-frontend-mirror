@@ -1,12 +1,9 @@
-import React from "react";
-import classes from './main.module.css'
-import { Button, Flex, Grid, Group, Image, SimpleGrid, Stack, Space, Table, Text, Title, UnstyledButton } from "@mantine/core";
-import { Link, useNavigate } from 'react-router';
 import { useEffect, useState } from 'react'
 import { useMediaQuery } from '@mantine/hooks'
 import NewUser from "./NewUser";
 import Join from "./Join"
-import Login from "./Login"
+import { useNavigate } from 'react-router';
+
 
 const items = [
     { src: '/img/math.png', alt: 'math', sub: '수학' },
@@ -24,7 +21,7 @@ const course = [
     { sub: '그 외' }
 ]
 
-function Main() {
+function StartPage() {
     const [toggled, setToggled] = useState(Array(items.length).fill(false));
     const [courseToggled, setCourseToggled] = useState(Array(course.length).fill(false));
 
@@ -37,6 +34,14 @@ function Main() {
     
     const [step, setStep] = useState(0);
 
+    const navigate = useNavigate()
+
+    useEffect(() => {
+      if (step === 2) {
+        navigate("/login", {state: { toggled: toggled, courseToggled: courseToggled }})
+      }
+    }, [step, navigate, toggled, courseToggled])
+
 
     const isMobile = useMediaQuery('(max-width: 60em)')
 
@@ -48,11 +53,11 @@ function Main() {
             ) : step === 1 ? (
                 Join(courseToggled, setCourseToggled, courseToggle, step, setStep)
             ) : (
-                Login(step, setStep)
+                <div>this is wrong page</div>
             )
         }
         </>
     )
 }
 
-export default Main;
+export default StartPage;
