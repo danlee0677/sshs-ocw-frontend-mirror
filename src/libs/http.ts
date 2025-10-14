@@ -50,19 +50,25 @@ function refreshAccessToken(): Promise<string | null> {
   return refreshPromise
 }
 
+
+
 http.interceptors.response.use((res) => res, async (err: AxiosError) => {
   const status = err.response?.status;
   const config: RetriableConfig = err.config || {} as RetriableConfig;
-  
+
+  //const original_req = config.
+
+  console.log("asdff")
   if (status === 401 && !config._retried &&
     !/\/api\/auth\/refresh$/.test(config.url || "") 
     // when hitting /api/auth/refresh and encountering 401(example: refresh token expire)
     // prevent infinite loop
   ) {
     config._retried = true;
-    
+    console.log("asdff")
     try {
       accessToken = await refreshAccessToken()
+      console.log(accessToken)
       if (!accessToken) {
         throw new Error("Failed to get new valid accessToken");
       }
