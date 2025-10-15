@@ -57,30 +57,34 @@ http.interceptors.response.use((res) => res, async (err: AxiosError) => {
   const config: RetriableConfig = err.config || {} as RetriableConfig;
 
   //const original_req = config.
+  
+  const url = config.url || "";
+  const isRefresh = /\/api\/auth\/refresh$/.test(url); // check if this is refresh
+  const isLogout = /\/api\/auth\/logout$/.test(url); // check if this is logout
 
-  console.log("asdff")
-  if (status === 401 && !config._retried &&
-    !/\/api\/auth\/refresh$/.test(config.url || "") 
-    // when hitting /api/auth/refresh and encountering 401(example: refresh token expire)
-    // prevent infinite loop
-  ) {
+  if (status === 401 && !config._retried && !isRefresh && !isLogout) {
+
     config._retried = true;
-    console.log("asdff")
+
     try {
-      accessToken = await refreshAccessToken()
-      console.log(accessToken)
-      if (!accessToken) {
+      const newToken = await refreshAccessToken()
+      if (!newToken) {
         throw new Error("Failed to get new valid accessToken");
       }
+      accessToken = newToken;
+      config.headers = config.headers ?? {};
+      config.headers.Authorization = `Bearer ${newToken}`;
+
+      return http(config)
 
     } catch (error) {
       console.log(error)
       try {
         await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/logout`, {}, { withCredentials: true }) 
       } catch {}
-      
+      return Promise.reject(error);
     }
   }
 
-  return err;
+  return Promise.reject(err);
 })
