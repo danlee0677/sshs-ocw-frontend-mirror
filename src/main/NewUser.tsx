@@ -1,9 +1,9 @@
 import React from "react"
 import classes from './main.module.css'
-import { Button, Flex, Grid, Group, Image, SimpleGrid, Stack, Space, Text, Title, UnstyledButton } from "@mantine/core";
+import { Button, Flex, Grid, Group, Image, SimpleGrid, Stack, Space, Text, Title, UnstyledButton, Anchor } from "@mantine/core";
 import { useEffect, useState } from 'react'
 import { useMediaQuery } from '@mantine/hooks';
-import { Link, useNavigate } from 'react-router';
+import { Link, NavigateFunction } from 'react-router';
 
 const items = [
     { src: '/img/math.png', alt: 'math', sub: '수학' },
@@ -14,7 +14,7 @@ const items = [
     { src: '/img/coding.png', alt: 'coding', sub: '정보' },
 ];
 
-function NewUser(toggle: Function, setToggled: Function, toggled: any, step: number, setStep: Function, isMobile: boolean) {
+function NewUser(toggle: Function, toggled: any, step: number, setStep: Function, isMobile: boolean, navigate: NavigateFunction) {
     return (
         <>
             {isMobile ? (
@@ -56,7 +56,7 @@ function NewUser(toggle: Function, setToggled: Function, toggled: any, step: num
                                             setStep(step + 1)
                                         }
                                     } }>시작하기</Button>
-                                    <Text className={classes.Text2}>이미 계정이 있으신가요? <Text onClick={() => {setStep(-1)}} className={classes.Link}>로그인 하러 가기</Text></Text>
+                                    <Text className={classes.Text2}>이미 계정이 있으신가요? <Text onClick={() => navigate("/login")} className={classes.Link}>로그인 하러 가기</Text></Text>
                                 </Stack>
                             </Flex>
                         </Stack>
@@ -101,7 +101,7 @@ function NewUser(toggle: Function, setToggled: Function, toggled: any, step: num
                                             setStep(step + 1)
                                         }
                                     } }>시작하기</Button>
-                                    <Text className={classes.Text2}>이미 계정이 있으신가요? <Text onClick={() => {setStep(-1)}} className={classes.Link}>로그인 하러 가기</Text></Text>
+                                    <Text className={classes.Text2}>이미 계정이 있으신가요? <Text onClick={() => navigate("login")} className={classes.Link}>로그인 하러 가기</Text></Text>
                                 </Stack>
                             </Flex>
                         </Group>
