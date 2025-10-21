@@ -8,7 +8,7 @@ import StartPage from "./main/StartPage";
 import LoginComplete from "./auth/LoginComplete";
 import Home from "./main/Home";
 import Setting from "./setting/Setting"
-import LectureEditor from "./editor/LectureEditor";
+import LectureEditor from "./editor/lectureEditor";
 
 function Router({user, setUser} : {user: User | null, setUser: React.Dispatch<User | null>}) {
   return (

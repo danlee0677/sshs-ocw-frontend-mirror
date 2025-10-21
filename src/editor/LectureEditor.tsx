@@ -4,7 +4,6 @@ import { FloatingMenu, BubbleMenu } from '@tiptap/react/menus'
 import StarterKit from "@tiptap/starter-kit";
 import { Mathematics } from '@tiptap/extension-mathematics'
 import Youtube from '@tiptap/extension-youtube'
-import Tiptap from "./Editor";
 import EditorAppshell from "./EditorAppshell";
 
 const STORAGE_KEY = "LectureEditor_v01"
