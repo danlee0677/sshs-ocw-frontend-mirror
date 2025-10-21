@@ -20,6 +20,7 @@ export interface LectureBody {
 }
 
 export const userSchema = z.object({
+  _id: z.string(),
   name: z.string(),
   roles: z.array(z.string()),
   preference: z.array(z.boolean()),
@@ -27,7 +28,3 @@ export const userSchema = z.object({
 })
 
 export type User = z.infer<typeof userSchema>
-
-export interface GoogleResponse {
-  
-}

@@ -49,7 +49,7 @@ function StartPage() {
         <>  
         {
             step === 0 ? (
-                NewUser(toggle, setToggled, toggled, step, setStep, isMobile)
+                NewUser(toggle, toggled, step, setStep, isMobile, navigate)
             ) : step === 1 ? (
                 Join(courseToggled, setCourseToggled, courseToggle, step, setStep)
             ) : (
