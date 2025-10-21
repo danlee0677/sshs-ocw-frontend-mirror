@@ -8,6 +8,7 @@ import StartPage from "./main/StartPage";
 import LoginComplete from "./auth/LoginComplete";
 import Home from "./main/Home";
 import Setting from "./setting/Setting"
+import LectureEditor from "./editor/LectureEditor";
 
 function Router({user, setUser} : {user: User | null, setUser: React.Dispatch<User | null>}) {
   return (
@@ -28,6 +29,8 @@ function Router({user, setUser} : {user: User | null, setUser: React.Dispatch<Us
       <Route path="setting" element={<Setting />}></Route>
 
       <Route path="*" element={<Nonexistent />} />
+
+      <Route path="lectureeditor" element={<LectureEditor />} />
     </Routes>
   )
 }
