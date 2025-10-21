@@ -5,11 +5,41 @@
     font-style: normal;
 }
 
-.Vertical_align {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+
+.ButtonText {
+    color: black;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    font-size: 20px;
+    transform: translate(-50%, -40%);
+    pointer-events: none;
+    z-index: 1;             
+    opacity: 0;             
+    transition: 0.3s ease;
+    font-family: 'JalnanGothic';
+    -webkit-user-select: none; /* 크롬, 사파리 */
+    -moz-user-select: none;    /* 파이어폭스 */
+    -ms-user-select: none;     /* 구버전 IE/Edge */
+    user-select: none; 
+    user-select: none;
 }
+
+.Box1 {
+    transition: 0.2s ease-in-out;
+}
+
+.Box1:hover {
+    transition: 0.2s ease-in-out;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0px 3px 3px 3px gainsboro;
+}
+
+.Box2:hover {
+    background-color: rgb(226, 226, 226);
+}
+
 
 .flex1 {
     display: flex;
@@ -18,18 +48,13 @@
     align-items: center;
 }
 
+.Inline {
+    display: inline-block;
+}
+
 .LoginInput {
     margin: 10px 0 10px 0;
     width: 60%;
-}
-
-.Text1 {
-    width: 70%;
-}
-
-.Text2 {
-    font-family: 'JalnanGothic';
-    color: gray;
 }
 
 .Link {
@@ -37,10 +62,6 @@
     text-decoration: underline;
     display: inline-block;
     cursor: pointer;
-}
-
-.Inline {
-    display: inline-block;
 }
 
 .selectBox {
@@ -74,6 +95,16 @@
     border-bottom: 6px rgb(40, 40, 105) solid;
 }
 
+.Text1 {
+    width: 70%;
+}
+
+.Text2 {
+    font-family: 'JalnanGothic';
+    color: gray;
+}
+
+
 .Title2 {
     font-family: 'JalnanGothic';
 }
@@ -87,23 +118,10 @@
     pointer-events: none; /* 클릭까지 막고 싶으면 */
 }
 
-.ButtonText {
-    color: black;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    font-size: 20px;
-    transform: translate(-50%, -40%);
-    pointer-events: none;
-    z-index: 1;             
-    opacity: 0;             
-    transition: 0.3s ease;
-    font-family: 'JalnanGothic';
-    -webkit-user-select: none; /* 크롬, 사파리 */
-    -moz-user-select: none;    /* 파이어폭스 */
-    -ms-user-select: none;     /* 구버전 IE/Edge */
-    user-select: none; 
-    user-select: none;
+.Vertical_align {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .selectBox:hover .ButtonText {

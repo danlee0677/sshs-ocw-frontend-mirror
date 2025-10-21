@@ -7,9 +7,9 @@ function MainPageHeader({ children }: { children: React.ReactNode }) {
   return (
   <AppShell
     padding="md"
-    header={{ height: 60 }}
+    header={{ height: 120 }}
   >
-    <AppShell.Header h={60}>
+    <AppShell.Header h={120}>
       <Group h="100%" w="100%" gap={0}>
           <Flex w="20%">
             <Space w="sm" />

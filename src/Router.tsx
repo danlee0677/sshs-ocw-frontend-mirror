@@ -6,11 +6,13 @@ import Login from "./auth/Login";
 import { User } from "./libs/types";
 import StartPage from "./main/StartPage";
 import LoginComplete from "./auth/LoginComplete";
+import Home from "./main/Home";
+import Setting from "./setting/Setting"
 
 function Router({user, setUser} : {user: User | null, setUser: React.Dispatch<User | null>}) {
   return (
     <Routes>
-      <Route index element = {user ? <></> : <StartPage />} />
+      <Route index element = {user ? <Home></Home> : <StartPage />} />
 
       <Route path="login">
         <Route index element={<Login />} />
@@ -21,6 +23,9 @@ function Router({user, setUser} : {user: User | null, setUser: React.Dispatch<Us
         <Route index></Route>
         <Route path="0" element={<Lecture />}></Route>
       </Route>
+
+      <Route path="Home" element={<Home />}></Route>
+      <Route path="setting" element={<Setting />}></Route>
 
       <Route path="*" element={<Nonexistent />} />
     </Routes>
