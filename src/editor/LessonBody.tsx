@@ -8,7 +8,7 @@ import { useDebounce, STORAGE_KEY, getContentFromLocalStorage } from "./editorUt
 import { Button, ScrollArea } from "@mantine/core";
 import { ShellComponent } from "../libs/types";
 
-function LectureEditor({editable, content, Shell} : {editable: boolean, content: object | null, Shell: ShellComponent}) {
+function LessonBody({editable, content, Shell} : {editable: boolean, content: object | null, Shell: ShellComponent}) {
   // persist through refresh: save 
   const debounceSave = useDebounce((json : any) => {
     try {
@@ -68,4 +68,4 @@ function LectureEditor({editable, content, Shell} : {editable: boolean, content:
   )
 }
 
-export default LectureEditor
+export default LessonBody

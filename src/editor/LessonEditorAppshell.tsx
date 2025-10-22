@@ -4,7 +4,7 @@ import { useCurrentEditor } from "@tiptap/react";
 import { linkStyle } from "../libs/styles";
 import { addYoutubeVideo } from "./editorUtils";
 
-function EditorAppshell({ children }: { children: React.ReactNode }) { 
+function LessonEditorAppshell({ children }: { children: React.ReactNode }) { 
   const { editor } = useCurrentEditor()
 
   return (
@@ -56,4 +56,4 @@ function EditorAppshell({ children }: { children: React.ReactNode }) {
   </AppShell>)
 }
 
-export default EditorAppshell;
+export default LessonEditorAppshell;

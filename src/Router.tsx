@@ -1,14 +1,17 @@
 import React from "react";
 import { Routes, Route } from "react-router";
 import Nonexistent from "./nonexistent/Nonexistent";
-import Lecture from "./lecture/Lecture";
+import LessonViewer from "./lecture/LessonViewer";
 import Login from "./auth/Login";
 import { User } from "./libs/types";
 import StartPage from "./main/StartPage";
 import LoginComplete from "./auth/LoginComplete";
 import Home from "./main/Home";
 import Setting from "./setting/Setting"
-import Editor from "./editor/Editor";
+import LessonEditor from "./editor/LessonEditor";
+import ModuleViewer from "./lecture/ModuleViewer";
+import ModuleEditor from "./editor/ModuleEditor";
+import SubjectViewer from "./lecture/SubjectViewer";
 
 function Router({user, setUser} : {user: User | null, setUser: React.Dispatch<User | null>}) {
   return (
@@ -20,11 +23,20 @@ function Router({user, setUser} : {user: User | null, setUser: React.Dispatch<Us
         <Route path="complete" element={<LoginComplete setUser={setUser}/>} />
       </Route>
 
-      <Route path="lesson">
-        <Route index></Route>
-        <Route path=":lessonId" element={<Lecture />}/> 
-        <Route path=":lessonId/edit" element={<Editor mode="edit" />} />
-        <Route path="create" element={<Editor mode="create" />} />
+      <Route path="lessons">
+        <Route path=":lessonId" element={<LessonViewer />}/> 
+        <Route path=":lessonId/edit" element={<LessonEditor mode="edit" />} />
+        <Route path="create" element={<LessonEditor mode="create" />} />
+      </Route>
+
+      <Route path="modules">
+        <Route path=":moduleId" element={<ModuleViewer />} />
+        <Route path=":moduleId/edit" element={<ModuleEditor />} />
+      </Route>
+
+      <Route path="subjects">
+        <Route path=":subjectId" element={<SubjectViewer />} />
+        <Route path=":subjectId/edit" element={<ModuleEditor />} />
       </Route>
 
       <Route path="Home" element={<Home />}></Route>

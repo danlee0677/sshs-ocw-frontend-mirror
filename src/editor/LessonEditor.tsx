@@ -1,23 +1,23 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
-import EditorAppshell from "./EditorAppshell";
-import LectureEditor from "./LectureEditor";
+import LessonEditorAppshell from "./LessonEditorAppshell";
+import LessonBody from "./LessonBody";
 import { Lesson } from "../libs/types";
 
-function Editor({mode} : {mode: "edit" | "create"}) {
+function LessonEditor({mode} : {mode: "edit" | "create"}) {
   const [initialContent, setInitialContent] = useState<null | Lesson>(null)
 
   useEffect(() => {
     if (mode !== "edit") return;
 
-  }, [])
+  }, [mode])
 
   return (
     <>
-      <LectureEditor content={null} editable={true} Shell={EditorAppshell} />
+      <LessonBody content={null} editable={true} Shell={LessonEditorAppshell} />
     </>
     
   )
 }
 
-export default Editor
+export default LessonEditor

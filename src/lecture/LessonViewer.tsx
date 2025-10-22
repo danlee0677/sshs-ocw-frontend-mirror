@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import LectureAppshell from "./LectureAppshell";
+import LectureAppshell from "./LessonAppshell";
 import { ScrollArea, Stack, Space } from "@mantine/core";
 import { z } from 'zod'
 import { Lesson } from "../libs/types";
 import { useParams } from "react-router";
 import NavigateCard from "./card/NavigateCard";
 import { http } from '../libs/http'
-import LectureEditor from "../editor/LectureEditor";
+import LectureEditor from "../editor/LessonBody";
 
 const PLACEHOLDER_DOC = {
   type: "doc",
@@ -16,7 +16,7 @@ const PLACEHOLDER_DOC = {
 }
 
 
-function Lecture() {
+function LessonViewer() {
   const { lessonId } = useParams()
 
   const [lesson, setLesson] = useState<Lesson | null>(null);
@@ -60,4 +60,4 @@ function Lecture() {
   )
 }
 
-export default Lecture
+export default LessonViewer
