@@ -8,7 +8,7 @@ import StartPage from "./main/StartPage";
 import LoginComplete from "./auth/LoginComplete";
 import Home from "./main/Home";
 import Setting from "./setting/Setting"
-import LectureEditor from "./editor/LectureEditor";
+import Editor from "./editor/Editor";
 
 function Router({user, setUser} : {user: User | null, setUser: React.Dispatch<User | null>}) {
   return (
@@ -20,17 +20,17 @@ function Router({user, setUser} : {user: User | null, setUser: React.Dispatch<Us
         <Route path="complete" element={<LoginComplete setUser={setUser}/>} />
       </Route>
 
-      <Route path="info">
+      <Route path="lesson">
         <Route index></Route>
-        <Route path="0" element={<Lecture />}></Route>
+        <Route path=":lessonId" element={<Lecture />}/> 
+        <Route path=":lessonId/edit" element={<Editor mode="edit" />} />
+        <Route path="create" element={<Editor mode="create" />} />
       </Route>
 
       <Route path="Home" element={<Home />}></Route>
       <Route path="setting" element={<Setting />}></Route>
 
       <Route path="*" element={<Nonexistent />} />
-
-      <Route path="lectureeditor" element={<LectureEditor />} />
     </Routes>
   )
 }

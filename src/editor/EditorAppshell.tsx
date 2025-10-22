@@ -1,16 +1,19 @@
-import React from "react";
 import { AppShell, Group, Text, Image, Title, Space, Flex, Button } from "@mantine/core";
 import { Link } from "react-router";
+import { useCurrentEditor } from "@tiptap/react";
 import { linkStyle } from "../libs/styles";
+import { addYoutubeVideo } from "./editorUtils";
 
-function EditorAppshell({ children }: { children: React.ReactNode }) {  
+function EditorAppshell({ children }: { children: React.ReactNode }) { 
+  const { editor } = useCurrentEditor()
+
   return (
   <AppShell
     padding="md"
-    header={{ height: 60 }}
+    header={{ height: 100 }}
   >
-    <AppShell.Header h={60}>
-      <Group h="100%" w="100%" gap={0}>
+    <AppShell.Header h="15vh">
+      <Group h="60%" w="100%" gap={0}>
           <Flex w="20%">
             <Space w="sm" />
             <Link to="/" style={linkStyle}>
@@ -42,9 +45,12 @@ function EditorAppshell({ children }: { children: React.ReactNode }) {
           </Group>
         </Flex>
       </Group>
+      <Group h="40%" gap="md" >
+        <Button onClick={() => addYoutubeVideo(editor)} >Add Youtube Video</Button>
+      </Group>
     </AppShell.Header>
 
-    <AppShell.Main>
+    <AppShell.Main h="85vh">
       {children}
     </AppShell.Main>
   </AppShell>)

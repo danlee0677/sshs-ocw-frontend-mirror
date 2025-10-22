@@ -1,22 +1,12 @@
+import { ReactNode, JSX } from "react";
 import { TitleOrder } from "@mantine/core";
 import { z } from 'zod'
-
-export type LectureComponent = LectureHeading | LectureVideo | LectureBody;
 
 export interface LectureHeading {
   type: 'heading';
   order: TitleOrder;
   content: string;
   justify: 'flex-start' | 'center' | 'flex-end';
-}
-
-export interface LectureVideo {
-  type: 'video';
-  src: string;
-}
-
-export interface LectureBody {
-  type: 'body';
 }
 
 export const userSchema = z.object({
@@ -28,3 +18,12 @@ export const userSchema = z.object({
 })
 
 export type User = z.infer<typeof userSchema>
+
+export interface Lesson {
+  title: string,
+  content: object,
+  createdBy: string,
+}
+
+export type ShellProps = { children: ReactNode }
+export type ShellComponent = (props: ShellProps) => JSX.Element
