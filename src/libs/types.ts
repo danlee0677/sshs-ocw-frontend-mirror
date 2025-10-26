@@ -19,11 +19,21 @@ export const userSchema = z.object({
 
 export type User = z.infer<typeof userSchema>
 
+export type ShellProps = { children: ReactNode }
+export type ShellComponent = (props: ShellProps) => JSX.Element
+
+export const lessonSchema = z.object({
+  title: z.string(),
+  content: z.string(),
+  createdBy: z.string(),
+  _id: z.string(),
+})
+
+export type LessonResponse = z.infer<typeof lessonSchema>
+
 export interface Lesson {
   title: string,
   content: object,
   createdBy: string,
+  _id: string,
 }
-
-export type ShellProps = { children: ReactNode }
-export type ShellComponent = (props: ShellProps) => JSX.Element

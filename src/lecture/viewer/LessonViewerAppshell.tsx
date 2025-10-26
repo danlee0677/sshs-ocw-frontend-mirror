@@ -1,9 +1,9 @@
 import React from "react";
 import { AppShell, Group, Flex, Space, Image, Title, Stack, Divider, ScrollArea } from "@mantine/core";
 import { Link } from "react-router";
-import { linkStyle } from "../libs/styles";
+import { linkStyle } from "../../libs/styles";
 
-function LectureAppshell({ children }: { children: React.ReactNode }) {
+function LessonViewerAppshell({ children }: { children: React.ReactNode }) {
   return (
     <AppShell
       navbar={{ width: 300, breakpoint: 'sm' }}
@@ -68,4 +68,4 @@ function LectureAppshell({ children }: { children: React.ReactNode }) {
   )
 }
 
-export default LectureAppshell
+export default LessonViewerAppshell;

@@ -3,7 +3,7 @@ import { Group, Space, Text } from "@mantine/core";
 import { Link } from "react-router";
 import { linkStyle } from "../../libs/styles";
 
-function NavigateCard({dir, ind, pageMin, pageMax}: {dir: string, ind: number, pageMin: number, pageMax: number}) {
+function LessonViewerNavigateCard({dir, ind, pageMin, pageMax}: {dir: string, ind: number, pageMin: number, pageMax: number}) {
   const prev = "< Prev";
   const next = "Next >";
   return (
@@ -22,4 +22,4 @@ function NavigateCard({dir, ind, pageMin, pageMax}: {dir: string, ind: number, p
   )
 }
 
-export default NavigateCard;
+export default LessonViewerNavigateCard;
