@@ -37,3 +37,27 @@ export interface Lesson {
   createdBy: string,
   _id: string,
 }
+
+export const moduleSchema = z.object({
+  _id: z.string(),
+  subject: z.string(),
+  title: z.string(),
+  order: z.number(),
+  content: z.array(z.object({
+    title: z.string(),
+    _id: z.string(),
+  }))
+})
+
+export type Module = z.infer<typeof moduleSchema>
+
+export const subjectSchema = z.object({
+  _id: z.string(),
+  title: z.string(),
+  content: z.array(z.object({
+    _id: z.string(),
+    title: z.string(),
+  }))
+})
+
+export type Subject = z.infer<typeof subjectSchema>

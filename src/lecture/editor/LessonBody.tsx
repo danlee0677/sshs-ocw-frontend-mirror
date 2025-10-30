@@ -4,9 +4,19 @@ import { BubbleMenu } from '@tiptap/react/menus'
 import StarterKit from "@tiptap/starter-kit";
 import { Mathematics } from '@tiptap/extension-mathematics'
 import Youtube from '@tiptap/extension-youtube'
+
+// code highlight imports
+import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
+// load all language: change if necessary
+import { createLowlight, all } from 'lowlight'
+import 'highlight.js/styles/github-dark.css' // todo: change when dark mode
+
 import { useDebounce, LESSON_STORAGE_KEY, getContentFromLocalStorage } from "./editorUtils";
 import { Button, Flex, ScrollArea, Stack, Space } from "@mantine/core";
 import { ShellComponent } from "../../libs/types";
+
+
+const lowlight = createLowlight(all);
 
 function LessonBody({editable, content, Shell, before, after} : {editable: boolean, content: object | null, Shell: ShellComponent, before: ReactNode, after: ReactNode}) {
   // persist through refresh: save 
@@ -20,7 +30,9 @@ function LessonBody({editable, content, Shell, before, after} : {editable: boole
 
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        codeBlock: false,
+      }),
       Mathematics.configure({
         inlineOptions: {
           // d
@@ -40,6 +52,12 @@ function LessonBody({editable, content, Shell, before, after} : {editable: boole
         allowFullscreen: true,
         
       }),
+      CodeBlockLowlight.configure({
+        lowlight: lowlight,
+        enableTabIndentation: true,
+        tabSize: 4,
+        
+      })
     ],
     // try to fetch from localStorage
     // if content is not editable, use content

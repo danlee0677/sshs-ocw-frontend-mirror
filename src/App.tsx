@@ -1,6 +1,7 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
 import '@mantine/core/styles.css';
+import './App.css';
 import { BrowserRouter } from 'react-router';
 import { http } from './libs/http'
 import Router from './Router';
@@ -9,7 +10,7 @@ import { User } from './libs/types'
 
 function App() {
   const theme = createTheme({
-    fontFamily: 'Noto Sans KR, Inter, system-ui, Avenir, Helvetica, Arial, sans-serif'
+    fontFamily: 'Noto Sans KR, Inter, system-ui, Avenir, Helvetica, Arial, sans-serif',
   });
   const [user, setUser] = useState<User | null>(null);
 

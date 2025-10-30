@@ -13,6 +13,7 @@ import ModuleViewer from "./lecture/viewer/ModuleViewer";
 import ModuleEditor from "./lecture/editor/ModuleEditor";
 import SubjectViewer from "./lecture/viewer/SubjectViewer";
 import { canEdit } from "./libs/utils";
+import SubjectEditor from "./lecture/editor/SubjectEditor";
 
 function Router({user, setUser} : {user: User | null, setUser: React.Dispatch<User | null>}) {
   return (
@@ -32,12 +33,14 @@ function Router({user, setUser} : {user: User | null, setUser: React.Dispatch<Us
 
       <Route path="modules">
         <Route path=":moduleId" element={<ModuleViewer />} />
-        <Route path=":moduleId/edit" element={canEdit(user) ? <ModuleEditor /> : <></>} />
+        <Route path=":moduleId/edit" element={canEdit(user) ? <ModuleEditor mode="edit" /> : <></>} />
+        <Route path="create" element={canEdit(user) ? <ModuleEditor mode="create" /> : <></> } />
       </Route>
 
       <Route path="subjects">
         <Route path=":subjectId" element={<SubjectViewer />} />
-        <Route path=":subjectId/edit" element={canEdit(user) ? <ModuleEditor /> : <></>} />
+        <Route path=":subjectId/edit" element={canEdit(user) ? <SubjectEditor mode="edit" /> : <></>} />
+        <Route path="create" element={canEdit(user) ? <SubjectEditor mode="create" /> : <></>} />
       </Route>
 
       <Route path="Home" element={<Home />}></Route>
