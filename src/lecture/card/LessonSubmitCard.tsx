@@ -1,9 +1,9 @@
 import { Button, Group, Text } from "@mantine/core"
-import { useCurrentEditor } from "@tiptap/react"
+import { useRichTextEditorContext } from '@mantine/tiptap'
 import { handleLessonSubmit } from "../editor/editorUtils";
 
 function LessonSubmitCard({ mode, lessonId, title }: { mode: "edit" | "create", lessonId: string | undefined, title: string }) {
-  const { editor } = useCurrentEditor();
+  const { editor } = useRichTextEditorContext();
 
   return (
     <>

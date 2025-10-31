@@ -1,11 +1,11 @@
 import { AppShell, Group, Text, Image, Title, Space, Flex, Button } from "@mantine/core";
 import { Link } from "react-router";
-import { useCurrentEditor } from "@tiptap/react";
+import { useRichTextEditorContext } from "@mantine/tiptap";
 import { linkStyle } from "../../libs/styles";
 import { addYoutubeVideo } from "./editorUtils";
 
 function LessonEditorAppshell({ children }: { children: React.ReactNode }) { 
-  const { editor } = useCurrentEditor()
+  const { editor } = useRichTextEditorContext();
 
   return (
   <AppShell
