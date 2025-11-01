@@ -1,4 +1,3 @@
-import React from "react";
 import MainPageHeader from "../main/MainPageAppshell";
 import { Flex, Title } from "@mantine/core";
 

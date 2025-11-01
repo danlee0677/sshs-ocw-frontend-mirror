@@ -1,4 +1,3 @@
-import React from 'react'
 import MainPageHeader from "../main/MainPageAppshell";
 import { Box, Image, Group, Stack, Text } from '@mantine/core';
 import { useElementSize } from '@mantine/hooks';

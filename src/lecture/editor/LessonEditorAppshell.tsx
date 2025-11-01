@@ -1,4 +1,4 @@
-import { AppShell, Group, Text, Image, Title, Space, Flex, Button } from "@mantine/core";
+import { AppShell, Group, Image, Title, Space, Flex, Button } from "@mantine/core";
 import { Link } from "react-router";
 import { useRichTextEditorContext } from "@mantine/tiptap";
 import { linkStyle } from "../../libs/styles";

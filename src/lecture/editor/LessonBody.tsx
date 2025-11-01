@@ -15,7 +15,7 @@ import { createLowlight, all } from 'lowlight'
 import 'highlight.js/styles/github-dark.css' // todo: change when dark mode
 
 import { useDebounce, LESSON_STORAGE_KEY, getContentFromLocalStorage } from "./editorUtils";
-import { Button, Flex, ScrollArea, Stack, Space } from "@mantine/core";
+import { Flex, ScrollArea, Stack, Space } from "@mantine/core";
 import { ShellComponent } from "../../libs/types";
 
 

@@ -1,9 +1,6 @@
-import React from "react";
 import classes from './join.module.css'
-import { ActionIcon, Button, Flex, Group, Stack, Text, Title, UnstyledButton } from "@mantine/core";
+import { ActionIcon, Button, Flex, Stack, Title, UnstyledButton } from "@mantine/core";
 import { IconArrowBack } from '@tabler/icons-react'
-import { Link, useNavigate } from 'react-router';
-import { useEffect, useState } from 'react'
 
 const course = [
     { sub: '중등 과정' },

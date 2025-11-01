@@ -1,8 +1,6 @@
-import React from "react";
 import { Text, FileButton, Group, TextInput, Stack, UnstyledButton } from "@mantine/core";
 import classes from '../main/main.module.css'
 import MainPageHeader from "../main/MainPageAppshell";
-import { file } from "zod";
 
 function Setting() {
     return (

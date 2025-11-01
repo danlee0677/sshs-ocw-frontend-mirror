@@ -1,8 +1,5 @@
-import React from "react"
 import classes from './main.module.css'
-import { Button, Flex, Grid, Group, Image, SimpleGrid, Stack, Space, Text, Title, UnstyledButton, Anchor } from "@mantine/core";
-import { useEffect, useState } from 'react'
-import { useMediaQuery } from '@mantine/hooks';
+import { Button, Flex, Group, Image, SimpleGrid, Stack, Space, Text, Title, UnstyledButton } from "@mantine/core";
 import { Link, NavigateFunction } from 'react-router';
 
 const items = [

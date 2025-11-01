@@ -46,7 +46,7 @@ function LessonViewer() {
       setModule(PLACEHOLDER_MODULE);
       console.log(err);
     })
-  }, [lessonId])
+  }, [lessonId, lesson.module])
   // todo: give the appshell `module` fetched with useEffect
   return (
     <>
