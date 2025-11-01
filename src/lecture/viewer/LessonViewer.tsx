@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Title, Stack, Flex } from "@mantine/core";
 import LessonViewerAppshell from "./LessonViewerAppshell";
 import { Lesson, lessonSchema, Module, moduleSchema } from "../../libs/types";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import LessonViewerNavigateCard from "../card/LessonViewerNavigateCard";
 import { http } from '../../libs/http'
 import LessonBody from "../editor/LessonBody";
@@ -15,8 +15,12 @@ function LessonViewer() {
   const [lesson, setLesson] = useState<Lesson>(PLACEHOLDER_LESSON);
   const [module, setModule] = useState<Module>(PLACEHOLDER_MODULE);
 
+  const navigate = useNavigate();
+
   // fetch lesson from routes
   useEffect(() => {
+    if (!lessonId) navigate('/notfound');
+
     http.get(`${process.env.REACT_APP_API_URL}/api/lessons/${lessonId}`).then((res) => {
       const parsed = lessonSchema.safeParse(res.data)
 
@@ -34,7 +38,7 @@ function LessonViewer() {
       })
     }).catch((err) => {
       console.log(err)
-      setLesson(PLACEHOLDER_LESSON)
+      navigate('/notfound');
     })
 
     http.get(`${process.env.REACT_APP_API_URL}/api/modules/${lesson.module}`).then((res) => {
@@ -43,8 +47,8 @@ function LessonViewer() {
       if (!parsed.success) throw new Error("Fetched module does not meet Module type");
       setModule(parsed.data);
     }).catch((err) => {
-      setModule(PLACEHOLDER_MODULE);
       console.log(err);
+      navigate('/notfound');
     })
   }, [lessonId, lesson.module])
   // todo: give the appshell `module` fetched with useEffect

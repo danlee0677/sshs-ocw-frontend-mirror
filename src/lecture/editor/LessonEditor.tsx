@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import LessonEditorAppshell from "./LessonEditorAppshell";
 import LessonBody from "./LessonBody";
 import { Lesson, lessonSchema } from "../../libs/types";
@@ -12,8 +12,12 @@ function LessonEditor({mode} : {mode: "edit" | "create"}) {
   const [title, setTitle] = useState("");
 
   const { lessonId } = useParams();
+  
+  const navigate = useNavigate();
 
   useEffect(() => {
+    if (!lessonId) navigate('/notfound');
+
     if (mode !== "edit") return;
     http.get(`${process.env.REACT_APP_API_URL}/api/lessons/${lessonId}`).then((res) => {
       const parsed = lessonSchema.safeParse(res.data);

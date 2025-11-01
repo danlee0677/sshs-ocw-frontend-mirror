@@ -27,18 +27,18 @@ function ModuleEditor({ mode }: {mode: "edit" | "create"}) {
   const navigate = useNavigate();
   const [module, setModule] = useState<Module>(PLACEHOLDER_MODULE);
 
-  if (!subjectId) {
-    console.log("No subjectId: invalid page");
-    navigate('/');
-  }
-
   useEffect(() => {
     // setModule((a) => {return {...a, subject: subjectId}})
+    if (!subjectId) {
+      console.log("No subjectId: invalid page");
+      navigate('/notfound');
+    }
+
     if (mode !== "edit") return;
 
     if (!moduleId) {
       console.log("No moduleId in edit: invalid page")
-      navigate('/');
+      navigate('/notfound');
     }
 
     http.get(`${process.env.REACT_APP_API_URL}/api/modules/${moduleId}`).then((res) => {

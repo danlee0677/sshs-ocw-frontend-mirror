@@ -19,13 +19,13 @@ export const PLACEHOLDER_MODULE: Module = {
   subject: "",
   _id: "",
   order: -1,
-  content: [],
+  contents: [],
 }
 
 export const PLACEHOLDER_SUBJECT: Subject = {
   title: "",
   _id: "",
-  content: []
+  contents: []
 }
 
 export const PLACEHOLDER_LESSON: Lesson = {

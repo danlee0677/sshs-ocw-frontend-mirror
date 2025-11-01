@@ -1,7 +1,7 @@
 import MainPageHeader from "../main/MainPageAppshell";
 import { Flex, Title } from "@mantine/core";
 
-function Nonexistent() {
+function NotFoundPage() {
   return (
     <MainPageHeader>
       <Flex w="100%" h="100%" justify="center" align="center">
@@ -11,4 +11,4 @@ function Nonexistent() {
   )
 }
 
-export default Nonexistent;
+export default NotFoundPage;
