@@ -27,6 +27,7 @@ export const lessonSchema = z.object({
   content: z.string(),
   createdBy: z.string(),
   _id: z.string(),
+  module: z.string()
 })
 
 export type LessonResponse = z.infer<typeof lessonSchema>
@@ -36,6 +37,7 @@ export interface Lesson {
   content: object,
   createdBy: string,
   _id: string,
+  module: string,
 }
 
 export const moduleSchema = z.object({

@@ -3,12 +3,8 @@ import { NavigateFunction, useNavigate, useParams } from "react-router";
 import { Button, Stack, TextInput, Flex, Title } from "@mantine/core";
 import { http } from "../../libs/http";
 import { Subject, subjectSchema } from "../../libs/types";
+import { PLACEHOLDER_SUBJECT } from "../../libs/utils";
 
-const PLACEHOLDER_SUBJECT = {
-  title: "",
-  _id: "",
-  content: []
-}
 
 function handleSubjectSubmit(mode: "edit" | "create", navigate: NavigateFunction, subject: Subject) {
   if (mode === "edit") {

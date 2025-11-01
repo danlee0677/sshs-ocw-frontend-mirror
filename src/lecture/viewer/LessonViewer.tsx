@@ -1,23 +1,19 @@
 import { useEffect, useState } from "react";
+import { Title, Stack, Flex } from "@mantine/core";
 import LessonViewerAppshell from "./LessonViewerAppshell";
-import { Lesson, lessonSchema } from "../../libs/types";
+import { Lesson, lessonSchema, Module, moduleSchema } from "../../libs/types";
 import { useParams } from "react-router";
 import LessonViewerNavigateCard from "../card/LessonViewerNavigateCard";
 import { http } from '../../libs/http'
 import LessonBody from "../editor/LessonBody";
-
-const PLACEHOLDER_DOC = {
-  type: "doc",
-  content: [
-    { type: "paragraph", content: [{ type: "text", text: "Fetching your lesson..." }] }
-  ]
-}
+import { PLACEHOLDER_LESSON, PLACEHOLDER_MODULE } from "../../libs/utils";
 
 
 function LessonViewer() {
   const { lessonId } = useParams()
 
-  const [lesson, setLesson] = useState<Lesson | null>(null);
+  const [lesson, setLesson] = useState<Lesson>(PLACEHOLDER_LESSON);
+  const [module, setModule] = useState<Module>(PLACEHOLDER_MODULE);
 
   // fetch lesson from routes
   useEffect(() => {
@@ -34,16 +30,41 @@ function LessonViewer() {
         content: contentJSON,
         createdBy: parsed.data.createdBy,
         _id: parsed.data._id,
+        module: parsed.data.module
       })
     }).catch((err) => {
       console.log(err)
-      setLesson(null)
+      setLesson(PLACEHOLDER_LESSON)
+    })
+
+    http.get(`${process.env.REACT_APP_API_URL}/api/modules/${lesson.module}`).then((res) => {
+      const parsed = moduleSchema.safeParse(res.data)
+
+      if (!parsed.success) throw new Error("Fetched module does not meet Module type");
+      setModule(parsed.data);
+    }).catch((err) => {
+      setModule(PLACEHOLDER_MODULE);
+      console.log(err);
     })
   }, [lessonId])
-
+  // todo: give the appshell `module` fetched with useEffect
   return (
-    <LessonBody editable={false} content={lesson ? lesson.content : PLACEHOLDER_DOC} Shell={LessonViewerAppshell}
-    before={<LessonViewerNavigateCard dir={"/info"} ind={0} pageMin={0} pageMax={0} />} after={<></>} />
+    <>
+      { lesson._id ? 
+        <LessonBody editable={false} content={lesson.content} Shell={LessonViewerAppshell}
+        before={
+        <Stack gap="md" w="100%">
+          <LessonViewerNavigateCard module={module} lesson={lesson} />
+          <Title order={1}>{lesson.title}</Title>
+          <Flex w="100%" justify="flex-end">
+            <Title order={4}>{lesson.createdBy}</Title>
+          </Flex>
+        </Stack>
+        } after={<></>} />  
+      : 
+        <></>
+      }
+    </>
   )
 }
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, FileButton, Group, Input, Stack, UnstyledButton } from "@mantine/core";
+import { Text, FileButton, Group, TextInput, Stack, UnstyledButton } from "@mantine/core";
 import classes from '../main/main.module.css'
 import MainPageHeader from "../main/MainPageAppshell";
 import { file } from "zod";
@@ -8,8 +8,9 @@ function Setting() {
     return (
         <MainPageHeader>
             <Stack className={`${classes.Vertical_align}`} w={'100%'} h={'auto'}>
-                <Group className={`${classes.Vertical_align}`} w={'80%'} h={'10vh'}>아이디 변경
-                    <Input></Input>
+                <Group className={`${classes.Vertical_align}`} w={'80%'} h={'10vh'}>
+                    <Text>아이디 변경</Text>
+                    <TextInput></TextInput>
                     <UnstyledButton>적용</UnstyledButton>
                 </Group>
                 <Group className={`${classes.Vertical_align}`} w={'80%'} h={'10vh'}>프로필 변경

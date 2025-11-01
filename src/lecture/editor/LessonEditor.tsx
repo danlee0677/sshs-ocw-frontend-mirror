@@ -27,6 +27,7 @@ function LessonEditor({mode} : {mode: "edit" | "create"}) {
         content: JSONcontent,
         createdBy: parsed.data.createdBy,
         _id: parsed.data._id,
+        module: parsed.data.module,
       })
     }).catch((err) => {
       console.log(err)

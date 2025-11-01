@@ -1,9 +1,12 @@
-import { ReactNode, useMemo } from "react";
+import { ReactNode } from "react";
 import { useEditor } from '@tiptap/react'
 import { RichTextEditor, Link } from '@mantine/tiptap'
 import StarterKit from "@tiptap/starter-kit";
 import { Mathematics } from '@tiptap/extension-mathematics'
 import Youtube from '@tiptap/extension-youtube'
+// todo: subscript/superscript
+// todo: useMemo for optimizing editor?
+
 
 // code highlight imports
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
@@ -49,7 +52,7 @@ function LessonBody({editable, content, Shell, before, after} : {editable: boole
       }),
       Youtube.configure({
         width: 640,
-        height: 480,
+        height: 360,
         controls: false,
         nocookie: true,
         allowFullscreen: true,
@@ -72,9 +75,6 @@ function LessonBody({editable, content, Shell, before, after} : {editable: boole
     editable: editable,
   })
 
-  const providerValue = useMemo(() => ({ editor }), [editor])
-
-  // todo: fix editor box width to stack width
   return (
     <RichTextEditor editor={editor} >
       <Shell>
@@ -84,11 +84,13 @@ function LessonBody({editable, content, Shell, before, after} : {editable: boole
                 {before}
                 <Space h="md" />
 
-                <RichTextEditor.Toolbar sticky stickyOffset="var(--docs-header-height)">
+                {editable ? <RichTextEditor.Toolbar sticky stickyOffset="var(--docs-header-height)">
                   <RichTextEditor.ControlsGroup>
                     <RichTextEditor.Bold />
                     <RichTextEditor.Italic />
                     <RichTextEditor.Underline />
+                    <RichTextEditor.Subscript />
+                    <RichTextEditor.Superscript />
                   </RichTextEditor.ControlsGroup>
 
                    <RichTextEditor.ControlsGroup>
@@ -100,7 +102,7 @@ function LessonBody({editable, content, Shell, before, after} : {editable: boole
                     <RichTextEditor.Link />
                     <RichTextEditor.Unlink />
                   </RichTextEditor.ControlsGroup>
-                </RichTextEditor.Toolbar>
+                </RichTextEditor.Toolbar> : <></>}
                 
                 <RichTextEditor.Content />
                 

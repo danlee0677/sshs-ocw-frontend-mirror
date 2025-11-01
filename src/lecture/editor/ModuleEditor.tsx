@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { NavigateFunction, useNavigate, useParams, useSearchParams } from "react-router";
 import { http } from "../../libs/http";
 import { moduleSchema, Module } from "../../libs/types";
+import { PLACEHOLDER_MODULE } from "../../libs/utils";
 
 function handleModuleSubmit(mode: "edit" | "create", navigate: NavigateFunction, module: Module) {
   if (mode === "edit") {
@@ -17,14 +18,6 @@ function handleModuleSubmit(mode: "edit" | "create", navigate: NavigateFunction,
       console.log(err);
     })
   }
-}
-
-const PLACEHOLDER_MODULE: Module = {
-  title: "",
-  subject: "",
-  _id: "",
-  order: -1,
-  content: [],
 }
 
 function ModuleEditor({ mode }: {mode: "edit" | "create"}) {
