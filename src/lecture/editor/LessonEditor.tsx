@@ -16,9 +16,10 @@ function LessonEditor({mode} : {mode: "edit" | "create"}) {
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (mode !== "edit") return;
+    
     if (!lessonId) navigate('/notfound');
 
-    if (mode !== "edit") return;
     http.get(`${process.env.REACT_APP_API_URL}/api/lessons/${lessonId}`).then((res) => {
       const parsed = lessonSchema.safeParse(res.data);
       if (!parsed.success) throw new Error("Malformed lesson data on fetch");
