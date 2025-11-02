@@ -37,7 +37,7 @@ function LessonEditor({mode} : {mode: "edit" | "create"}) {
       console.log(err)
       setInitialContent(null);
     })
-  }, [mode, lessonId])
+  }, [mode, lessonId, navigate])
 
   return (
     <>

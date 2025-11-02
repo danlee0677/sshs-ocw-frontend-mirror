@@ -21,7 +21,8 @@ function ModuleViewer() {
       console.log(err);
       navigate('/notfound')
     })
-  }, [moduleId])
+  }, [moduleId, navigate])
+  
   return (
     <></>
   )

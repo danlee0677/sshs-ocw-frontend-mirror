@@ -50,7 +50,7 @@ function LessonViewer() {
       console.log(err);
       navigate('/notfound');
     })
-  }, [lessonId, lesson.module])
+  }, [lessonId, lesson.module, navigate])
   // todo: give the appshell `module` fetched with useEffect
   return (
     <>

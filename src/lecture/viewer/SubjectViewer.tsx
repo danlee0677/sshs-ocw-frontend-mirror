@@ -26,7 +26,7 @@ function SubjectViewer() {
       navigate('/notfound')
       console.log(err);
     })
-  }, [subjectId])
+  }, [subjectId, navigate])
 
   return (
     // todo: add appshell
