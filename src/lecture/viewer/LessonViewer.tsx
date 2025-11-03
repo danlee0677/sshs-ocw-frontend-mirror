@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Title, Stack, Flex } from "@mantine/core";
 import LessonViewerAppshell from "./LessonViewerAppshell";
 import { Lesson, lessonSchema, Module, moduleSchema } from "../../libs/types";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 import LessonViewerNavigateCard from "../card/LessonViewerNavigateCard";
 import { http } from '../../libs/http'
 import LessonBody from "../editor/LessonBody";
@@ -11,6 +11,9 @@ import { PLACEHOLDER_LESSON, PLACEHOLDER_MODULE } from "../../libs/utils";
 
 function LessonViewer() {
   const { lessonId } = useParams()
+  const [searchParams] = useSearchParams();
+  const subjectId = searchParams.get('subjectId');
+  const moduleId = searchParams.get('moduleId');
 
   const [lesson, setLesson] = useState<Lesson>(PLACEHOLDER_LESSON);
   const [module, setModule] = useState<Module>(PLACEHOLDER_MODULE);
@@ -19,8 +22,11 @@ function LessonViewer() {
 
   // fetch lesson from routes
   useEffect(() => {
-    if (!lessonId) navigate('/notfound');
-
+    if (!lessonId) {
+      navigate('/notfound');
+      return;
+    }
+    
     http.get(`${process.env.REACT_APP_API_URL}/api/lessons/${lessonId}`).then((res) => {
       const parsed = lessonSchema.safeParse(res.data)
 
@@ -36,21 +42,23 @@ function LessonViewer() {
         _id: parsed.data._id,
         module: parsed.data.module
       })
+      // if (lesson._id !== lessonId || lesson.module !== moduleId) throw new Error("lesson Id mismatch");
     }).catch((err) => {
       console.log(err)
       navigate('/notfound');
     })
 
-    http.get(`${process.env.REACT_APP_API_URL}/api/modules/${lesson.module}`).then((res) => {
+    http.get(`${process.env.REACT_APP_API_URL}/api/modules/${moduleId}`).then((res) => {
       const parsed = moduleSchema.safeParse(res.data)
 
       if (!parsed.success) throw new Error("Fetched module does not meet Module type");
       setModule(parsed.data);
+      // if (module._id !== moduleId || module.subject !== subjectId) throw new Error("moduleId or subjectId mismatch");
     }).catch((err) => {
       console.log(err);
       navigate('/notfound');
     })
-  }, [lessonId, lesson.module, navigate])
+  }, [lessonId, moduleId, navigate])
   // todo: give the appshell `module` fetched with useEffect
   return (
     <>

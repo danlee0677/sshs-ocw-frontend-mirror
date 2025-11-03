@@ -27,12 +27,12 @@ function Router({user, setUser} : {user: User | null, setUser: React.Dispatch<Us
 
       <Route path="lessons">
         <Route path=":lessonId" element={<LessonViewer />}/> 
-        <Route path=":lessonId/edit" element={canEdit(user) ? <LessonEditor mode="edit" /> : <></>} />
-        <Route path="create" element={canEdit(user) ? <LessonEditor mode="create" /> : <></>} />
+        <Route path=":lessonId/edit" element={canEdit(user) ? <LessonEditor mode="edit" user={user} /> : <></>} />
+        <Route path="create" element={canEdit(user) ? <LessonEditor mode="create" user={user} /> : <></>} />
       </Route>
 
       <Route path="modules">
-        <Route path=":moduleId" element={<ModuleViewer />} />
+        <Route path=":moduleId" element={<ModuleViewer user={user} />} />
         <Route path=":moduleId/edit" element={canEdit(user) ? <ModuleEditor mode="edit" /> : <></>} />
         <Route path="create" element={canEdit(user) ? <ModuleEditor mode="create" /> : <></> } />
       </Route>

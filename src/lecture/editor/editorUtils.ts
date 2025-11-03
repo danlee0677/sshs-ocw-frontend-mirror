@@ -1,6 +1,8 @@
 import { useMemo, useCallback } from "react";
 import { Editor } from "@tiptap/react";
 import { http } from "../../libs/http";
+import { NavigateFunction } from "react-router";
+import { User } from "../../libs/types";
 
 // key for storing editor things in localstorage
 export const LESSON_STORAGE_KEY = "LectureEditor_v01"
@@ -18,7 +20,6 @@ export function useDebounce<T extends (...args: any[]) => void>(fn: T, delay: nu
   const timeout = useMemo<{ id: number | null }>(() => ({id: null}), [])
   return useCallback((...args: Parameters<T>) => {
     if (timeout.id) clearTimeout(timeout.id);
-    console.log(5)
     timeout.id = window.setTimeout(() => fn(...args), delay)
   }, [fn, delay, timeout])
 }
@@ -37,25 +38,32 @@ export function addYoutubeVideo(editor: Editor | null) {
 
 
 // todo: send module id along
-export function handleLessonSubmit(mode: "edit" | "create", lessonId: string | undefined, editor: Editor, title: string) {
+export function handleLessonSubmit(mode: "edit" | "create", lessonId: string | undefined, editor: Editor, title: string, navigate: NavigateFunction, moduleId: string, subjectId: string, user: User) {
+  // todo: alert?
+  if (!title || !editor.getJSON()) return;
+
   // when endpoint is /lessons/create i.e. creating new lesson
   if (mode === "create") {
-    http.post(`${process.env.REACT_APP_API_URL}/api/lesson`, {
+    http.post(`${process.env.REACT_APP_API_URL}/api/lessons`, {
+      module: moduleId,
       title: title,
       content: JSON.stringify(editor.getJSON()),
-    }).catch((err) => {
-      console.log(err);
+      createdBy: user._id
     }).then((res) => {
       localStorage.removeItem(LESSON_STORAGE_KEY);
+      navigate(`/modules/${moduleId}?subjectId=${subjectId}`)
+    }).catch((err) => {
+      console.log(err);
     })
   } else { // when endpoint is /lesson/:lessonId/edit i.e. editing a lesson
     http.patch(`${process.env.REACT_APP_API_URL}/api/lessons/${lessonId}`, {
       title: title,
       content: JSON.stringify(editor.getJSON()),
-    }).catch((err) => {
-      console.log(err);
     }).then((res) => {
       localStorage.removeItem(LESSON_STORAGE_KEY);
+      navigate(`/modules/${moduleId}?subjectId=${subjectId}`)
+    }).catch((err) => {
+      console.log(err);
     })
   }
 }

@@ -14,13 +14,13 @@ function LessonViewerNavigateCard({ module, lesson }: { module: Module, lesson: 
   return (
     <Group gap={0}>
       {(ind - 1) >= pageMin ? 
-      <Link to={`/lessons/${module.contents[ind - 1]._id}`} style={linkStyle}>
+      <Link to={`/lessons/${module.contents[ind - 1]._id}?subjectId=${module.subject}&moduleId=${module._id}`} style={linkStyle}>
         <Text size="md">{prev}</Text>
       </Link> : <Text size="md">{prev}</Text>}
       
       <Space w={600} />
       {(ind + 1) < pageMax ? 
-      <Link to={`/lessons/${module.contents[ind + 1]._id}`} style={linkStyle}>
+      <Link to={`/lessons/${module.contents[ind + 1]._id}?subjectId=${module.subject}&moduleId=${module._id}`} style={linkStyle}>
         <Text size="md">{next}</Text>
       </Link> : <Text size="md">{next}</Text>}
     </Group>

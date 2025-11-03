@@ -11,12 +11,9 @@ function arrToBitmask(arr: boolean[]) {
 }
 
 function handleLogin(method: Method, toggled: Array<boolean>, courseToggled: Array<boolean>) { // withcredentials: send http-only cookie with the request
-  console.log(toggled)
-  console.log(courseToggled)
   const toggledMask = arrToBitmask(toggled);
   const courseToggledMask = arrToBitmask(courseToggled);
   const prefs = `${toggledMask}.${courseToggledMask}` // if toggled is default, toggled = [] -> pref is 0.0
-  console.log(`${process.env.REACT_APP_API_URL}/api/auth/login/${method}`)
 
   window.location.assign(`${process.env.REACT_APP_API_URL}/api/auth/login/${method}?prefs=${encodeURIComponent(prefs)}`)
 }

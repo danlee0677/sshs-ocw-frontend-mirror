@@ -48,7 +48,8 @@ function LessonBody({editable, content, Shell, before, after} : {editable: boole
         },
         katexOptions: {
           throwOnError: false,
-        }
+        },
+        
       }),
       Youtube.configure({
         width: 640,
@@ -66,7 +67,6 @@ function LessonBody({editable, content, Shell, before, after} : {editable: boole
       })
     ],
     // try to fetch from localStorage
-    // if content is not editable, use content
     content: content ?? getContentFromLocalStorage(),
     onUpdate: ({editor, transaction}) => {
       if (!editable) return;
