@@ -1,0 +1,18 @@
+.searchIcon:hover {
+    cursor: pointer;
+}
+
+.searchArea:hover .searchBar_animate {
+    transition: all 0.4s ease-out;
+    width: 50%;
+}
+
+.searchBar_animate {
+    transition: all 0.4s ease-out;
+    width: 0px;
+    overflow: hidden;
+}
+
+.searchBar {
+    width: 50%;
+}
