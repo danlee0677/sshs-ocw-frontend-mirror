@@ -23,7 +23,7 @@ function LoginComplete({ setUser } : {setUser: React.Dispatch<User | null>}) {
       if (!typedUser.success) throw new Error("Incorrect Form of user in accessToken")
       
       setUser(typedUser.data)
-      navigate("/")
+      navigate("/home")
 
       // todo: add double check if the optimistic user matches /api/auth/verify
 

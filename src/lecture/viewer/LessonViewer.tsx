@@ -9,6 +9,7 @@ import LessonBody from "../editor/LessonBody";
 import { PLACEHOLDER_LESSON, PLACEHOLDER_MODULE } from "../../libs/utils";
 
 
+
 function LessonViewer() {
   const { lessonId } = useParams()
   const [searchParams] = useSearchParams();

@@ -18,7 +18,7 @@ import SubjectEditor from "./lecture/editor/SubjectEditor";
 function Router({user, setUser} : {user: User | null, setUser: React.Dispatch<User | null>}) {
   return (
     <Routes>
-      <Route index element = {user ? <Home></Home> : <StartPage />} />
+      <Route index element = {<StartPage />} />
 
       <Route path="login">
         <Route index element={<Login />} />

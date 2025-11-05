@@ -4,6 +4,7 @@ import { Button, Stack, TextInput, Flex, Title } from "@mantine/core";
 import { http } from "../../libs/http";
 import { Subject, subjectSchema } from "../../libs/types";
 import { PLACEHOLDER_SUBJECT } from "../../libs/utils";
+import z from "zod";
 
 
 function handleSubjectSubmit(mode: "edit" | "create", navigate: NavigateFunction, subject: Subject) {
@@ -13,8 +14,10 @@ function handleSubjectSubmit(mode: "edit" | "create", navigate: NavigateFunction
     http.post(`${process.env.REACT_APP_API_URL}/api/subjects`, {
       title: subject.title,
     }).then((res) => {
+      const parsed = z.object({_id: z.string()}).safeParse(res.data);
+      if (!parsed.success) throw new Error("Failed to fetch subject id");
       // todo: add popup(alert, Modals, etc)
-      navigate(`${process.env.REACT_APP_API_URL}/subjects/${subject._id}`);
+      navigate(`/subjects/${parsed.data._id}`);
     }).catch((err) => {
       console.log(err);
     })
@@ -56,7 +59,10 @@ function SubjectEditor({ mode }: { mode: "edit" | "create" }) {
           <Stack gap="md" w="50%">
             <Title order={3}>과목 이름 입력</Title>
             <TextInput placeholder="과목 이름을 입력하세요(예: 일반물리학)"
-            value={subject.title} onChange={(e) => {setSubject((sub) => {return {...sub, title: e.currentTarget.value}})}} />
+            value={subject.title ?? ""}
+            onChange={(e) => {
+                const v = e.currentTarget?.value ?? ""; 
+                setSubject((sub) => ({ ...sub, title: v }))}} />
             <Button onClick={() => handleSubjectSubmit(mode, navigate, subject)}>과목 생성</Button>
           </Stack>
         </Flex>
