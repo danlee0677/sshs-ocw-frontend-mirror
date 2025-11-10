@@ -71,7 +71,7 @@ function LessonViewer() {
           <Title order={1}>{lesson.title}</Title>
           <Flex w="100%" justify="flex-end">
             <Title order={4}>{lesson.createdBy}</Title>
-          </Flex>
+          </Flex> 
         </Stack>
         } after={<></>} />  
       : 

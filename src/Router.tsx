@@ -43,7 +43,7 @@ function Router({user, setUser} : {user: User | null, setUser: React.Dispatch<Us
         <Route path="create" element={canEdit(user) ? <SubjectEditor mode="create" /> : <></>} />
       </Route>
 
-      <Route path="Home" element={<Home />}></Route>
+      <Route path="Home" element={<Home user={user} setUser={setUser} />}></Route>
       <Route path="setting" element={<Setting />}></Route>
 
       <Route path="notfound" element={<NotFoundPage />} />

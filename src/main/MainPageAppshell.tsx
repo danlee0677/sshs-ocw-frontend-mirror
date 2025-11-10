@@ -5,8 +5,10 @@ import { Link } from "react-router";
 import { useState } from "react";
 import { linkStyle } from "../libs/styles";
 import classes from "./Appshell.module.css"
+import { http } from "../libs/http";
+import { User } from "../libs/types";
 
-function MainPageHeader({ children }: { children: React.ReactNode }) {
+function MainPageAppshell({ children, setUser }: { children: React.ReactNode, setUser: React.Dispatch<User | null> }) {
   const [value, setValue] = useState("");
   return (
     <AppShell
@@ -43,6 +45,11 @@ function MainPageHeader({ children }: { children: React.ReactNode }) {
               <Title order={5}>|</Title>
               <Link to="/" style={linkStyle}>
                 <Title order={5}>Register</Title>
+                <Button onClick={() => {
+                  http.post(`${process.env.REACT_APP_API_URL}/api/auth/logout`).then(() => {
+                    setUser(null);
+                  })
+                }}></Button>
               </Link>
               <Space w={0} />
             </Group>
@@ -56,4 +63,4 @@ function MainPageHeader({ children }: { children: React.ReactNode }) {
     </AppShell>)
 }
 
-export default MainPageHeader;
+export default MainPageAppshell;

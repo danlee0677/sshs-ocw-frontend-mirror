@@ -72,7 +72,9 @@ function LessonViewerAppshell({ children }: { children: React.ReactNode }) {
               <Stack gap="0">
                 {module.contents.map((item, i) => {
                   return <>
-                    <Group className={`${classes.ProgressGroup}`} h={'60px'} align="center">
+                    <Group
+                      className={`${classes.ProgressGroup} ${i === ind ? classes.selected : ''}`}
+                      h={'60px'} align="center">
                       <Box ml={'sm'} w={'4px'} h={'90%'}
                         bg={i <= ind ? '#007bffff' : '#aaaaaa'}
                         className={`${classes.ProgressRect}`}></Box>

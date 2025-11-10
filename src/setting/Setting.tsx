@@ -1,10 +1,10 @@
 import { Text, FileButton, Group, TextInput, Stack, UnstyledButton } from "@mantine/core";
 import classes from '../main/main.module.css'
-import MainPageHeader from "../main/MainPageAppshell";
+import MainPageAppshell from "../main/MainPageAppshell";
 
 function Setting() {
     return (
-        <MainPageHeader>
+        <MainPageAppshell>
             <Stack className={`${classes.Vertical_align}`} w={'100%'} h={'auto'}>
                 <Group className={`${classes.Vertical_align}`} w={'80%'} h={'10vh'}>
                     <Text>아이디 변경</Text>
@@ -25,7 +25,7 @@ function Setting() {
                 </Group>
                 <Group className={`${classes.Vertical_align}`} w={'80%'} h={'10vh'}>관심사 변경</Group>
             </Stack>
-        </MainPageHeader>
+        </MainPageAppshell>
     )
 }
 

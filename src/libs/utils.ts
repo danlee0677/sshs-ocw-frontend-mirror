@@ -1,7 +1,7 @@
 import { User, Module, Lesson, Subject } from './types'
 
 export function isUser(user: User | null) {
-  if (user && user.name) return true;
+  if (user && user.name && user._id.length > 0) return true;
   return false;
 }
 

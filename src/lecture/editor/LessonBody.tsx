@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { useEditor } from '@tiptap/react'
 import { RichTextEditor, Link } from '@mantine/tiptap'
 import StarterKit from "@tiptap/starter-kit";
@@ -67,13 +67,19 @@ function LessonBody({editable, content, Shell, before, after} : {editable: boole
       })
     ],
     // try to fetch from localStorage
-    content: content ?? getContentFromLocalStorage(),
+    content: editable ? (content ?? getContentFromLocalStorage()) : content,
     onUpdate: ({editor, transaction}) => {
       if (!editable) return;
       if (transaction.docChanged) debounceSave(editor.getJSON());
     },
     editable: editable,
   })
+
+  useEffect(() => {
+    if (!editor) return;
+    if (content == null) return;
+    editor.commands.setContent(content as any, { emitUpdate: false }); // ✅
+}, [content, editor]);
 
   return (
     <RichTextEditor editor={editor} >
