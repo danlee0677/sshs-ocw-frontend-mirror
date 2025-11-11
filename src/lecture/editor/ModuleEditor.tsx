@@ -3,16 +3,16 @@ import { NavigateFunction, useNavigate, useParams, useSearchParams } from "react
 import { Stack, Button, TextInput } from "@mantine/core";
 import { useListState } from "@mantine/hooks";
 import { http } from "../../libs/http";
-import { moduleSchema, Module } from "../../libs/types";
+import { moduleSchema, Module, OrderData } from "../../libs/types";
 import { PLACEHOLDER_MODULE } from "../../libs/utils";
 import OrderTable from "../card/OrderTable";
 import z from "zod";
 
-function handleModuleSubmit(mode: "edit" | "create", navigate: NavigateFunction, module: Module, subjectId: string) {
+function handleModuleSubmit(mode: "edit" | "create", navigate: NavigateFunction, module: Module, state: OrderData, subjectId: string) {
   if (mode === "edit") {
     http.patch(`${process.env.REACT_APP_API_URL}/api/modules/${module._id}`, {
       title: module.title,
-      contents: module.contents,
+      contents: state,
     }).then((res) => {
       // todo: popup
       navigate(`/modules/${module._id}?subjectId=${subjectId}`)
@@ -91,7 +91,7 @@ function ModuleEditor({ mode }: { mode: "edit" | "create" }) {
 
           <OrderTable state={state} handlers={handlers} />
           <Button onClick={() => navigate(`/lessons/create?moduleId=${moduleId}&subjectId=${subjectId}`)} >새 강의 생성</Button>
-          <Button onClick={() => handleModuleSubmit("edit", navigate, module, subjectId)}>모듈 수정</Button>
+          <Button onClick={() => handleModuleSubmit("edit", navigate, module, state, subjectId)}>모듈 수정</Button>
           
         </Stack>
       : 
@@ -102,7 +102,7 @@ function ModuleEditor({ mode }: { mode: "edit" | "create" }) {
               setModule((mod) => {
               return {...mod, title: val}
             })}} />
-          <Button onClick={() => handleModuleSubmit("create", navigate, module, subjectId)}>모듈 생성</Button>
+          <Button onClick={() => handleModuleSubmit("create", navigate, module, state, subjectId)}>모듈 생성</Button>
         </Stack>
       }
     </>
