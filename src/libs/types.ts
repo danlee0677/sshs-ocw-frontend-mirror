@@ -63,3 +63,7 @@ export const subjectSchema = z.object({
 })
 
 export type Subject = z.infer<typeof subjectSchema>
+
+export type OrderData = {title: string, _id: string}[]
+
+export type OrderDataRow = {title: string, _id: string}

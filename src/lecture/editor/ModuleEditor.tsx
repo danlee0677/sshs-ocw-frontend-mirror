@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { NavigateFunction, useNavigate, useParams, useSearchParams } from "react-router";
 import { Stack, Button, TextInput } from "@mantine/core";
+import { useListState } from "@mantine/hooks";
 import { http } from "../../libs/http";
 import { moduleSchema, Module } from "../../libs/types";
 import { PLACEHOLDER_MODULE } from "../../libs/utils";
-import ReorderTable from "./ReorderTable";
+import OrderTable from "../card/OrderTable";
 import z from "zod";
 
 function handleModuleSubmit(mode: "edit" | "create", navigate: NavigateFunction, module: Module, subjectId: string) {
@@ -41,6 +42,7 @@ function ModuleEditor({ mode }: { mode: "edit" | "create" }) {
   const subjectId = searchParams.get("subjectId")
   const navigate = useNavigate();
   const [module, setModule] = useState<Module>(PLACEHOLDER_MODULE);
+  const [state, handlers] = useListState(module.contents);
 
   useEffect(() => {
     // setModule((a) => {return {...a, subject: subjectId}})
@@ -66,6 +68,7 @@ function ModuleEditor({ mode }: { mode: "edit" | "create" }) {
       if (parsed.data.subject !== subjectId) throw new Error("Failed to fetch")
 
       setModule(parsed.data)
+      handlers.setState(parsed.data.contents);
     }).catch((err) => {
       console.log(err)
       navigate("/notfound")
@@ -86,7 +89,7 @@ function ModuleEditor({ mode }: { mode: "edit" | "create" }) {
             })
           }} />
 
-          <>{ /*<ReorderTable />*/ }</>
+          <OrderTable state={state} handlers={handlers} />
           <Button onClick={() => navigate(`/lessons/create?moduleId=${moduleId}&subjectId=${subjectId}`)} >새 강의 생성</Button>
           <Button onClick={() => handleModuleSubmit("edit", navigate, module, subjectId)}>모듈 수정</Button>
           
