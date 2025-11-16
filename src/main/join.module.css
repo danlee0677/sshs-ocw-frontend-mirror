@@ -1,0 +1,51 @@
+@font-face {
+    font-family: 'JalnanGothic';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_231029@1.1/JalnanGothic.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+.longSelectBox {
+    position: relative;
+    text-align: center;
+    transition: transform 0.2s ease, background-color 0.5s ease, border-bottom 0.5s ease;
+    border: 3px black solid;
+    border-bottom: 9px rgb(42, 141, 222) solid;
+    background-color: lightskyblue;
+    border-radius: 5px;
+    width: 100%;
+    font-family: 'JalnanGothic';
+    font-size: large;
+    height: 70px;
+    -webkit-user-drag: none !important;
+    -khtml-user-drag: none !important;
+    -moz-user-drag: none !important;
+    -o-user-drag: none !important;
+}
+
+.longSelectBox:hover {
+    background-color: rgb(74, 118, 176);
+    border-bottom: 9px rgb(40, 40, 105) solid;
+}
+
+.selected {
+    background-color: rgb(69, 135, 220);
+    border-bottom: 6px navy solid;
+    transform: translateY(2px);
+}
+
+.selected:hover {
+    background-color: rgb(74, 118, 176);
+    border-bottom: 6px rgb(40, 40, 105) solid;
+}
+
+.Title {
+    font-family: 'JalnanGothic';
+    text-align: center;
+}
+
+.IconContainer {
+    position: fixed;
+    left: 20px;
+    top: 20px;
+}
