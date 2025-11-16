@@ -54,7 +54,7 @@ function ModuleViewer({ user }: { user: User | null }) {
         <Table.Tbody>
           {module.contents.map((lesson, ind) => {
             return (
-              <Table.Tr>
+              <Table.Tr key={lesson._id}>
                 <Table.Td>{ind + 1}</Table.Td>
                 <Table.Td>{lesson.title}</Table.Td>
                 <Table.Td>
