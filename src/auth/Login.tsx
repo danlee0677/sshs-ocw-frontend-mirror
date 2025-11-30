@@ -15,7 +15,7 @@ function handleLogin(method: Method, toggled: Array<boolean>, courseToggled: Arr
   const courseToggledMask = arrToBitmask(courseToggled);
   const prefs = `${toggledMask}.${courseToggledMask}` // if toggled is default, toggled = [] -> pref is 0.0
 
-  window.location.assign(`${process.env.VITE_API_URL}/api/auth/login/${method}?prefs=${encodeURIComponent(prefs)}`)
+  window.location.assign(`${import.meta.env.VITE_API_URL}/api/auth/login/${method}?prefs=${encodeURIComponent(prefs)}`)
 }
 
 function Login() {
@@ -45,7 +45,7 @@ function Login() {
       <Stack w='30vw' justify={"center"} align={"center"}>
         <Title className={classes.Title}>SSHS OCW</Title>
         <UnstyledButton className={`${classes.LoginButton} ${classes.Google}`} onClick={() => handleLogin("google", toggled, courseToggled)}>구글 계정으로 로그인</UnstyledButton>
-        <UnstyledButton className={`${classes.LoginButton} ${classes.Kakao}`} onClick={() => handleLogin("kakao", toggled, courseToggled)}>카카오 계정으로 로그인</UnstyledButton>
+        <button className={`${classes.LoginButton} ${classes.Kakao}`} onClick={() => handleLogin("kakao", toggled, courseToggled)}>카카오 계정으로 로그인</button>
         <UnstyledButton className={`${classes.LoginButton} ${classes.Naver}`} onClick={() => handleLogin("naver", toggled, courseToggled)}>네이버 계정으로 로그인</UnstyledButton>
       </Stack>
     </Flex>
