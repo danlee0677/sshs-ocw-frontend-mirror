@@ -2,18 +2,16 @@
     position: relative;
     overflow: visible;
     padding: var(--mantine-spacing-xl);
-    padding-top: calc(var(--mantine-spacing-xl) * 1.5 + 20px);
-}
-
-.icon {
-    position: absolute;
-    top: -20px;
-    left: calc(50% - 30px);
+    padding-top: var(--mantine-spacing-xs);
 }
 
 .title {
     font-family: Outfit, var(--mantine-font-family);
     line-height: 1;
+}
+
+.icon {
+    margin-bottom: var(--mantine-spacing-xs);
 }
 
 .month {

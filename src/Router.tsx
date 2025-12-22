@@ -6,7 +6,7 @@ import Login from "./auth/Login";
 import type { User } from "./libs/types";
 import StartPage from "./main/StartPage";
 import LoginComplete from "./auth/LoginComplete";
-import Home from "./main/Home";
+import Home from "./main/home";
 import Setting from "./setting/Setting"
 import LessonEditor from "./lecture/editor/LessonEditor";
 import ModuleViewer from "./lecture/viewer/ModuleViewer";
@@ -44,11 +44,11 @@ function Router({user, setUser} : {user: User | null, setUser: React.Dispatch<Us
       </Route>
 
       <Route path="Home" element={<Home user={user} setUser={setUser} />}></Route>
-      <Route path="setting" element={<Setting />}></Route>
+      <Route path="setting" element={<Setting user={user} setUser={setUser}/>}></Route>
 
-      <Route path="notfound" element={<NotFoundPage />} />
+      <Route path="notfound" element={<NotFoundPage user={user} setUser={setUser} />} />
 
-      <Route path="*" element={<NotFoundPage />} />
+      <Route path="*" element={<NotFoundPage user={user} setUser={setUser} />} />
     </Routes>
   )
 }

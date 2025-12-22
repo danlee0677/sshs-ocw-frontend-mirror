@@ -8,8 +8,9 @@ import classes from "./Appshell.module.css"
 import { http } from "../libs/http";
 import type { User } from "../libs/types";
 import logo from '@/assets/app-logo.png';
+import { isUser } from "../libs/utils";
 
-function MainPageAppshell({ children, setUser }: { children: React.ReactNode, setUser: React.Dispatch<User | null> }) {
+function MainPageAppshell({ children, user, setUser }: { children: React.ReactNode, user: User | null, setUser: React.Dispatch<User | null> }) {
   const [value, setValue] = useState("");
   return (
     <AppShell
@@ -32,26 +33,30 @@ function MainPageAppshell({ children, setUser }: { children: React.ReactNode, se
             <Group w='80%' justify="center" className={`${classes.searchArea}`}>
               <IconSearch className={`${classes.searchIcon}`}></IconSearch>
               <TextInput placeholder="검색어를 입력해 주세요."
-              value={value}
-              onChange={(e) => {setValue(e.target.value)}}
-              className={`${value ? classes.searchBar : classes.searchBar_animate}`}></TextInput>
+                value={value}
+                onChange={(e) => { setValue(e.target.value) }}
+                className={`${value ? classes.searchBar : classes.searchBar_animate}`}></TextInput>
             </Group>
           </Flex>
 
           <Flex w="20%" h="100%" justify="flex-end">
             <Group gap="md" align="center" w="100%" h="100%">
-              <Link to="/" style={linkStyle}>
-                <Title order={5}>Login</Title>
-              </Link>
-              <Title order={5}>|</Title>
-              <Link to="/" style={linkStyle}>
-                <Title order={5}>Register</Title>
+              {!isUser(user) ? <>
+                <Link to="/" style={linkStyle}>
+                  <Title order={5}>Login</Title>
+                </Link>
+                <Title order={5}>|</Title>
+                <Link to="/" style={linkStyle}>
+                  <Title order={5}>Register</Title>
+                </Link>
+              </> : <>
                 <Button onClick={() => {
                   http.post(`${import.meta.env.VITE_API_URL}/api/auth/logout`).then(() => {
                     setUser(null);
                   })
                 }}></Button>
-              </Link>
+              </>
+              }
               <Space w={0} />
             </Group>
           </Flex>

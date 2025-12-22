@@ -1,5 +1,5 @@
 import MainPageAppshell from "../main/MainPageAppshell";
-import { Box, Image, Group, Paper, Stack, Text, Title} from '@mantine/core';
+import { Badge, Box, Flex, Image, Group, Paper, Stack, Text, Title} from '@mantine/core';
 import { useElementSize } from '@mantine/hooks';
 import classes from './main.module.css'
 import { ProgressCard } from '../main/Progress'
@@ -13,14 +13,19 @@ function Home({ user, setUser }: { user: User | null, setUser: React.Dispatch<Us
     const isNarrow = width < 150;
 
     return (
-        <MainPageAppshell setUser={setUser}>
+        <MainPageAppshell user={user} setUser={setUser}>
             <Group className={`${classes.Vertical_align} ${classes.Main1}`} w={'100%'} h={'60vh'}>
                 <Stack w={'50%'} h={'100%'}>
                     <Paper w={'100%'} h={'50%'} className={`${classes.Box1}`}>
-                        {isUser(user) ? 
-                            <>
-                                <Title>{user?.name}님! 환영합니다.</Title>
-                            </> :
+                        {isUser(user) ?
+                            <Flex
+                                justify={"flex-start"}>
+                                <Image w={'200px'} src={user?.pfp_url} className={`${classes.Main_pfp_image}`}></Image>
+                                <Flex direction="column">
+                                    <Title className={classes.Inline}>{user?.name}님</Title>
+                                    <Badge color="green">안녕</Badge>
+                                </Flex>
+                            </Flex> :
                             <>
                                 <Title>로그인 후 이용할 수 있는 기능입니다.</Title>
                             </>

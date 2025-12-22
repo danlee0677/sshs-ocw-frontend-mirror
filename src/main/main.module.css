@@ -49,7 +49,7 @@
 }
 
 .Inline {
-    display: inline-block;
+    display: inline;
 }
 
 .LoginInput {
@@ -68,6 +68,10 @@
     color: gray;
     text-decoration: underline;
     display: inline-block;
+}
+
+.Main_pfp_image {
+    display: inline;
 }
 
 .selectBox {

@@ -12,6 +12,7 @@ export interface LectureHeading {
 export const userSchema = z.object({
   _id: z.string(),
   name: z.string(),
+  pfp_url: z.string(),
   roles: z.array(z.string()),
   preference: z.array(z.boolean()),
   studyLevel: z.array(z.boolean()),
