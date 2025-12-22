@@ -6,7 +6,7 @@ import Login from "./auth/Login";
 import type { User } from "./libs/types";
 import StartPage from "./main/StartPage";
 import LoginComplete from "./auth/LoginComplete";
-import Home from "./main/home";
+import Home from "./main/Home";
 import Setting from "./setting/Setting"
 import LessonEditor from "./lecture/editor/LessonEditor";
 import ModuleViewer from "./lecture/viewer/ModuleViewer";

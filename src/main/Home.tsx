@@ -67,4 +67,4 @@ function Home({ user, setUser }: { user: User | null, setUser: React.Dispatch<Us
     )
 }
 
-export default Home
+export default Home;
