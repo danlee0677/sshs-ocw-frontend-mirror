@@ -3,7 +3,9 @@ import { useEditor } from '@tiptap/react'
 import { RichTextEditor, Link } from '@mantine/tiptap'
 import StarterKit from "@tiptap/starter-kit";
 import { Mathematics } from '@tiptap/extension-mathematics'
+import 'katex/dist/katex.min.css'
 import Youtube from '@tiptap/extension-youtube'
+import { Markdown } from '@tiptap/markdown';
 // todo: subscript/superscript
 // todo: useMemo for optimizing editor?
 
@@ -39,6 +41,7 @@ function LessonBody({editable, content, Shell, before, after} : {editable: boole
         link: false,
       }),
       Link,
+      Markdown,
       Mathematics.configure({
         inlineOptions: {
           // d
@@ -64,7 +67,7 @@ function LessonBody({editable, content, Shell, before, after} : {editable: boole
         enableTabIndentation: true,
         tabSize: 4,
         
-      })
+      }),
     ],
     // try to fetch from localStorage
     content: editable ? (content ?? getContentFromLocalStorage()) : content,
@@ -78,7 +81,7 @@ function LessonBody({editable, content, Shell, before, after} : {editable: boole
   useEffect(() => {
     if (!editor) return;
     if (content == null) return;
-    editor.commands.setContent(content as any, { emitUpdate: false }); // ✅
+    editor.commands.setContent(content as any, { emitUpdate: false });
 }, [content, editor]);
 
   return (
