@@ -1,5 +1,5 @@
 import MainPageAppshell from "../main/MainPageAppshell";
-import { Badge, Box, Flex, Image, Group, Paper, Stack, Text, Title} from '@mantine/core';
+import { Badge, Box, Flex, Image, Group, Paper, Stack, Text, Title } from '@mantine/core';
 import { useElementSize } from '@mantine/hooks';
 import classes from './main.module.css'
 import { ProgressCard } from '../main/Progress'
@@ -14,16 +14,24 @@ function Home({ user, setUser }: { user: User | null, setUser: React.Dispatch<Us
 
     return (
         <MainPageAppshell user={user} setUser={setUser}>
-            <Group className={`${classes.Vertical_align} ${classes.Main1}`} w={'100%'} h={'60vh'}>
+            <Group className={`${classes.Vertical_align} ${classes.Main1}`} w={'100%'} h={'65vh'}>
                 <Stack w={'50%'} h={'100%'}>
-                    <Paper w={'100%'} h={'50%'} className={`${classes.Box1}`}>
+                    <Paper w={'100%'} h={'50%'} className={`${classes.Box1}`} bg={'#cbd6eaff'}>
                         {isUser(user) ?
-                            <Flex
-                                justify={"flex-start"}>
-                                <Image w={'200px'} src={user?.pfp_url} className={`${classes.Main_pfp_image}`}></Image>
-                                <Flex direction="column">
-                                    <Title className={classes.Inline}>{user?.name}님</Title>
-                                    <Badge color="green">안녕</Badge>
+                            <Flex w={'100%'} h={'100%'}
+                                justify={"flex-start"}
+                                align={'center'}>
+                                <Flex>
+                                    <Box className={classes.SpeechBubble} ta={'center'} bdrs={'50px'}>
+                                        <Flex w={'100%'} h={'100%'} align={'center'} justify={'center'}>
+                                            안녕하살법
+                                        </Flex>
+                                    </Box>
+                                    <Image w={'150px'} src={user?.pfp_url} className={`${classes.Main_pfp_image}`} bdrs={'80px'} mr={'60px'}></Image>
+                                    <Flex direction="column" justify={'center'}>
+                                        <Title className={`${classes.Inline} ${classes.JalnanGothic}`} mb={'lg'}>{user?.name}님</Title>
+                                        <Badge size="lg" color="green">안녕</Badge>
+                                    </Flex>
                                 </Flex>
                             </Flex> :
                             <>
@@ -36,7 +44,7 @@ function Home({ user, setUser }: { user: User | null, setUser: React.Dispatch<Us
                             <>
                                 <ProgressCard type={1}></ProgressCard>
                                 <ProgressCard type={2}></ProgressCard>
-                            </> : 
+                            </> :
                             <>
                                 <Text>로그인하셈</Text>
                             </>
@@ -45,7 +53,7 @@ function Home({ user, setUser }: { user: User | null, setUser: React.Dispatch<Us
                 </Stack>
                 <Group className={`${classes.Box1}`} w={'25%'} h={'100%'}>
                     <Stack w={'100%'} h={'100%'} className={`${classes.Vertical_align}`} gap={0}>
-                        <Text className={`${classes.Title2}`}>최근 이용한 강좌</Text>
+                        <Text className={`${classes.JalnanGothic}`}>최근 이용한 강좌</Text>
                         {array.map(() => (
                             <Box ref={ref} className={`${classes.Box2} ${classes.Vertical_align}`} w={'100%'} h={'20%'} miw={0}>
                                 <Group wrap='nowrap' w={'80%'} h={'100%'}>

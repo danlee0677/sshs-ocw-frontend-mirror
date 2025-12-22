@@ -5,6 +5,12 @@
     font-style: normal;
 }
 
+@font-face {
+    font-family: 'Paperozi';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-display: swap;
+}
 
 .ButtonText {
     color: black;
@@ -52,6 +58,10 @@
     display: inline;
 }
 
+.JalnanGothic {
+    font-family: 'JalnanGothic';
+}
+
 .LoginInput {
     margin: 10px 0 10px 0;
     width: 60%;
@@ -72,6 +82,10 @@
 
 .Main_pfp_image {
     display: inline;
+}
+
+.Paperozi {
+    font-family: 'Paperozi';
 }
 
 .selectBox {
@@ -105,6 +119,19 @@
     border-bottom: 6px rgb(40, 40, 105) solid;
 }
 
+.SpeechBubble {
+    position: relative;
+    background-color: rgb(62, 62, 62);
+    font-family: 'Paperozi';
+    font-size: 13px;
+    color: white;
+    width: 100px;
+    height: 60px;
+    top: -20px;
+    left: 200px;
+    opacity: 90%;
+}
+
 .Text1 {
     width: 70%;
 }
@@ -112,11 +139,6 @@
 .Text2 {
     font-family: 'JalnanGothic';
     color: gray;
-}
-
-
-.Title2 {
-    font-family: 'JalnanGothic';
 }
 
 .UndraggableImage {

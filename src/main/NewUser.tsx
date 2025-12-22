@@ -14,7 +14,7 @@ function NewUser(toggle: Function, toggled: any, step: number, setStep: Function
                             <Stack w="80%" h="100%" justify="center" align="center">
                                 <Group>
                                     <Image src={logo} h={'50px'} w={'50px'}></Image>
-                                    <Title className={classes.Title2}>SSHS OCW</Title>
+                                    <Title className={classes.JalnanGothic}>SSHS OCW</Title>
                                 </Group>
                                 <Text className={classes.Text1}>
                                     SSHS OCW는 서울과학고 학생들이 직접 제작·공유하는 100% 학생 주도형 온라인 강의 플랫폼입니다.<br></br>
@@ -25,7 +25,7 @@ function NewUser(toggle: Function, toggled: any, step: number, setStep: Function
                             <Space w="md" />
                             <Flex w="80%" h="100%" justify="center" align="center">
                                 <Stack gap="md" align="center" justify="center" >
-                                    <Text size="xl" className={classes.Title2}>관심 있는 분야가 무엇인가요?</Text>
+                                    <Text size="xl" className={classes.JalnanGothic}>관심 있는 분야가 무엇인가요?</Text>
                                     <SimpleGrid verticalSpacing="md" cols={3}>
                                         {items.map((item, i) => (
                                             <UnstyledButton key={i}
@@ -59,7 +59,7 @@ function NewUser(toggle: Function, toggled: any, step: number, setStep: Function
                             <Stack w="40%" h="100%" justify="center" align="center">
                                 <Group>
                                     <Image src={logo} h={'50px'} w={'50px'}></Image>
-                                    <Title className={classes.Title2}>SSHS OCW</Title>
+                                    <Title className={classes.JalnanGothic}>SSHS OCW</Title>
                                 </Group>
                                 <Text className={`${classes.Text1} `}>
                                     SSHS OCW는 서울과학고 학생들이 직접 제작·공유하는 100% 학생 주도형 온라인 강의 플랫폼입니다.<br></br>
@@ -70,7 +70,7 @@ function NewUser(toggle: Function, toggled: any, step: number, setStep: Function
                             <Space w="md" />
                             <Flex w="30%" h="100%" justify="center" align="center">
                                 <Stack gap="md" align="center" justify="center" >
-                                    <Text size="xl" className={classes.Title2}>관심 있는 분야가 무엇인가요?</Text>
+                                    <Text size="xl" className={classes.JalnanGothic}>관심 있는 분야가 무엇인가요?</Text>
                                     <SimpleGrid verticalSpacing="md" cols={3}>
                                         {items.map((item, i) => (
                                             <UnstyledButton key={i}
