@@ -1,7 +1,7 @@
 import { Group, Space, Text } from "@mantine/core";
 import { Link } from "react-router";
-import { linkStyle } from "../../libs/styles";
-import type { Lesson, Module, Subject } from "../../libs/types";
+import { linkStyle } from "../libs/styles";
+import type { Lesson, Module, Subject } from "../libs/types";
 
 function LessonViewerNavigateCard({ subject, lesson }: { subject: Subject, lesson: Lesson }) {
   const prev = "< Prev";

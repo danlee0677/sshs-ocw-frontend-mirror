@@ -6,7 +6,7 @@ import { Mathematics } from '@tiptap/extension-mathematics'
 import 'katex/dist/katex.min.css'
 import Youtube from '@tiptap/extension-youtube'
 import { Markdown } from '@tiptap/markdown';
-import { addYoutubeVideo } from "./editorUtils";
+import { addYoutubeVideo } from "../libs/editorUtils";
 // todo: subscript/superscript
 // todo: useMemo for optimizing editor?
 
@@ -17,9 +17,9 @@ import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import { createLowlight, all } from 'lowlight'
 import 'highlight.js/styles/github-dark.css' // todo: change when dark mode
 
-import { useDebounce, LESSON_STORAGE_KEY, getContentFromLocalStorage } from "./editorUtils";
+import { useDebounce, LESSON_STORAGE_KEY, getContentFromLocalStorage } from "../libs/editorUtils";
 import { Button, Flex, Group, ScrollArea, Stack, Space } from "@mantine/core";
-import type { ShellComponent } from "../../libs/types";
+import type { ShellComponent } from "../libs/types";
 
 
 const lowlight = createLowlight(all);
@@ -67,7 +67,6 @@ function LessonBody({ editable, content, Shell, before, after }: { editable: boo
 				lowlight: lowlight,
 				enableTabIndentation: true,
 				tabSize: 4,
-
 			}),
 		],
 		// try to fetch from localStorage

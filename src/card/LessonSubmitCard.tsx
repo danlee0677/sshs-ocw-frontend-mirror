@@ -2,9 +2,9 @@ import { Button, Group, Text } from "@mantine/core"
 import type { NavigateFunction } from "react-router";
 import { Editor } from "@tiptap/react";
 import { useRichTextEditorContext } from '@mantine/tiptap'
-import type { User } from "../../libs/types";
-import { http } from "../../libs/http";
-import { LESSON_STORAGE_KEY } from "../editor/editorUtils";
+import type { User } from "../libs/types";
+import { http } from "../libs/http";
+import { LESSON_STORAGE_KEY } from "../libs/editorUtils";
 
 export function handleLessonSubmit(mode: "edit" | "create", lessonId: string | undefined, editor: Editor, title: string, navigate: NavigateFunction, subjectId: string, user: User) {
   // todo: alert?

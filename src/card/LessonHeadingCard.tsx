@@ -1,5 +1,5 @@
 import { Title, TextInput, Stack, Text, Flex } from "@mantine/core"
-import type { Lesson } from "../../libs/types"
+import type { Lesson } from "../libs/types"
 
 function LessonHeadingCard({ editable, title, setTitle, content }: { editable: boolean, title: string, setTitle: React.Dispatch<string>, content: Lesson | null }) {
 
