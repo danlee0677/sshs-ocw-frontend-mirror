@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams, type NavigateFunction } from "react-router";
 import LessonBody from "./LessonBody";
-import { type Lesson, lessonSchema, type User } from "../../libs/types";
+import { type Lesson, lessonSchema, type User } from "../libs/types";
 import LessonSubmitCard from "../card/LessonSubmitCard";
-import { http } from "../../libs/http";
+import { http } from "../libs/http";
 import LessonHeadingCard from "../card/LessonHeadingCard";
-import MainPageAppshell from "../../main/MainPageAppshell";
+import MainPageAppshell from "../main/MainPageAppshell";
 
 
 

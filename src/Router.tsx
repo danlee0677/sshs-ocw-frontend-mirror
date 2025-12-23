@@ -1,17 +1,17 @@
 import React from "react";
 import { Routes, Route } from "react-router";
 import NotFoundPage from "./notfound/NotFoundPage";
-import LessonViewer from "./lecture/viewer/LessonViewer";
+import LessonViewer from "./lesson/LessonViewer";
 import Login from "./auth/Login";
 import type { User } from "./libs/types";
 import StartPage from "./main/StartPage";
 import LoginComplete from "./auth/LoginComplete";
 import Home from "./main/Home";
 import Setting from "./setting/Setting"
-import LessonEditor from "./lecture/editor/LessonEditor";
-import SubjectViewer from "./lecture/viewer/SubjectViewer";
+import LessonEditor from "./lesson/LessonEditor";
+import SubjectViewer from "./subject/SubjectViewer";
 import { canEdit } from "./libs/utils";
-import SubjectEditor from "./lecture/editor/SubjectEditor";
+import SubjectEditor from "./subject/SubjectEditor";
 
 function Router({user, setUser} : {user: User | null, setUser: React.Dispatch<User | null>}) {
   return (

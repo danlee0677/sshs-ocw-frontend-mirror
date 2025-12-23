@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { type NavigateFunction, useNavigate, useParams } from "react-router";
 import { Button, Stack, TextInput, Flex, Title } from "@mantine/core";
 import { useListState } from "@mantine/hooks";
-import { http } from "../../libs/http";
-import { type OrderData, type Subject, subjectSchema } from "../../libs/types";
-import { PLACEHOLDER_SUBJECT } from "../../libs/utils";
+import { http } from "../libs/http";
+import { type OrderData, type Subject, subjectSchema } from "../libs/types";
+import { PLACEHOLDER_SUBJECT } from "../libs/utils";
 import OrderTable from "../card/OrderTable";
 import z from "zod";
 

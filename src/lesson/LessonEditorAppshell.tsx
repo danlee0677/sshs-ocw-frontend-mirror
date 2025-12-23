@@ -1,8 +1,8 @@
 import { AppShell, Group, Image, Title, Space, Flex, Button } from "@mantine/core";
 import { Link } from "react-router";
 import { useRichTextEditorContext } from "@mantine/tiptap";
-import { linkStyle } from "../../libs/styles";
-import { addYoutubeVideo } from "./editorUtils";
+import { linkStyle } from "../libs/styles";
+import { addYoutubeVideo } from "../libs/editorUtils";
 
 function LessonEditorAppshell({ children }: { children: React.ReactNode }) { 
   const { editor } = useRichTextEditorContext();

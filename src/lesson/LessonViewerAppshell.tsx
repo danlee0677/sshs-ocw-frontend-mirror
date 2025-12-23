@@ -1,13 +1,13 @@
 import React from "react";
 import { AppShell, Box, Divider, Group, Flex, Image, Stack, ScrollArea, Space, Text, Title, } from "@mantine/core";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router";
-import { linkStyle } from "../../libs/styles";
+import { linkStyle } from "../libs/styles";
 import { useState, useEffect } from "react";
-import { PLACEHOLDER_SUBJECT } from "../../libs/utils";
-import { http } from "../../libs/http";
-import classes from "./viewer.module.css"
-import logo from '@/assets/app-logo.png';
-import { subjectSchema, type Subject } from "../../libs/types";
+import { PLACEHOLDER_SUBJECT } from "../libs/utils";
+import { http } from "../libs/http";
+import classes from "./lessonViewer.module.css"
+import { subjectSchema, type Subject } from "../libs/types";
+import logo from '@assets/logo.png'
 
 function LessonViewerAppshell({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();

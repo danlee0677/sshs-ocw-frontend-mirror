@@ -1,14 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link, type NavigateFunction, useNavigate, useParams } from "react-router";
-import { Stack, Title, Button, SimpleGrid, UnstyledButton } from "@mantine/core";
-import { http } from "../../libs/http";
-import { subjectSchema, type Subject } from "../../libs/types";
-import { PLACEHOLDER_SUBJECT } from "../../libs/utils";
-import './viewer.module.css'
-
-function handleModuleCreate(navigate: NavigateFunction, subjectId: string) {
-  navigate(`/modules/create?subjectId=${subjectId}`)
-}
+import { Link, useNavigate, useParams } from "react-router";
+import { Stack, Title, Button, SimpleGrid, UnstyledButton, Flex } from "@mantine/core";
+import { http } from "../libs/http";
+import { subjectSchema, type Subject } from "../libs/types";
+import { PLACEHOLDER_SUBJECT } from "../libs/utils";
+import './subjectViewer.module.css'
 
 function SubjectViewer() {
   const [subject, setSubject] = useState<Subject>(PLACEHOLDER_SUBJECT);
@@ -39,9 +35,18 @@ function SubjectViewer() {
           <SimpleGrid w="80%" h="30%" cols={3}>
             {subject.contents.map((lesson) => {
               return (
-                <UnstyledButton color="" h="100%" w="100%" 
+                <UnstyledButton h="100%" w="100%"
+                style={{
+                  backgroundColor: "#acacacff",
+                  color: "inherit",
+                  "&:hover": {
+                    color: "inherit"
+                  }
+                }}
                 component={Link} to={`/lessons/${lesson._id}?subjectId=${subject._id}`}>
-                  <Title h={3}>{lesson.title}</Title>
+                  <Flex h="100%" w="100%" justify="center">
+                    <Title h={3}>{lesson.title}</Title>
+                  </Flex>
                 </UnstyledButton>
               )
             })}
