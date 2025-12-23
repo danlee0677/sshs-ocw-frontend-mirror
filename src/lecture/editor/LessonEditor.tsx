@@ -1,18 +1,49 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router";
+import { useNavigate, useParams, useSearchParams, type NavigateFunction } from "react-router";
+import { Editor } from "@tiptap/react";
 import LessonEditorAppshell from "./LessonEditorAppshell";
 import LessonBody from "./LessonBody";
 import { type Lesson, lessonSchema, type User } from "../../libs/types";
 import LessonSubmitCard from "../card/LessonSubmitCard";
 import { http } from "../../libs/http";
 import LessonHeadingCard from "../card/LessonHeadingCard";
+import { LESSON_STORAGE_KEY } from "./editorUtils";
+
+export function handleLessonSubmit(mode: "edit" | "create", lessonId: string | undefined, editor: Editor, title: string, navigate: NavigateFunction, moduleId: string, subjectId: string, user: User) {
+  // todo: alert?
+  if (!title || !editor.getJSON()) return;
+
+  // when endpoint is /lessons/create i.e. creating new lesson
+  if (mode === "create") {
+    http.post(`${import.meta.env.VITE_API_URL}/api/lessons`, {
+      module: moduleId,
+      title: title,
+      content: JSON.stringify(editor.getJSON()),
+      createdBy: user._id
+    }).then((res) => {
+      localStorage.removeItem(LESSON_STORAGE_KEY);
+      navigate(`/modules/${moduleId}?subjectId=${subjectId}`)
+    }).catch((err) => {
+      console.log(err);
+    })
+  } else { // when endpoint is /lesson/:lessonId/edit i.e. editing a lesson
+    http.patch(`${import.meta.env.VITE_API_URL}/api/lessons/${lessonId}`, {
+      title: title,
+      content: JSON.stringify(editor.getJSON()),
+    }).then((res) => {
+      localStorage.removeItem(LESSON_STORAGE_KEY);
+      navigate(`/modules/${moduleId}?subjectId=${subjectId}`)
+    }).catch((err) => {
+      console.log(err);
+    })
+  }
+}
 
 function LessonEditor({ mode, user } : { mode: "edit" | "create", user: User | null }) {
   const [initialContent, setInitialContent] = useState<null | Lesson>(null)
   const [title, setTitle] = useState("");
   const [searchParams] = useSearchParams();
   const subjectId = searchParams.get('subjectId');
-  const moduleId = searchParams.get('moduleId');
 
   const { lessonId } = useParams();
   
@@ -26,7 +57,7 @@ function LessonEditor({ mode, user } : { mode: "edit" | "create", user: User | n
   useEffect(() => {
     if (mode !== "edit") return;
     
-    if (!lessonId || !moduleId || !subjectId) navigate('/notfound');
+    if (!lessonId || !subjectId) navigate('/notfound');
 
     http.get(`${import.meta.env.VITE_API_URL}/api/lessons/${lessonId}`).then((res) => {
       const parsed = lessonSchema.safeParse(res.data);
@@ -46,15 +77,15 @@ function LessonEditor({ mode, user } : { mode: "edit" | "create", user: User | n
       console.log(err)
       setInitialContent(null);
     })
-  }, [mode, lessonId, navigate, subjectId, moduleId])
+  }, [mode, lessonId, navigate, subjectId])
 
-  if ((mode === "edit" && !lessonId) || !subjectId || !moduleId || !user) return;
+  if ((mode === "edit" && !lessonId) || !subjectId || !user) return;
 
   return (
     <>
       <LessonBody content={initialContent} editable={true} Shell={LessonEditorAppshell}
       before={<LessonHeadingCard editable={true} title={title} setTitle={setTitle} content={initialContent} />} 
-      after={<LessonSubmitCard mode={mode} lessonId={lessonId} title={title} moduleId={moduleId} subjectId={subjectId} navigate={navigate} user={user} />} />
+      after={<LessonSubmitCard mode={mode} lessonId={lessonId} title={title} subjectId={subjectId} navigate={navigate} user={user} />} />
     </>
     
   )

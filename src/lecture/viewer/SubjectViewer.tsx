@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { type NavigateFunction, useNavigate, useParams } from "react-router";
-import { Stack, Title, Button } from "@mantine/core";
+import { Link, type NavigateFunction, useNavigate, useParams } from "react-router";
+import { Stack, Title, Button, SimpleGrid, UnstyledButton } from "@mantine/core";
 import { http } from "../../libs/http";
 import { subjectSchema, type Subject } from "../../libs/types";
 import { PLACEHOLDER_SUBJECT } from "../../libs/utils";
+import './viewer.module.css'
 
 function handleModuleCreate(navigate: NavigateFunction, subjectId: string) {
   navigate(`/modules/create?subjectId=${subjectId}`)
@@ -34,7 +35,17 @@ function SubjectViewer() {
       { subjectId ?
         <Stack w="100vw" h="100vh" align="center">
           <Title order={1}>{subject.title}</Title>
-          <Button onClick={() => handleModuleCreate(navigate, subjectId)}>모듈 생성</Button>
+          <Button component={Link} to={`/subjects/${subjectId}/edit`}>과목 수정</Button>
+          <SimpleGrid w="80%" h="30%" cols={3}>
+            {subject.contents.map((lesson) => {
+              return (
+                <UnstyledButton color="" h="100%" w="100%" 
+                component={Link} to={`/lessons/${lesson._id}?subjectId=${subject._id}`}>
+                  <Title h={3}>{lesson.title}</Title>
+                </UnstyledButton>
+              )
+            })}
+          </SimpleGrid>
         </Stack>
       :
         <></>

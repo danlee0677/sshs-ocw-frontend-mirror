@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { Title, Stack, Flex } from "@mantine/core";
 import LessonViewerAppshell from "./LessonViewerAppshell";
-import { type Lesson, lessonSchema, type Module, moduleSchema } from "../../libs/types";
+import { type Lesson, lessonSchema, type Subject, subjectSchema } from "../../libs/types";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 import LessonViewerNavigateCard from "../card/LessonViewerNavigateCard";
 import { http } from '../../libs/http'
 import LessonBody from "../editor/LessonBody";
-import { PLACEHOLDER_LESSON, PLACEHOLDER_MODULE } from "../../libs/utils";
+import { PLACEHOLDER_LESSON, PLACEHOLDER_SUBJECT } from "../../libs/utils";
 
 
 
@@ -14,10 +14,9 @@ function LessonViewer() {
   const { lessonId } = useParams()
   const [searchParams] = useSearchParams();
   const subjectId = searchParams.get('subjectId');
-  const moduleId = searchParams.get('moduleId');
 
+  const [subject, setSubject] = useState<Subject>(PLACEHOLDER_SUBJECT);
   const [lesson, setLesson] = useState<Lesson>(PLACEHOLDER_LESSON);
-  const [module, setModule] = useState<Module>(PLACEHOLDER_MODULE);
 
   const navigate = useNavigate();
 
@@ -48,18 +47,20 @@ function LessonViewer() {
       console.log(err)
       navigate('/notfound');
     })
+    http.get(`${import.meta.env.VITE_API_URL}/api/subjects/${subjectId}`).then((res) => {
+      const parsed = subjectSchema.safeParse(res.data);
+      if (!parsed.success) throw new Error("Fetched Subject does not meet type");
 
-    http.get(`${import.meta.env.VITE_API_URL}/api/modules/${moduleId}`).then((res) => {
-      const parsed = moduleSchema.safeParse(res.data)
-
-      if (!parsed.success) throw new Error("Fetched module does not meet Module type");
-      setModule(parsed.data);
-      // if (module._id !== moduleId || module.subject !== subjectId) throw new Error("moduleId or subjectId mismatch");
+      setSubject({
+        _id: parsed.data._id,
+        title: parsed.data.title,
+        contents: parsed.data.contents,
+      })
     }).catch((err) => {
       console.log(err);
-      navigate('/notfound');
+      navigate("/notfound");
     })
-  }, [lessonId, moduleId, navigate])
+  }, [lessonId, subjectId, navigate])
   // todo: give the appshell `module` fetched with useEffect
   return (
     <>
@@ -67,7 +68,7 @@ function LessonViewer() {
         <LessonBody editable={false} content={lesson.content} Shell={LessonViewerAppshell}
         before={
         <Stack gap="md" w="100%">
-          <LessonViewerNavigateCard module={module} lesson={lesson} />
+          <LessonViewerNavigateCard subject={subject} lesson={lesson} />
           <Title order={1}>{lesson.title}</Title>
           <Flex w="100%" justify="flex-end">
             <Title order={4}>{lesson.createdBy}</Title>
