@@ -54,6 +54,7 @@ function SubjectEditor({ mode }: { mode: "edit" | "create" }) {
       if (parsed.data._id !== subjectId) throw new Error("Id does not match")
 
       setSubject(parsed.data);
+      handlers.setState(parsed.data.contents);
     }).catch((err) => {
       console.log(err);
     })
