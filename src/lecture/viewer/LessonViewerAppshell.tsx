@@ -1,72 +1,107 @@
 import React from "react";
-import { AppShell, Group, Image, Title, Space, Flex, Button, TextInput } from "@mantine/core";
-import { IconSearch } from '@tabler/icons-react';
-import { Link } from "react-router";
-import { useState } from "react";
-import { linkStyle } from "../libs/styles";
-import classes from "./Appshell.module.css"
-import { http } from "../libs/http";
-import type { User } from "../libs/types";
-import logo from '@/assets/app-logo.png';
-import { isUser } from "../libs/utils";
+import { AppShell, Box, Divider, Group, Flex, Image, Stack, ScrollArea, Space, Text, Title, } from "@mantine/core";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router";
+import { linkStyle } from "../../libs/styles";
+import { useState, useEffect } from "react";
+import { type Module, moduleSchema } from '../../libs/types'
+import { PLACEHOLDER_MODULE } from "../../libs/utils";
+import { http } from "../../libs/http";
+import classes from "./viewer.module.css"
 
-function MainPageAppshell({ children, user, setUser }: { children: React.ReactNode, user: User | null, setUser: React.Dispatch<User | null> }) {
-  const [value, setValue] = useState("");
+function LessonViewerAppshell({ children }: { children: React.ReactNode }) {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  const [module, setModule] = useState<Module>(PLACEHOLDER_MODULE);
+  const { lessonId } = useParams();
+  const subjectId = searchParams.get('subjectId');
+  const moduleId = searchParams.get('moduleId');
+  const ind = module.contents.findIndex((val) => val._id === lessonId)
+
+
+  useEffect(() => {
+    if (!moduleId || !subjectId || !lessonId) navigate('/notfound');
+
+    http.get(`${import.meta.env.VITE_API_URL}/api/modules/${moduleId}`).then((res) => {
+      const parsed = moduleSchema.safeParse(res.data)
+
+      if (!parsed.success) throw new Error("Fetched module does not meet Module type");
+      setModule(parsed.data);
+      // if (module._id !== moduleId || module.subject !== subjectId) throw new Error("moduleId or subjectId mismatch");
+    }).catch((err) => {
+      console.log(err);
+      navigate('/notfound');
+    })
+  }, [subjectId, moduleId, navigate])
+
+
   return (
     <AppShell
-      padding="md"
-      header={{ height: 120 }}
+      navbar={{ width: 300, breakpoint: 'sm' }}
+      styles={{
+        main: {
+          height: "100vh",
+          display: "flex",
+          flexDirection: "column"
+        },
+        navbar: {
+          height: "100vh",
+          display: "flex",
+          flexDirection: "column"
+        }
+      }}
     >
-      <AppShell.Header h={120}>
-        <Group h="100%" w="100%" gap={0}>
-          <Flex w="20%">
-            <Space w="sm" />
+
+      <AppShell.Navbar>
+        <Stack w="100%" gap={0} align="center" h="100%">
+          <Space h="sm" />
+          <Flex w="80%" justify="flex-start" h="5%">
             <Link to="/" style={linkStyle}>
               <Group gap="md" align="center" h="100%">
-                <Image alt="logo" h="40" w="auto" src={logo} />
-                <Title order={3}>SSHS OCW</Title>
+                <Image alt="logo" h="40" w="auto" src="\app-logo.png" />
+                <Title order={2}>SSHS OCW</Title>
               </Group>
             </Link>
           </Flex>
+          <Space h="sm" />
 
-          <Flex w="60%" h="100%" align={"center"} justify="center">
-            <Group w='80%' justify="center" className={`${classes.searchArea}`}>
-              <IconSearch className={`${classes.searchIcon}`}></IconSearch>
-              <TextInput placeholder="검색어를 입력해 주세요."
-                value={value}
-                onChange={(e) => { setValue(e.target.value) }}
-                className={`${value ? classes.searchBar : classes.searchBar_animate}`}></TextInput>
-            </Group>
+          <Divider size="xs" w="100%" />
+
+          <Flex w="100%" direction="column" h="80vh">
+            <ScrollArea h="100%" type="auto" scrollbarSize={5}>
+              <Stack gap="0">
+                {module.contents.map((item, i) => {
+                  return <>
+                    <Group
+                      className={`${classes.ProgressGroup} ${i === ind ? classes.selected : ''}`}
+                      h={'60px'} align="center">
+                      <Box ml={'sm'} w={'4px'} h={'90%'}
+                        bg={i <= ind ? '#007bffff' : '#aaaaaa'}
+                        className={`${classes.ProgressRect}`}></Box>
+                      <Text
+                        className={`${classes.ProgressText}`}
+                        component={Link}
+                        to={`/lessons/${item._id}?subjectId=${subjectId}&moduleId=${moduleId}`}
+                        h={'100%'}>{item.title}</Text>
+                    </Group>
+                  </>
+                })}
+              </Stack>
+
+            </ScrollArea>
           </Flex>
 
-          <Flex w="20%" h="100%" justify="flex-end">
-            <Group gap="md" align="center" w="100%" h="100%">
-              {!isUser(user) ? <>
-                <Link to="/" style={linkStyle}>
-                  <Title order={5}>Login</Title>
-                </Link>
-                <Title order={5}>|</Title>
-                <Link to="/" style={linkStyle}>
-                  <Title order={5}>Register</Title>
-                </Link>
-              </> : <>
-                <Button onClick={() => {
-                  http.post(`${import.meta.env.VITE_API_URL}/api/auth/logout`).then(() => {
-                    setUser(null);
-                  })
-                }}></Button>
-              </>
-              }
-              <Space w={0} />
-            </Group>
-          </Flex>
-        </Group>
-      </AppShell.Header>
+          <Divider size="xs" w="100%" />
+
+          <Flex h="10%">Profile Page</Flex>
+        </Stack>
+      </AppShell.Navbar>
 
       <AppShell.Main>
         {children}
       </AppShell.Main>
-    </AppShell>)
+    </AppShell>
+  )
 }
 
-export default MainPageAppshell;
+export default LessonViewerAppshell;
