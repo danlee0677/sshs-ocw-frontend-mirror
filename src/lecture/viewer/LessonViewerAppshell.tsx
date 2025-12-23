@@ -3,36 +3,34 @@ import { AppShell, Box, Divider, Group, Flex, Image, Stack, ScrollArea, Space, T
 import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import { linkStyle } from "../../libs/styles";
 import { useState, useEffect } from "react";
-import { type Module, moduleSchema } from '../../libs/types'
-import { PLACEHOLDER_MODULE } from "../../libs/utils";
+import { PLACEHOLDER_SUBJECT } from "../../libs/utils";
 import { http } from "../../libs/http";
 import classes from "./viewer.module.css"
+import { subjectSchema, type Subject } from "../../libs/types";
 
 function LessonViewerAppshell({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const [module, setModule] = useState<Module>(PLACEHOLDER_MODULE);
+  const [subject, setSubject] = useState<Subject>(PLACEHOLDER_SUBJECT);
   const { lessonId } = useParams();
   const subjectId = searchParams.get('subjectId');
-  const moduleId = searchParams.get('moduleId');
-  const ind = module.contents.findIndex((val) => val._id === lessonId)
+  const ind = subject.contents.findIndex((val) => val._id === lessonId)
 
 
   useEffect(() => {
-    if (!moduleId || !subjectId || !lessonId) navigate('/notfound');
+    if (!subjectId || !lessonId) navigate('/notfound');
 
-    http.get(`${import.meta.env.VITE_API_URL}/api/modules/${moduleId}`).then((res) => {
-      const parsed = moduleSchema.safeParse(res.data)
+    http.get(`${import.meta.env.VITE_API_URL}/api/subjects/${subjectId}`).then((res) => {
+      const parsed = subjectSchema.safeParse(res.data)
 
-      if (!parsed.success) throw new Error("Fetched module does not meet Module type");
-      setModule(parsed.data);
-      // if (module._id !== moduleId || module.subject !== subjectId) throw new Error("moduleId or subjectId mismatch");
+      if (!parsed.success) throw new Error("Fetched subject does not meet Module type");
+      setSubject(parsed.data);
     }).catch((err) => {
       console.log(err);
       navigate('/notfound');
     })
-  }, [subjectId, moduleId, navigate])
+  }, [subjectId, subject, navigate])
 
 
   return (
@@ -70,7 +68,7 @@ function LessonViewerAppshell({ children }: { children: React.ReactNode }) {
           <Flex w="100%" direction="column" h="80vh">
             <ScrollArea h="100%" type="auto" scrollbarSize={5}>
               <Stack gap="0">
-                {module.contents.map((item, i) => {
+                {subject.contents.map((item, i) => {
                   return <>
                     <Group
                       className={`${classes.ProgressGroup} ${i === ind ? classes.selected : ''}`}
@@ -81,7 +79,7 @@ function LessonViewerAppshell({ children }: { children: React.ReactNode }) {
                       <Text
                         className={`${classes.ProgressText}`}
                         component={Link}
-                        to={`/lessons/${item._id}?subjectId=${subjectId}&moduleId=${moduleId}`}
+                        to={`/lessons/${item._id}?subjectId=${subjectId}`}
                         h={'100%'}>{item.title}</Text>
                     </Group>
                   </>

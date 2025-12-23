@@ -40,7 +40,7 @@ function LessonViewer() {
         content: contentJSON,
         createdBy: parsed.data.createdBy,
         _id: parsed.data._id,
-        module: parsed.data.module
+        subject: parsed.data.subject
       })
       // if (lesson._id !== lessonId || lesson.module !== moduleId) throw new Error("lesson Id mismatch");
     }).catch((err) => {

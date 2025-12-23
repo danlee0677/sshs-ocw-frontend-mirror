@@ -9,8 +9,6 @@ import LoginComplete from "./auth/LoginComplete";
 import Home from "./main/Home";
 import Setting from "./setting/Setting"
 import LessonEditor from "./lecture/editor/LessonEditor";
-import ModuleViewer from "./lecture/viewer/ModuleViewer";
-import ModuleEditor from "./lecture/editor/ModuleEditor";
 import SubjectViewer from "./lecture/viewer/SubjectViewer";
 import { canEdit } from "./libs/utils";
 import SubjectEditor from "./lecture/editor/SubjectEditor";

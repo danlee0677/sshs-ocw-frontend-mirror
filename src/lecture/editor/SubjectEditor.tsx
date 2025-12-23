@@ -9,10 +9,10 @@ import OrderTable from "../card/OrderTable";
 import z from "zod";
 
 function handleSubjectEdit(navigate: NavigateFunction, subject: Subject, state: OrderData) {
-  http.patch(`${import.meta.env.VITE_API_URL}/api/modules/${subject._id}`, {
+  http.patch(`${import.meta.env.VITE_API_URL}/api/subjects/${subject._id}`, {
     title: subject.title,
     contents: state,
-  }).then((res) => {
+  }).then(() => {
     // todo: popup
     navigate(`/subjects/${subject._id}`)
   }).catch((err) => {

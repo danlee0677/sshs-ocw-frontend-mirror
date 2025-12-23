@@ -6,6 +6,7 @@ import { Mathematics } from '@tiptap/extension-mathematics'
 import 'katex/dist/katex.min.css'
 import Youtube from '@tiptap/extension-youtube'
 import { Markdown } from '@tiptap/markdown';
+import { addYoutubeVideo } from "./editorUtils";
 // todo: subscript/superscript
 // todo: useMemo for optimizing editor?
 
