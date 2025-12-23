@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { PLACEHOLDER_SUBJECT } from "../../libs/utils";
 import { http } from "../../libs/http";
 import classes from "./viewer.module.css"
+import logo from '@/assets/app-logo.png';
 import { subjectSchema, type Subject } from "../../libs/types";
 
 function LessonViewerAppshell({ children }: { children: React.ReactNode }) {
@@ -56,7 +57,7 @@ function LessonViewerAppshell({ children }: { children: React.ReactNode }) {
           <Flex w="80%" justify="flex-start" h="5%">
             <Link to="/" style={linkStyle}>
               <Group gap="md" align="center" h="100%">
-                <Image alt="logo" h="40" w="auto" src="\app-logo.png" />
+                <Image alt="logo" h="40" w="auto" src={logo} />
                 <Title order={2}>SSHS OCW</Title>
               </Group>
             </Link>
