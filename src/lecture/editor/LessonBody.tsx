@@ -17,112 +17,120 @@ import { createLowlight, all } from 'lowlight'
 import 'highlight.js/styles/github-dark.css' // todo: change when dark mode
 
 import { useDebounce, LESSON_STORAGE_KEY, getContentFromLocalStorage } from "./editorUtils";
-import { Flex, ScrollArea, Stack, Space } from "@mantine/core";
+import { Button, Flex, Group, ScrollArea, Stack, Space } from "@mantine/core";
 import type { ShellComponent } from "../../libs/types";
 
 
 const lowlight = createLowlight(all);
 
-function LessonBody({editable, content, Shell, before, after} : {editable: boolean, content: object | null, Shell: ShellComponent, before: ReactNode, after: ReactNode}) {
-  // persist through refresh: save 
-  const debounceSave = useDebounce((json : any) => {
-    try {
-      localStorage.setItem(LESSON_STORAGE_KEY, JSON.stringify(json))
-    } catch (err) {
-      console.log('Failed to save document', err);
-    }
-  }, 800)
+function LessonBody({ editable, content, Shell, before, after }: { editable: boolean, content: object | null, Shell: ShellComponent, before: ReactNode, after: ReactNode }) {
+	// persist through refresh: save 
+	const debounceSave = useDebounce((json: any) => {
+		try {
+			localStorage.setItem(LESSON_STORAGE_KEY, JSON.stringify(json))
+		} catch (err) {
+			console.log('Failed to save document', err);
+		}
+	}, 800)
 
-  const editor = useEditor({
-    shouldRerenderOnTransaction: true,
-    extensions: [
-      StarterKit.configure({
-        codeBlock: false,
-        link: false,
-      }),
-      Link,
-      Markdown,
-      Mathematics.configure({
-        inlineOptions: {
-          // d
-        },
-        blockOptions: {
-          // d
-        },
-        katexOptions: {
-          throwOnError: false,
-        },
-        
-      }),
-      Youtube.configure({
-        width: 640,
-        height: 360,
-        controls: false,
-        nocookie: true,
-        allowFullscreen: true,
-        
-      }),
-      CodeBlockLowlight.configure({
-        lowlight: lowlight,
-        enableTabIndentation: true,
-        tabSize: 4,
-        
-      }),
-    ],
-    // try to fetch from localStorage
-    content: editable ? (content ?? getContentFromLocalStorage()) : content,
-    onUpdate: ({editor, transaction}) => {
-      if (!editable) return;
-      if (transaction.docChanged) debounceSave(editor.getJSON());
-    },
-    editable: editable,
-  })
+	const editor = useEditor({
+		shouldRerenderOnTransaction: true,
+		extensions: [
+			StarterKit.configure({
+				codeBlock: false,
+				link: false,
+			}),
+			Link,
+			Markdown,
+			Mathematics.configure({
+				inlineOptions: {
+					// d
+				},
+				blockOptions: {
+					// d
+				},
+				katexOptions: {
+					throwOnError: false,
+				},
 
-  useEffect(() => {
-    if (!editor) return;
-    if (content == null) return;
-    editor.commands.setContent(content as any, { emitUpdate: false });
-}, [content, editor]);
+			}),
+			Youtube.configure({
+				width: 640,
+				height: 360,
+				controls: false,
+				nocookie: true,
+				allowFullscreen: true,
 
-  return (
-    <RichTextEditor editor={editor} >
-      <Shell>
-        <ScrollArea w="100%" h="100%" scrollbarSize={5} >
-          <Flex h="100%" w="100%" justify="center">
-            <Stack h="100%" w="700" align="stretch" gap={0}>
-                {before}
-                <Space h="md" />
+			}),
+			CodeBlockLowlight.configure({
+				lowlight: lowlight,
+				enableTabIndentation: true,
+				tabSize: 4,
 
-                {editable ? <RichTextEditor.Toolbar sticky stickyOffset="var(--docs-header-height)">
-                  <RichTextEditor.ControlsGroup>
-                    <RichTextEditor.Bold />
-                    <RichTextEditor.Italic />
-                    <RichTextEditor.Underline />
-                    <RichTextEditor.Subscript />
-                    <RichTextEditor.Superscript />
-                  </RichTextEditor.ControlsGroup>
+			}),
+		],
+		// try to fetch from localStorage
+		content: editable ? (content ?? getContentFromLocalStorage()) : content,
+		onUpdate: ({ editor, transaction }) => {
+			if (!editable) return;
+			if (transaction.docChanged) debounceSave(editor.getJSON());
+		},
+		editable: editable,
+	})
 
-                   <RichTextEditor.ControlsGroup>
-                    <RichTextEditor.Undo />
-                    <RichTextEditor.Redo />
-                  </RichTextEditor.ControlsGroup>
+	useEffect(() => {
+		if (!editor) return;
+		if (content == null) return;
+		editor.commands.setContent(content as any, { emitUpdate: false });
+	}, [content, editor]);
 
-                  <RichTextEditor.ControlsGroup>
-                    <RichTextEditor.Link />
-                    <RichTextEditor.Unlink />
-                  </RichTextEditor.ControlsGroup>
-                </RichTextEditor.Toolbar> : <></>}
-                
-                <RichTextEditor.Content />
-                
-                <Space h="md" />
-                {after}
-            </Stack>
-          </Flex>
-        </ScrollArea>
-      </Shell>
-    </RichTextEditor>
-  )
+	return (
+		<RichTextEditor editor={editor} >
+			<Shell>
+				<ScrollArea w="100%" h="100%" scrollbarSize={5} >
+					<Flex h="100%" w="100%" justify="center">
+						<Stack h="100%" w="700" align="stretch" gap={0}>
+							{before}
+							<Space h="md" />
+
+
+							{editable ?
+								<>
+									<Group h="40%" gap="md" >
+										<Button onClick={() => addYoutubeVideo(editor)} >Add Youtube Video</Button>
+									</Group>
+									<RichTextEditor.Toolbar sticky stickyOffset="var(--docs-header-height)">
+										<RichTextEditor.ControlsGroup>
+											<RichTextEditor.Bold />
+											<RichTextEditor.Italic />
+											<RichTextEditor.Underline />
+											<RichTextEditor.Subscript />
+											<RichTextEditor.Superscript />
+										</RichTextEditor.ControlsGroup>
+
+										<RichTextEditor.ControlsGroup>
+											<RichTextEditor.Undo />
+											<RichTextEditor.Redo />
+										</RichTextEditor.ControlsGroup>
+
+										<RichTextEditor.ControlsGroup>
+											<RichTextEditor.Link />
+											<RichTextEditor.Unlink />
+										</RichTextEditor.ControlsGroup>
+									</RichTextEditor.Toolbar>
+								</>
+								: <></>}
+
+							<RichTextEditor.Content />
+
+							<Space h="md" />
+							{after}
+						</Stack>
+					</Flex>
+				</ScrollArea>
+			</Shell>
+		</RichTextEditor>
+	)
 }
 
 export default LessonBody

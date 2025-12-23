@@ -160,3 +160,13 @@
     opacity: 1;
     color: white;
 }
+
+::selection {
+    background-color: #bdbdbd;
+    color: #000;
+}
+
+::-moz-selection {
+    background: #bdbdbd;
+    color: #000;
+}

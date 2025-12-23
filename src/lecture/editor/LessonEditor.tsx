@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams, type NavigateFunction } from "react-router";
 import { Editor } from "@tiptap/react";
-import LessonEditorAppshell from "./LessonEditorAppshell";
 import LessonBody from "./LessonBody";
 import { type Lesson, lessonSchema, type User } from "../../libs/types";
 import LessonSubmitCard from "../card/LessonSubmitCard";
 import { http } from "../../libs/http";
 import LessonHeadingCard from "../card/LessonHeadingCard";
 import { LESSON_STORAGE_KEY } from "./editorUtils";
+import MainPageAppshell from "../../main/MainPageAppshell";
 
 export function handleLessonSubmit(mode: "edit" | "create", lessonId: string | undefined, editor: Editor, title: string, navigate: NavigateFunction, moduleId: string, subjectId: string, user: User) {
   // todo: alert?
@@ -39,7 +39,7 @@ export function handleLessonSubmit(mode: "edit" | "create", lessonId: string | u
   }
 }
 
-function LessonEditor({ mode, user } : { mode: "edit" | "create", user: User | null }) {
+function LessonEditor({ mode, user, setUser } : { mode: "edit" | "create", user: User | null, setUser: React.Dispatch<User | null> }) {
   const [initialContent, setInitialContent] = useState<null | Lesson>(null)
   const [title, setTitle] = useState("");
   const [searchParams] = useSearchParams();
@@ -83,7 +83,9 @@ function LessonEditor({ mode, user } : { mode: "edit" | "create", user: User | n
 
   return (
     <>
-      <LessonBody content={initialContent} editable={true} Shell={LessonEditorAppshell}
+      <LessonBody content={initialContent} editable={true} Shell={(props) => (
+        <MainPageAppshell {...props} user={user} setUser={setUser}></MainPageAppshell>
+      )}
       before={<LessonHeadingCard editable={true} title={title} setTitle={setTitle} content={initialContent} />} 
       after={<LessonSubmitCard mode={mode} lessonId={lessonId} title={title} subjectId={subjectId} navigate={navigate} user={user} />} />
     </>

@@ -27,8 +27,8 @@ function Router({user, setUser} : {user: User | null, setUser: React.Dispatch<Us
 
       <Route path="lessons">
         <Route path=":lessonId" element={<LessonViewer />}/> 
-        <Route path=":lessonId/edit" element={canEdit(user) ? <LessonEditor mode="edit" user={user} /> : <></>} />
-        <Route path="create" element={canEdit(user) ? <LessonEditor mode="create" user={user} /> : <></>} />
+        <Route path=":lessonId/edit" element={canEdit(user) ? <LessonEditor mode="edit" user={user} setUser={setUser} /> : <></>} />
+        <Route path="create" element={canEdit(user) ? <LessonEditor mode="create" user={user} setUser={setUser}/> : <></>} />
       </Route>
 
       <Route path="subjects">
