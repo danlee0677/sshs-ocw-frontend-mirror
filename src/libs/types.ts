@@ -28,7 +28,7 @@ export const lessonSchema = z.object({
   content: z.string(),
   createdBy: z.string(),
   _id: z.string(),
-  module: z.string()
+  subject: z.string()
 })
 
 export type LessonResponse = z.infer<typeof lessonSchema>
@@ -38,21 +38,8 @@ export interface Lesson {
   content: object,
   createdBy: string,
   _id: string,
-  module: string,
+  subject: string,
 }
-
-export const moduleSchema = z.object({
-  _id: z.string(),
-  subject: z.string(),
-  title: z.string(),
-  order: z.number(),
-  contents: z.array(z.object({
-    title: z.string(),
-    _id: z.string(),
-  }))
-})
-
-export type Module = z.infer<typeof moduleSchema>
 
 export const subjectSchema = z.object({
   _id: z.string(),

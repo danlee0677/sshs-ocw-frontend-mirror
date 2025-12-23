@@ -1,43 +1,13 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams, useSearchParams, type NavigateFunction } from "react-router";
-import { Editor } from "@tiptap/react";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 import LessonEditorAppshell from "./LessonEditorAppshell";
 import LessonBody from "./LessonBody";
 import { type Lesson, lessonSchema, type User } from "../../libs/types";
 import LessonSubmitCard from "../card/LessonSubmitCard";
 import { http } from "../../libs/http";
 import LessonHeadingCard from "../card/LessonHeadingCard";
-import { LESSON_STORAGE_KEY } from "./editorUtils";
 
-export function handleLessonSubmit(mode: "edit" | "create", lessonId: string | undefined, editor: Editor, title: string, navigate: NavigateFunction, moduleId: string, subjectId: string, user: User) {
-  // todo: alert?
-  if (!title || !editor.getJSON()) return;
 
-  // when endpoint is /lessons/create i.e. creating new lesson
-  if (mode === "create") {
-    http.post(`${import.meta.env.VITE_API_URL}/api/lessons`, {
-      module: moduleId,
-      title: title,
-      content: JSON.stringify(editor.getJSON()),
-      createdBy: user._id
-    }).then((res) => {
-      localStorage.removeItem(LESSON_STORAGE_KEY);
-      navigate(`/modules/${moduleId}?subjectId=${subjectId}`)
-    }).catch((err) => {
-      console.log(err);
-    })
-  } else { // when endpoint is /lesson/:lessonId/edit i.e. editing a lesson
-    http.patch(`${import.meta.env.VITE_API_URL}/api/lessons/${lessonId}`, {
-      title: title,
-      content: JSON.stringify(editor.getJSON()),
-    }).then((res) => {
-      localStorage.removeItem(LESSON_STORAGE_KEY);
-      navigate(`/modules/${moduleId}?subjectId=${subjectId}`)
-    }).catch((err) => {
-      console.log(err);
-    })
-  }
-}
 
 function LessonEditor({ mode, user } : { mode: "edit" | "create", user: User | null }) {
   const [initialContent, setInitialContent] = useState<null | Lesson>(null)
