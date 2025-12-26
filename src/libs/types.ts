@@ -44,6 +44,7 @@ export interface Lesson {
 export const subjectSchema = z.object({
   _id: z.string(),
   title: z.string(),
+  description: z.string(),
   contents: z.array(z.object({
     _id: z.string(),
     title: z.string(),

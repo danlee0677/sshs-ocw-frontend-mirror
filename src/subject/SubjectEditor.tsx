@@ -3,10 +3,11 @@ import { type NavigateFunction, useNavigate, useParams } from "react-router";
 import { Button, Stack, TextInput, Flex, Title } from "@mantine/core";
 import { useListState } from "@mantine/hooks";
 import { http } from "../libs/http";
-import { type OrderData, type Subject, subjectSchema } from "../libs/types";
+import { type OrderData, type Subject, subjectSchema, type User } from "../libs/types";
 import { PLACEHOLDER_SUBJECT } from "../libs/utils";
 import OrderTable from "../card/OrderTable";
 import z from "zod";
+import MainPageAppshell from "../main/MainPageAppshell";
 
 function handleSubjectEdit(navigate: NavigateFunction, subject: Subject, state: OrderData) {
   http.patch(`${import.meta.env.VITE_API_URL}/api/subjects/${subject._id}`, {
@@ -23,17 +24,18 @@ function handleSubjectEdit(navigate: NavigateFunction, subject: Subject, state: 
 function handleSubjectCreate(navigate: NavigateFunction, subject: Subject) {
   http.post(`${import.meta.env.VITE_API_URL}/api/subjects`, {
     title: subject.title,
+    description: subject.description
   }).then((res) => {
     const parsed = z.object({_id: z.string()}).safeParse(res.data);
     if (!parsed.success) throw new Error("Failed to fetch subject id");
     // todo: add popup(alert, Modals, etc)
-    navigate(`/subjects/${parsed.data._id}`);
+    navigate(`/subject/${parsed.data._id}`);
   }).catch((err) => {
     console.log(err);
   })
 }
 
-function SubjectEditor({ mode }: { mode: "edit" | "create" }) {
+function SubjectEditor({ mode, user, setUser }: { mode: "edit" | "create", user: User | null, setUser: React.Dispatch<User | null> }) {
   const [subject, setSubject] = useState<Subject>(PLACEHOLDER_SUBJECT)
   const { subjectId } = useParams()
   const navigate = useNavigate();
@@ -61,7 +63,7 @@ function SubjectEditor({ mode }: { mode: "edit" | "create" }) {
   }, [mode, subjectId, navigate])
   
   return (
-    <>{
+    <MainPageAppshell user={user} setUser={setUser}>{
       mode === "edit" ? // edit
         <Stack w="100vw" h="100vh" gap="md" align="center">
           <TextInput value={subject.title} placeholder="변경할 과목 제목을 입력하세요(예: 2025 고급프로그래밍 강좌)"
@@ -73,7 +75,7 @@ function SubjectEditor({ mode }: { mode: "edit" | "create" }) {
           }} />
 
           <OrderTable state={state} handlers={handlers} />
-          <Button onClick={() => navigate(`/lessons/create?subjectId=${subjectId}`)} >새 강의 생성</Button>
+          <Button onClick={() => navigate(`/lesson/create?subjectId=${subjectId}`)} >새 강의 생성</Button>
           <Button onClick={() => handleSubjectEdit(navigate, subject, state)}>과목 수정</Button>
           
         </Stack>
@@ -85,11 +87,17 @@ function SubjectEditor({ mode }: { mode: "edit" | "create" }) {
             value={subject.title ?? ""}
             onChange={(e) => {
                 const v = e.currentTarget?.value ?? ""; 
-                setSubject((sub) => ({ ...sub, title: v }))}} />
+                setSubject((sub) => ({ ...sub, title: v, description: sub.description }))}} />
+            <TextInput placeholder="간단한 과목 설명을 입력하세요"
+            value={subject.description ?? ""}
+            onChange={(e) => {
+                const v = e.currentTarget?.value ?? ""; 
+                setSubject((sub) => ({ ...sub, title: sub.title, description: v }))}} />
+            
             <Button onClick={() => handleSubjectCreate(navigate, subject)}>과목 생성</Button>
           </Stack>
         </Flex>
-    }</>
+    }</MainPageAppshell>
   )
 }
 

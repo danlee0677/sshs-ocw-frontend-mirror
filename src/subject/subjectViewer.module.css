@@ -1,5 +1,23 @@
-.selected {
-    background-color: #e1e1e1;
+@font-face {
+    font-family: 'JalnanGothic';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_231029@1.1/JalnanGothic.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Paperozi';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-display: swap;
+}
+
+.List {
+    border-bottom: 2px dashed black;
+}
+
+.JalnanGothic {
+    font-family: 'JalnanGothic';
 }
 
 .ProgressText {
@@ -18,4 +36,8 @@
 
 .ProgressRect {
     border-radius: 2px;
+}
+
+.selected {
+    background-color: #e1e1e1;
 }

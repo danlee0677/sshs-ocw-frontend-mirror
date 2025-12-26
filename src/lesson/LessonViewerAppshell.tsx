@@ -7,7 +7,7 @@ import { PLACEHOLDER_SUBJECT } from "../libs/utils";
 import { http } from "../libs/http";
 import classes from "./lessonViewer.module.css"
 import { subjectSchema, type Subject } from "../libs/types";
-import logo from '@assets/logo.png'
+import logo from '@/assets/app-logo.png'
 
 function LessonViewerAppshell({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
@@ -17,7 +17,6 @@ function LessonViewerAppshell({ children }: { children: React.ReactNode }) {
   const { lessonId } = useParams();
   const subjectId = searchParams.get('subjectId');
   const ind = subject.contents.findIndex((val) => val._id === lessonId)
-
 
   useEffect(() => {
     if (!subjectId || !lessonId) navigate('/notfound');
@@ -80,7 +79,7 @@ function LessonViewerAppshell({ children }: { children: React.ReactNode }) {
                       <Text
                         className={`${classes.ProgressText}`}
                         component={Link}
-                        to={`/lessons/${item._id}?subjectId=${subjectId}`}
+                        to={`/lesson/${item._id}?subjectId=${subjectId}`}
                         h={'100%'}>{item.title}</Text>
                     </Group>
                   </>
