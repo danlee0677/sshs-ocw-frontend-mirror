@@ -52,6 +52,7 @@ function LessonViewer() {
       setSubject({
         _id: parsed.data._id,
         title: parsed.data.title,
+        likes: parsed.data.likes,
         description: parsed.data.description,
         contents: parsed.data.contents,
       })

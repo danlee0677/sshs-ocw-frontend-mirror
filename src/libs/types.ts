@@ -14,6 +14,7 @@ export const userSchema = z.object({
   name: z.string(),
   pfp_url: z.string(),
   roles: z.array(z.string()),
+  liked_subject: z.array(z.string()),
   preference: z.array(z.boolean()),
   studyLevel: z.array(z.boolean()),
 })
@@ -45,6 +46,7 @@ export const subjectSchema = z.object({
   _id: z.string(),
   title: z.string(),
   description: z.string(),
+  likes: z.number(),
   contents: z.array(z.object({
     _id: z.string(),
     title: z.string(),

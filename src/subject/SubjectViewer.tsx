@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router";
+import { useEffect, useState, type SetStateAction } from "react";
+import { Link, useNavigate, useParams, type NavigateFunction } from "react-router";
 import { Group, Stack, Title, Button, SimpleGrid, UnstyledButton, Flex, Text, Image, ThemeIcon } from "@mantine/core";
-import { IconPencilPlus } from "@tabler/icons-react";
+import { IconHeart, IconPencilPlus } from "@tabler/icons-react";
 import { http } from "../libs/http";
 import { subjectSchema, type Subject, type User } from "../libs/types";
 import { PLACEHOLDER_SUBJECT } from "../libs/utils";
@@ -9,8 +9,14 @@ import './subjectViewer.module.css'
 import MainPageAppshell from "../main/MainPageAppshell";
 import classes from "./subjectViewer.module.css"
 
-function SubjectViewer({ user, setUser }: { user: User | null, setUser: React.Dispatch<User | null> }) {
-  const [subject, setSubject] = useState<Subject>(PLACEHOLDER_SUBJECT);
+async function handleSubjectLike(subject: Subject) {
+  const res = await http.post(`${import.meta.env.VITE_API_URL}/api/subjects/${subject._id}/like`);
+  return res.data as {liked: boolean, likes: number}
+}
+
+function SubjectViewer({ user, setUser }: { user: User | null, setUser: React.Dispatch<SetStateAction<User | null>> }) {
+  const [subject, setSubject] = useState<Subject>(PLACEHOLDER_SUBJECT); 
+  const [likeLoading, setLikeLoading] = useState(false);
   const { subjectId } = useParams()
   const navigate = useNavigate();
 
@@ -29,6 +35,38 @@ function SubjectViewer({ user, setUser }: { user: User | null, setUser: React.Di
     })
   }, [subjectId, navigate])
 
+  const isLiked = !!user && Array.isArray((user as any).liked_subject) && (user as any).liked_subject.includes(subject._id)
+
+  const onClickLike = async () => {
+    if (!user) return;
+    if (likeLoading) return;
+
+    setLikeLoading(true);
+    try {
+      const { liked, likes } = await handleSubjectLike(subject);
+
+      setSubject((prev) => ({ ...prev, likes }));
+
+      setUser((prev) => {
+        if (!prev) return prev;
+
+        const prevArr = Array.isArray((prev as any).liked_subject)
+          ? (prev as any).liked_subject
+          : [];
+        const nextArr = liked
+          ? Array.from(new Set([...prevArr, subject._id]))
+          : prevArr.filter((id: string) => id !== subject._id);
+
+        return { ...(prev as any), liked_subject: nextArr } as any;
+      });
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setLikeLoading(false);
+    }
+  };
+
+
   return (
     <MainPageAppshell user={user} setUser={setUser}>
       {subjectId ?
@@ -39,10 +77,16 @@ function SubjectViewer({ user, setUser }: { user: User | null, setUser: React.Di
             <Text className={classes.Paperozi}>{subject.description}</Text>
             {(user && user.roles.includes('admin')) ? 
               <UnstyledButton component={Link} to={`/subject/${subjectId}/edit`}  >
-                <ThemeIcon><IconPencilPlus></IconPencilPlus></ThemeIcon>
+                <IconPencilPlus></IconPencilPlus>
               </UnstyledButton>
             : 
             <></>}
+            <UnstyledButton onClick={onClickLike} disabled={likeLoading}>
+                <IconHeart
+                color="red"
+                fill={isLiked ? "red" : "none"}></IconHeart>
+            </UnstyledButton>
+            <Text>{subject.likes}</Text>
           </Stack>
           <Stack w={'50%'} h={'100%'} gap={0} align={'center'}>
             <Title order={2} className={classes.JalnanGothic} m={"xl"}>목록</Title>

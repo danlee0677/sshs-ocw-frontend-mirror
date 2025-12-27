@@ -12,6 +12,8 @@ import MainPageAppshell from "../main/MainPageAppshell";
 function handleSubjectEdit(navigate: NavigateFunction, subject: Subject, state: OrderData) {
   http.patch(`${import.meta.env.VITE_API_URL}/api/subjects/${subject._id}`, {
     title: subject.title,
+    description: subject.description,
+    likes: subject.likes,
     contents: state,
   }).then(() => {
     // todo: popup
@@ -24,7 +26,8 @@ function handleSubjectEdit(navigate: NavigateFunction, subject: Subject, state: 
 function handleSubjectCreate(navigate: NavigateFunction, subject: Subject) {
   http.post(`${import.meta.env.VITE_API_URL}/api/subjects`, {
     title: subject.title,
-    description: subject.description
+    description: subject.description,
+    likes: 0,
   }).then((res) => {
     const parsed = z.object({_id: z.string()}).safeParse(res.data);
     if (!parsed.success) throw new Error("Failed to fetch subject id");

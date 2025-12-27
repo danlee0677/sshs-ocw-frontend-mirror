@@ -1,20 +1,17 @@
 import MainPageAppshell from "../main/MainPageAppshell";
-import { Badge, Box, Flex, Image, Group, Paper, Stack, Text, Title } from '@mantine/core';
+import { Box, Flex, Image, Group, Paper, Stack, Text, Title } from '@mantine/core';
 import { useElementSize } from '@mantine/hooks';
 import classes from './main.module.css'
 import { ProgressCard } from '../main/Progress'
 import { CustomBadge } from "./CustomBadge";
 import { isUser } from "../libs/utils";
 import { type User } from "../libs/types";
-import { IconUserPlus } from "@tabler/icons-react";
 
 const array = [0, 1, 2, 3]
 
 function Home({ user, setUser }: { user: User | null, setUser: React.Dispatch<User | null> }) {
     const { ref, width } = useElementSize()
     const isNarrow = width < 150;
-
-    const icon1 = <IconUserPlus size={16}></IconUserPlus>
 
     return (
         <MainPageAppshell user={user} setUser={setUser}>
