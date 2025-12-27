@@ -1,21 +1,15 @@
 import classes from './join.module.css'
-import { ActionIcon, Button, Flex, Stack, Title, UnstyledButton } from "@mantine/core";
+import { ActionIcon, Button, Flex, Stack, TextInput, Title } from "@mantine/core";
 import { IconArrowBack } from '@tabler/icons-react'
-
-const course = [
-    { sub: '중등 과정' },
-    { sub: '고등 과정' },
-    { sub: '대학 과정' },
-    { sub: '그 외' }
-]
+import type { SetStateAction } from 'react';
 
 
-function Join(courseToggled: any, courseToggle: Function, step: number, setStep: Function) {
+function Join(step: number, setStep: React.Dispatch<SetStateAction<number>>, username: string, setUsername: React.Dispatch<SetStateAction<string>>) {
     return (
         <>
             <Flex w={'100vw'} h={'100vh'} align={'center'} justify={'center'}>
 
-                <ActionIcon onClick={() => { setStep(step - 1) }} size={42} variant={'default'} className={classes.IconContainer}>
+                <ActionIcon onClick={() => { setStep((st) => (st - 1)) }} size={42} variant={'default'} className={classes.IconContainer}>
                     <IconArrowBack size={30}></IconArrowBack>
                 </ActionIcon>
 
@@ -23,20 +17,16 @@ function Join(courseToggled: any, courseToggle: Function, step: number, setStep:
                 <Stack w={'40%'}>
                     {step === 1 && (
                         <>
-                            <Title className={classes.Title}>원하는 교육 과정을 선택해 주세요</Title>
-                            {course.map((item, i) => (
-                                <UnstyledButton
-                                    className={`${classes.longSelectBox} ${courseToggled[i] ? classes.selected : ''}`}
-                                    onClick={() => courseToggle(i)}>{item.sub}
-                                </UnstyledButton>
-                            ))}
+                            <Title className={classes.Title}>사용할 닉네임을 입력해 주세요</Title>
+                            <TextInput title="username"
+                            value={username} onChange={(e) => setUsername(e.currentTarget.value)} />
                         </>
                     )}
 
 
                     <Button w={'20%'} onClick={() => {
-                        if (courseToggled.every((v: Boolean) => !v)) {
-                            alert("한 개 이상 선택해 주세요!")
+                        if (username.length === 0) {
+                            alert("닉네임은 한 글자 이상이어야 합니다!")
                         }
                         else {
                             setStep(step + 1)

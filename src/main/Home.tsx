@@ -30,7 +30,7 @@ function Home({ user, setUser }: { user: User | null, setUser: React.Dispatch<Us
                                     </Box>
                                     <Image w={'150px'} src={user?.pfp_url} className={`${classes.Main_pfp_image}`} bdrs={'80px'} mr={'60px'}></Image>
                                     <Flex direction="column" justify={'center'}>
-                                        <Title className={`${classes.Inline} ${classes.JalnanGothic}`} mb={'lg'}>{user?.name}님</Title>
+                                        <Title className={`${classes.Inline} ${classes.JalnanGothic}`} mb={'lg'}>{user?.username}님</Title>
                                         <Flex className={classes.Inline}>
                                             <CustomBadge type={1}></CustomBadge>
                                             <CustomBadge type={2}></CustomBadge>

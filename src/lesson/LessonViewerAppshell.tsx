@@ -7,7 +7,7 @@ import { PLACEHOLDER_SUBJECT } from "../libs/utils";
 import { http } from "../libs/http";
 import classes from "./lessonViewer.module.css"
 import { subjectSchema, type Subject } from "../libs/types";
-import logo from '@/assets/app-logo.png'
+import logo from '../assets/app-logo.png'
 
 function LessonViewerAppshell({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
