@@ -37,31 +37,31 @@ function StartPage() {
 
     const toggle = (i: Number) =>
         setToggled((prev) => prev.map((v, idx) => (idx === i ? !v : v)));
-    
+
     const [step, setStep] = useState(0);
 
     const navigate = useNavigate()
 
     useEffect(() => {
-      if (step === 2) {
-        navigate("/login", {state: { toggled: toggled, courseToggled: courseToggled }})
-      }
+        if (step === 2) {
+            navigate("/login", { state: { toggled: toggled, courseToggled: courseToggled } })
+        }
     }, [step, navigate, toggled, courseToggled])
 
 
     const isMobile = useMediaQuery('(max-width: 60em)')
 
     return (
-        <>  
-        {
-            step === 0 ? (
-                NewUser(toggle, toggled, step, setStep, isMobile, navigate, items)
-            ) : step === 1 ? (
-                Join(courseToggled, courseToggle, step, setStep)
-            ) : (
-                <div>this is wrong page</div>
-            )
-        }
+        <>
+            {
+                step === 0 ? (
+                    NewUser(toggle, toggled, step, setStep, isMobile, navigate, items)
+                ) : step === 1 ? (
+                    Join(courseToggled, courseToggle, step, setStep)
+                ) : (
+                    <div>this is wrong page</div>
+                )
+            }
         </>
     )
 }

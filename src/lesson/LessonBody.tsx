@@ -103,8 +103,6 @@ function LessonBody({ editable, content, Shell, before, after }: { editable: boo
 						<Stack h="100%" w="700" align="stretch" gap={0}>
 							{before}
 							<Space h="md" />
-
-
 							{editable ?
 								<>
 									<Group h="40%" gap="md" >

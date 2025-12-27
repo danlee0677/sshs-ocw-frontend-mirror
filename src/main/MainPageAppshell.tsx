@@ -54,7 +54,7 @@ function MainPageAppshell({ children, user, setUser }: { children: React.ReactNo
                   http.post(`${import.meta.env.VITE_API_URL}/api/auth/logout`).then(() => {
                     setUser(null);
                   })
-                }}></Button>
+                }}>로그아웃</Button>
               </>
               }
               <Space w={0} />

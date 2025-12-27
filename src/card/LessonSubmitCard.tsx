@@ -19,7 +19,7 @@ export function handleLessonSubmit(mode: "edit" | "create", lessonId: string | u
       createdBy: user._id
     }).then(() => {
       localStorage.removeItem(LESSON_STORAGE_KEY);
-      navigate(`/subjects/${subjectId}`)
+      navigate(`/subject/${subjectId}`)
     }).catch((err) => {
       console.log(err);
     })
@@ -29,7 +29,7 @@ export function handleLessonSubmit(mode: "edit" | "create", lessonId: string | u
       content: JSON.stringify(editor.getJSON()),
     }).then(() => {
       localStorage.removeItem(LESSON_STORAGE_KEY);
-      navigate(`/subjects/${subjectId}`)
+      navigate(`/subject/${subjectId}`)
     }).catch((err) => {
       console.log(err);
     })

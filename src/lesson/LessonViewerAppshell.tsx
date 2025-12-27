@@ -18,7 +18,6 @@ function LessonViewerAppshell({ children }: { children: React.ReactNode }) {
   const subjectId = searchParams.get('subjectId');
   const ind = subject.contents.findIndex((val) => val._id === lessonId)
 
-
   useEffect(() => {
     if (!subjectId || !lessonId) navigate('/notfound');
 
@@ -80,7 +79,7 @@ function LessonViewerAppshell({ children }: { children: React.ReactNode }) {
                       <Text
                         className={`${classes.ProgressText}`}
                         component={Link}
-                        to={`/lessons/${item._id}?subjectId=${subjectId}`}
+                        to={`/lesson/${item._id}?subjectId=${subjectId}`}
                         h={'100%'}>{item.title}</Text>
                     </Group>
                   </>

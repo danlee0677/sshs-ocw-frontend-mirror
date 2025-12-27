@@ -3,14 +3,18 @@ import { Badge, Box, Flex, Image, Group, Paper, Stack, Text, Title } from '@mant
 import { useElementSize } from '@mantine/hooks';
 import classes from './main.module.css'
 import { ProgressCard } from '../main/Progress'
+import { CustomBadge } from "./CustomBadge";
 import { isUser } from "../libs/utils";
 import { type User } from "../libs/types";
+import { IconUserPlus } from "@tabler/icons-react";
 
 const array = [0, 1, 2, 3]
 
 function Home({ user, setUser }: { user: User | null, setUser: React.Dispatch<User | null> }) {
     const { ref, width } = useElementSize()
     const isNarrow = width < 150;
+
+    const icon1 = <IconUserPlus size={16}></IconUserPlus>
 
     return (
         <MainPageAppshell user={user} setUser={setUser}>
@@ -24,13 +28,17 @@ function Home({ user, setUser }: { user: User | null, setUser: React.Dispatch<Us
                                 <Flex>
                                     <Box className={classes.SpeechBubble} ta={'center'} bdrs={'50px'}>
                                         <Flex w={'100%'} h={'100%'} align={'center'} justify={'center'}>
-                                            안녕하살법
+                                            이게 조금 길어진다면? ㅋㅋ
                                         </Flex>
                                     </Box>
                                     <Image w={'150px'} src={user?.pfp_url} className={`${classes.Main_pfp_image}`} bdrs={'80px'} mr={'60px'}></Image>
                                     <Flex direction="column" justify={'center'}>
                                         <Title className={`${classes.Inline} ${classes.JalnanGothic}`} mb={'lg'}>{user?.name}님</Title>
-                                        <Badge size="lg" color="green">안녕</Badge>
+                                        <Flex className={classes.Inline}>
+                                            <CustomBadge type={1}></CustomBadge>
+                                            <CustomBadge type={2}></CustomBadge>
+                                            <CustomBadge type={3}></CustomBadge>
+                                        </Flex>
                                     </Flex>
                                 </Flex>
                             </Flex> :
