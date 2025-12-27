@@ -6,10 +6,13 @@ import { Mathematics } from '@tiptap/extension-mathematics'
 import 'katex/dist/katex.min.css'
 import Youtube from '@tiptap/extension-youtube'
 import { Markdown } from '@tiptap/markdown';
+import { TableKit } from '@tiptap/extension-table';
+import { Highlight } from '@tiptap/extension-highlight';
+import { Image } from '@tiptap/extension-image'
+import { Details, DetailsContent, DetailsSummary } from '@tiptap/extension-details';
 import { addYoutubeVideo } from "../libs/editorUtils";
 // todo: subscript/superscript
 // todo: useMemo for optimizing editor?
-
 
 // code highlight imports
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
@@ -43,6 +46,14 @@ function LessonBody({ editable, content, Shell, before, after }: { editable: boo
 			}),
 			Link,
 			Markdown,
+      TableKit,
+      Image,
+      Highlight,
+      Details.configure({
+        persist: true,
+      }),
+      DetailsSummary,
+      DetailsContent,
 			Mathematics.configure({
 				inlineOptions: {
 					// d
