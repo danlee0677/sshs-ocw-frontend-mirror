@@ -1,10 +1,10 @@
 import classes from './main.module.css'
-import { Button, Flex, Group, Image, SimpleGrid, Stack, Space, Text, Title, UnstyledButton } from "@mantine/core";
+import { Button, Flex, Group, Image, Stack, Space, Text, Title } from "@mantine/core";
 import { Link } from 'react-router';
 import type { NavigateFunction } from 'react-router';
 import logo from "@/assets/app-logo.png"
 
-function NewUser(toggle: Function, toggled: any, step: number, setStep: Function, isMobile: boolean, navigate: NavigateFunction, items: { src: string, alt: string, sub: string}[] ) {
+function NewUser(setStep: Function, isMobile: boolean, navigate: NavigateFunction) {
     return (
         <>
             {isMobile ? (
@@ -25,27 +25,13 @@ function NewUser(toggle: Function, toggled: any, step: number, setStep: Function
                             <Space w="md" />
                             <Flex w="80%" h="100%" justify="center" align="center">
                                 <Stack gap="md" align="center" justify="center" >
+
                                     <Text size="xl" className={classes.JalnanGothic}>관심 있는 분야가 무엇인가요?</Text>
-                                    <SimpleGrid verticalSpacing="md" cols={3}>
-                                        {items.map((item, i) => (
-                                            <UnstyledButton key={i}
-                                                onClick={() => toggle(i)}
-                                                aria-pressed={toggled[i]}
-                                                className={`${classes.selectBox} ${classes.Vertical_align} ${toggled[i] ? classes.selected : ''}`}
-                                            >
-                                                <Image src={item.src} alt={item.alt} className={classes.UndraggableImage} w='80%' />
-                                                <Text className={classes.ButtonText}>{item.sub}</Text>
-                                            </UnstyledButton>
-                                        ))}
-                                    </SimpleGrid>
-                                    <Button onClick={() =>{
-                                        if (toggled.every((v: Boolean) => !v)) {
-                                            alert("한 개 이상 선택해 주세요!")
-                                        }
-                                        else {
-                                            setStep(step + 1)
-                                        }
-                                    } }>시작하기</Button>
+
+                                    <Text size="l">뭔가 삐까뻔적한 뭐 과학 소개라던지 아무거나</Text>
+
+                                    <Button onClick={() => setStep((st: number) => (st + 1))}>시작하기</Button>
+
                                     <Text className={classes.Text2}>이미 계정이 있으신가요? <Text onClick={() => navigate("/login")} className={classes.Link}>로그인 하러 가기</Text></Text>
                                 </Stack>
                             </Flex>
@@ -71,26 +57,10 @@ function NewUser(toggle: Function, toggled: any, step: number, setStep: Function
                             <Flex w="30%" h="100%" justify="center" align="center">
                                 <Stack gap="md" align="center" justify="center" >
                                     <Text size="xl" className={classes.JalnanGothic}>관심 있는 분야가 무엇인가요?</Text>
-                                    <SimpleGrid verticalSpacing="md" cols={3}>
-                                        {items.map((item, i) => (
-                                            <UnstyledButton key={i}
-                                                onClick={() => toggle(i)}
-                                                aria-pressed={toggled[i]}
-                                                className={`${classes.selectBox} ${classes.Vertical_align} ${toggled[i] ? classes.selected : ''}`}
-                                            >
-                                                <Image src={item.src} alt={item.alt} className={classes.UndraggableImage} w="80%" />
-                                                <Text className={classes.ButtonText}>{item.sub}</Text>
-                                            </UnstyledButton>
-                                        ))}
-                                    </SimpleGrid>
-                                    <Button onClick={() =>{
-                                        if (toggled.every((v: Boolean) => !v)) {
-                                            alert("한 개 이상 선택해 주세요!")
-                                        }
-                                        else {
-                                            setStep(step + 1)
-                                        }
-                                    } }>시작하기</Button>
+
+                                    <Text size="l">뭔가 삐까뻔적한 뭐 과학 소개라던지 아무거나</Text>
+
+                                    <Button onClick={() => setStep((st: number) => (st + 1))}>시작하기</Button>
                                     <Text className={classes.Text2}>이미 계정이 있으신가요? <Link to="/login" className={classes.Link}>로그인 하러 가기</Link></Text>
                                 </Stack>
                             </Flex>

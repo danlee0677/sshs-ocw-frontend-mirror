@@ -1,7 +1,7 @@
-import type { User, Module, Lesson, Subject } from './types'
+import type { User, Lesson, Subject } from './types'
 
 export function isUser(user: User | null) {
-  if (user && user.name && user._id.length > 0) return true;
+  if (user && user.username && user._id.length > 0) return true;
   return false;
 }
 
@@ -14,17 +14,10 @@ export function canEdit(user: User | null) {
   return true;
 }
 
-export const PLACEHOLDER_MODULE: Module = {
-  title: "",
-  subject: "",
-  _id: "",
-  order: -1,
-  contents: [],
-}
-
 export const PLACEHOLDER_SUBJECT: Subject = {
   title: "",
   _id: "",
+  description: "",
   contents: []
 }
 
@@ -38,5 +31,5 @@ export const PLACEHOLDER_LESSON: Lesson = {
   },
   createdBy: "anon",
   _id: "",
-  module: "",
+  subject: "",
 }

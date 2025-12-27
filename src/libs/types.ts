@@ -11,11 +11,10 @@ export interface LectureHeading {
 
 export const userSchema = z.object({
   _id: z.string(),
-  name: z.string(),
+  username: z.string(),
   pfp_url: z.string(),
   roles: z.array(z.string()),
-  preference: z.array(z.boolean()),
-  studyLevel: z.array(z.boolean()),
+  liked_subject: z.array(z.string()),
 })
 
 export type User = z.infer<typeof userSchema>
