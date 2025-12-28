@@ -18,7 +18,8 @@ export const PLACEHOLDER_SUBJECT: Subject = {
   title: "",
   _id: "",
   description: "",
-  contents: []
+  contents: [],
+  likes: 0
 }
 
 export const PLACEHOLDER_LESSON: Lesson = {
