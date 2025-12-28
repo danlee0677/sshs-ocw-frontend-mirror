@@ -24,9 +24,9 @@ function StartPage() {
         <>
             {
                 step === 0 ? (
-                    NewUser(setStep, isMobile, navigate)
+                    <NewUser setStep={setStep} isMobile={isMobile} navigate={navigate} />
                 ) : step === 1 ? (
-                    Join(step, setStep, username, setUsername)
+                    <Join step={step} setStep={setStep} username={username} setUsername={setUsername} />
                 ) : (
                     <div>this is wrong page</div>
                 )

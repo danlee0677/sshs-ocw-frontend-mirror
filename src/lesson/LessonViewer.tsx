@@ -1,11 +1,11 @@
-  import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Title, Stack, Flex } from "@mantine/core";
 import LessonViewerAppshell from "./LessonViewerAppshell";
 import { type Lesson, lessonSchema, type Subject, subjectSchema } from "../libs/types";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 import LessonViewerNavigateCard from "../card/LessonViewerNavigateCard";
 import { http } from '../libs/http'
-import LessonBody from "./LessonBody";
+import LessonViewerBody from "./LessonViewerBody";
 import { PLACEHOLDER_LESSON, PLACEHOLDER_SUBJECT } from "../libs/utils";
 
 function LessonViewer() {
@@ -65,7 +65,7 @@ function LessonViewer() {
   return (
     <>
       { lesson._id ? 
-        <LessonBody editable={false} content={lesson.content} Shell={LessonViewerAppshell}
+        <LessonViewerBody content={lesson.content} Shell={LessonViewerAppshell}
         before={
         <Stack gap="md" w="100%">
           <LessonViewerNavigateCard subject={subject} lesson={lesson} />
@@ -82,4 +82,4 @@ function LessonViewer() {
   )
 }
 
-export default LessonViewer
+export default LessonViewer;

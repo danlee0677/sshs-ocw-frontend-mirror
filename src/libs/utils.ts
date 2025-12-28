@@ -9,7 +9,7 @@ export function isUser(user: User | null) {
 export function canEdit(user: User | null) {
   // if (user && (user.roles.includes('admin'))) return true;
   // return false;
-
+  user
   // todo: change before deployment
   return true;
 }
@@ -18,7 +18,8 @@ export const PLACEHOLDER_SUBJECT: Subject = {
   title: "",
   _id: "",
   description: "",
-  contents: []
+  contents: [],
+  likes: 0
 }
 
 export const PLACEHOLDER_LESSON: Lesson = {

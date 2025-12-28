@@ -1,19 +1,20 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams, useSearchParams, type NavigateFunction } from "react-router";
-import LessonBody from "./LessonBody";
+import { useNavigate, useParams, useSearchParams } from "react-router";
+import LessonEditorBody from "./LessonEditorBody";
 import { type Lesson, lessonSchema, type User } from "../libs/types";
 import LessonSubmitCard from "../card/LessonSubmitCard";
 import { http } from "../libs/http";
 import LessonHeadingCard from "../card/LessonHeadingCard";
 import MainPageAppshell from "../main/MainPageAppshell";
 
-
-
 function LessonEditor({ mode, user, setUser } : { mode: "edit" | "create", user: User | null, setUser: React.Dispatch<User | null> }) {
   const [initialContent, setInitialContent] = useState<null | Lesson>(null)
   const [title, setTitle] = useState("");
   const [searchParams] = useSearchParams();
   const subjectId = searchParams.get('subjectId');
+
+  const [markdown, setMarkdown] = useState<string>("");
+  const [isMarkdown, setIsMarkdown] = useState<boolean>(true);
 
   const { lessonId } = useParams();
   
@@ -53,7 +54,8 @@ function LessonEditor({ mode, user, setUser } : { mode: "edit" | "create", user:
 
   return (
     <>
-      <LessonBody content={initialContent} editable={true} Shell={(props) => (
+      <LessonEditorBody markdown={markdown} setMarkdown={setMarkdown} content={initialContent} isMarkdown={isMarkdown}
+      Shell={(props) => (
         <MainPageAppshell {...props} user={user} setUser={setUser}></MainPageAppshell>
       )}
       before={<LessonHeadingCard editable={true} title={title} setTitle={setTitle} content={initialContent} />} 

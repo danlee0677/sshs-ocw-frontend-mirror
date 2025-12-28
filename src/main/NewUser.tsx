@@ -4,7 +4,7 @@ import { Link } from 'react-router';
 import type { NavigateFunction } from 'react-router';
 import logo from "@/assets/app-logo.png"
 
-function NewUser(setStep: Function, isMobile: boolean, navigate: NavigateFunction) {
+function NewUser({ setStep, isMobile, navigate }: { setStep: Function, isMobile: boolean, navigate: NavigateFunction }) {
     return (
         <>
             {isMobile ? (
@@ -24,7 +24,7 @@ function NewUser(setStep: Function, isMobile: boolean, navigate: NavigateFunctio
                             </Stack>
                             <Space w="md" />
                             <Flex w="80%" h="100%" justify="center" align="center">
-                                <Stack gap="md" align="center" justify="center" >~
+                                <Stack gap="md" align="center" justify="center" >
 
                                     <Text size="xl" className={classes.JalnanGothic}>관심 있는 분야가 무엇인가요?</Text>
 
