@@ -17,7 +17,6 @@ function App() {
     http.get(`${import.meta.env.VITE_API_URL}/api/auth/verify`).then((res) => {
       // user-defined: withCredentials: true & attach refreshtoken as default
       setUser(res.data)
-      console.log(res.data)
     }).catch((err) => {
       setUser(null);
       console.log(err)
