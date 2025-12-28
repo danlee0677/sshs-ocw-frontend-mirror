@@ -44,6 +44,7 @@ export const subjectSchema = z.object({
   _id: z.string(),
   title: z.string(),
   description: z.string(),
+  likes: z.number(),
   contents: z.array(z.object({
     _id: z.string(),
     title: z.string(),
