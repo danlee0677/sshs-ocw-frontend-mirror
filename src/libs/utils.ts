@@ -9,7 +9,7 @@ export function isUser(user: User | null) {
 export function canEdit(user: User | null) {
   // if (user && (user.roles.includes('admin'))) return true;
   // return false;
-
+  user
   // todo: change before deployment
   return true;
 }

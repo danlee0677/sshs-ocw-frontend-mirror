@@ -19,7 +19,7 @@ import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 // load all language: change if necessary
 import { createLowlight, all } from 'lowlight'
 import 'highlight.js/styles/github-dark.css' // todo: change when dark mode
-import { Button, Flex, Group, ScrollArea, Stack, Textarea } from "@mantine/core";
+import { Button, Group, ScrollArea, Stack, Textarea } from "@mantine/core";
 import type { ShellComponent } from "../libs/types";
 
 

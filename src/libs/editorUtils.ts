@@ -1,4 +1,3 @@
-import { useMemo, useCallback } from "react";
 import { Editor } from "@tiptap/react";
 
 // key for storing editor things in localstorage

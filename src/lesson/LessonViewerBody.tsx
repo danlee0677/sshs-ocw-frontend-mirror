@@ -10,7 +10,6 @@ import { TableKit } from '@tiptap/extension-table';
 import { Highlight } from '@tiptap/extension-highlight';
 import { Image } from '@tiptap/extension-image'
 import { Details, DetailsContent, DetailsSummary } from '@tiptap/extension-details';
-import { addYoutubeVideo } from "../libs/editorUtils";
 // todo: subscript/superscript
 // todo: useMemo for optimizing editor?
 
@@ -19,9 +18,8 @@ import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 // load all language: change if necessary
 import { createLowlight, all } from 'lowlight'
 import 'highlight.js/styles/github-dark.css' // todo: change when dark mode
-import { Button, Flex, Group, ScrollArea, Stack, Space } from "@mantine/core";
+import { Flex, ScrollArea, Stack, Space } from "@mantine/core";
 import type { ShellComponent } from "../libs/types";
-import { IconFlagSearch } from "@tabler/icons-react";
 
 
 const lowlight = createLowlight(all);
