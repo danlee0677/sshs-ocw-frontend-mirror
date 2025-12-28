@@ -24,7 +24,7 @@ function NewUser(setStep: Function, isMobile: boolean, navigate: NavigateFunctio
                             </Stack>
                             <Space w="md" />
                             <Flex w="80%" h="100%" justify="center" align="center">
-                                <Stack gap="md" align="center" justify="center" >
+                                <Stack gap="md" align="center" justify="center" >~
 
                                     <Text size="xl" className={classes.JalnanGothic}>관심 있는 분야가 무엇인가요?</Text>
 
