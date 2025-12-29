@@ -12,6 +12,7 @@ import LessonEditor from "./lesson/LessonEditor";
 import SubjectViewer from "./subject/SubjectViewer";
 import { canEdit } from "./libs/utils";
 import SubjectEditor from "./subject/SubjectEditor";
+import SearchResult from "./search/SearchResult";
 
 function Router({user, setUser} : {user: User | null, setUser: React.Dispatch<React.SetStateAction<User | null>>}) {
   return (
@@ -37,6 +38,8 @@ function Router({user, setUser} : {user: User | null, setUser: React.Dispatch<Re
 
       <Route path="Home" element={<Home user={user} setUser={setUser} />}></Route>
       <Route path="setting" element={<Setting user={user} setUser={setUser}/>}></Route>
+
+      <Route path="search" element={<SearchResult />} />
 
       <Route path="notfound" element={<NotFoundPage user={user} setUser={setUser} />} />
 

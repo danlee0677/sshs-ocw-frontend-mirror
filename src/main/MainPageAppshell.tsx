@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useEffect, type SetStateAction } from "react";
 import { AppShell, Group, Image, Title, Space, Flex, Button, TextInput } from "@mantine/core";
 import { IconSearch } from '@tabler/icons-react';
-import { Link } from "react-router";
+import { Link, type NavigateFunction } from "react-router";
 import { useState } from "react";
 import { linkStyle } from "../libs/styles";
 import classes from "./Appshell.module.css"
@@ -10,8 +10,28 @@ import type { User } from "../libs/types";
 import logo from '@/assets/app-logo.png';
 import { isUser } from "../libs/utils";
 
-function MainPageAppshell({ children, user, setUser }: { children: React.ReactNode, user: User | null, setUser: React.Dispatch<User | null> }) {
+
+function handleSearch(value: string, navigate: NavigateFunction, setError: React.Dispatch<SetStateAction<string>>) {
+  if (value.length === 0) return;
+  if (value.length < 2 && value.length !== 0) {
+    setError("검색어 길이는 2자 이상이어야 합니다!")
+    return;
+  }
+  if (value.length > 20) {
+    setError("검색어 길이는 20자 이하여야 합니다!")
+    return;
+  }
+  navigate('/search', { state: { keyword: value } });
+}
+
+function MainPageAppshell({ children, user, setUser, navigate }: { children: React.ReactNode, user: User | null, setUser: React.Dispatch<User | null>, navigate: NavigateFunction }) {
   const [value, setValue] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (value.length === 0 || (2 <= value.length && value.length <= 20)) setError("");
+  }, [value])
+
   return (
     <AppShell
       padding="md"
@@ -31,11 +51,24 @@ function MainPageAppshell({ children, user, setUser }: { children: React.ReactNo
 
           <Flex w="60%" h="100%" align={"center"} justify="center">
             <Group w='80%' justify="center" className={`${classes.searchArea}`}>
-              <IconSearch className={`${classes.searchIcon}`}></IconSearch>
-              <TextInput placeholder="검색어를 입력해 주세요."
-                value={value}
-                onChange={(e) => { setValue(e.target.value) }}
-                className={`${value ? classes.searchBar : classes.searchBar_animate}`}></TextInput>
+              <IconSearch className={`${classes.searchIcon}`} 
+              onClick={() => handleSearch(value, navigate, setError)}></IconSearch>
+              { error.length === 0 ?
+                <TextInput placeholder="검색어를 입력해 주세요."
+                  value={value}
+                  onChange={(e) => { setValue(e.target.value) }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSearch(e.currentTarget.value, navigate, setError);
+                    }
+                  }}
+                  className={`${value ? classes.searchBar : classes.searchBar_animate}`} />
+                :
+                <TextInput placeholder="검색어를 입력해 주세요."
+                  value={value} error={error}
+                  onChange={(e) => { setValue(e.target.value) }}
+                  className={`${value ? classes.searchBar : classes.searchBar_animate}`} />
+              }
             </Group>
           </Flex>
 

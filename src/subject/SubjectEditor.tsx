@@ -66,7 +66,7 @@ function SubjectEditor({ mode, user, setUser }: { mode: "edit" | "create", user:
   }, [mode, subjectId, navigate])
   
   return (
-    <MainPageAppshell user={user} setUser={setUser}>{
+    <MainPageAppshell user={user} setUser={setUser} navigate={navigate}>{
       mode === "edit" ? // edit
         <Stack w="100vw" h="100vh" gap="md" align="center">
           <TextInput value={subject.title} placeholder="변경할 과목 제목을 입력하세요(예: 2025 고급프로그래밍 강좌)"
