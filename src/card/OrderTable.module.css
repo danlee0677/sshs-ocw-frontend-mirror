@@ -1,5 +1,17 @@
+@font-face {
+    font-family: 'JalnanGothic';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_231029@1.1/JalnanGothic.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
 .item {
   background-color: var(--mantine-color-body);
+  border-bottom: 2px dashed black;
+}
+
+.JalnanGothic {
+    font-family: 'JalnanGothic';
 }
 
 .dragHandle {
@@ -9,4 +21,8 @@
   justify-content: center;
   height: 100%;
   color: light-dark(var(--mantine-color-gray-6), var(--mantine-color-dark-1));
+}
+
+tbody tr:nth-of-type(odd) {
+  background: #f1f3f5; /* 원하는 회색 */
 }
