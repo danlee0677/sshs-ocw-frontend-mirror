@@ -72,7 +72,7 @@ function SubjectViewer({ user, setUser }: { user: User | null, setUser: React.Di
       {subjectId ?
         <Flex w={'100%'} justify={'center'} gap={'md'}>
           <Stack w={'30%'} align={'center'} gap={'xs'}>
-            <Image mt={'lg'} w={'160px'} h={'160px'}></Image>
+            <Image mt={'lg'} w={'160px'} src={subject.image_url}></Image>
             <Title order={1} className={classes.JalnanGothic}>{subject.title}</Title>
             <Text className={classes.Paperozi}>{subject.description}</Text>
             {(user && user.roles.includes('admin')) ? 
@@ -94,7 +94,7 @@ function SubjectViewer({ user, setUser }: { user: User | null, setUser: React.Di
               return (
                 <UnstyledButton h="100%" w="100%"
                   style={{
-                    backgroundColor: i % 2 === 0 ? "#e0e0e0ff" : "#ffffffff",
+                    backgroundColor: i % 2 === 0 ? "#f1f3f5" : "#ffffffff",
                     color: "inherit",
                     "&:hover": {
                       color: "inherit"

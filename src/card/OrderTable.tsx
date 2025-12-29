@@ -38,14 +38,14 @@ function SortableRow({ item, navigate, subjectId }: RowProps) {
   };
 
   return (
-    <Table.Tr ref={setNodeRef} style={style} className={classes.item} {...attributes}>
-      <Table.Td>
+    <Table.Tr w={'100%'} ref={setNodeRef} style={style} className={classes.item} {...attributes}>
+      <Table.Td w={'10%'}>
         <div className={classes.dragHandle} {...listeners}>
           <IconGripVertical size={18} stroke={1.5} />
         </div>
       </Table.Td>
-      <Table.Td w={200}>{item.title}</Table.Td>
-      <Table.Td w={200}>
+      <Table.Td pt={'lg'} pb={'lg'} w={'80%'} className={classes.JalnanGothic}>{item.title}</Table.Td>
+      <Table.Td w={'10%'}>
         <Button onClick={() => {
           navigate(`/lesson/${item._id}/edit?subjectId=${subjectId}`)
         }}>수정</Button>
@@ -71,14 +71,14 @@ function OrderTable({ state, handlers, navigate, subjectId }: { state: OrderData
   };
 
   return (
-    <Table.ScrollContainer minWidth={420}>
+    <Table.ScrollContainer minWidth={420} w={'100%'}>
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <Table>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th w={40} />
-              <Table.Th w={200}>제목</Table.Th>
-              <Table.Th w={200}>강의 수정</Table.Th>
+              <Table.Th w={'10%'} />
+              <Table.Th w={'80%'}>제목</Table.Th>
+              <Table.Th w={'10%'}>강의 수정</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <SortableContext
