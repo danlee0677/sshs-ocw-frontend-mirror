@@ -13,6 +13,7 @@ import MainPageAppshell from "../main/MainPageAppshell";
 function handleSubjectEdit(navigate: NavigateFunction, subject: Subject, state: OrderData) {
   http.patch(`${import.meta.env.VITE_API_URL}/api/subjects/${subject._id}`, {
     title: subject.title,
+    image_url: subject.image_url,
     description: subject.description,
     likes: subject.likes,
     contents: state,
