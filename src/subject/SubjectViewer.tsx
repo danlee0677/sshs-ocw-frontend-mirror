@@ -24,7 +24,6 @@ function SubjectViewer({ user, setUser }: { user: User | null, setUser: React.Di
     if (!subjectId) navigate("/notfound");
 
     http.get(`${import.meta.env.VITE_API_URL}/api/subjects/${subjectId}`).then((res) => {
-      console.log(res.data)
       const parsed = subjectSchema.safeParse(res.data)
 
       if (!parsed.success) throw new Error("Response type is not Subject");

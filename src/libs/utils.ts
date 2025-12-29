@@ -14,6 +14,14 @@ export function canEdit(user: User | null) {
   return true;
 }
 
+export const PLACEHOLDER_USER: User = {
+  _id: "",
+  username: "",
+  pfp_url: "",
+  liked_subject: [],
+  roles: []
+}
+
 export const PLACEHOLDER_SUBJECT: Subject = {
   title: "",
   _id: "",

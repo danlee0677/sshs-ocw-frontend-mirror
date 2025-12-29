@@ -1,5 +1,4 @@
-import React from "react";
-import { AppShell, Box, Divider, Group, Flex, Image, Stack, ScrollArea, Space, Text, Title, } from "@mantine/core";
+import { AppShell, Box, Divider, Group, Flex, Image, Stack, ScrollArea, Space, Text, Title, Center, } from "@mantine/core";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import { linkStyle } from "../libs/styles";
 import { useState, useEffect } from "react";
@@ -84,6 +83,9 @@ function LessonViewerAppshell({ children }: { children: React.ReactNode }) {
                     </Group>
                   </>
                 })}
+                <Flex h={'60px'} className={classes.ProgressGroup} align="center" justify="center">
+                  <Text h={'100%'} component={Link} to={`/subject/${subjectId}`} className={classes.ProgressText}>과목으로 돌아가기</Text>
+                </Flex>
               </Stack>
 
             </ScrollArea>

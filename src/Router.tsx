@@ -1,4 +1,3 @@
-import React from "react";
 import { Routes, Route } from "react-router";
 import NotFoundPage from "./notfound/NotFoundPage";
 import LessonViewer from "./lesson/LessonViewer";
@@ -7,6 +6,7 @@ import type { User } from "./libs/types";
 import StartPage from "./main/StartPage";
 import LoginComplete from "./auth/LoginComplete";
 import Home from "./main/Home";
+import Profile from "./mypage/Profile"
 import Setting from "./setting/Setting"
 import LessonEditor from "./lesson/LessonEditor";
 import SubjectViewer from "./subject/SubjectViewer";
@@ -39,7 +39,11 @@ function Router({user, setUser} : {user: User | null, setUser: React.Dispatch<Re
       <Route path="Home" element={<Home user={user} setUser={setUser} />}></Route>
       <Route path="setting" element={<Setting user={user} setUser={setUser}/>}></Route>
 
-      <Route path="search" element={<SearchResult />} />
+      <Route path="search" element={<SearchResult user={user} setUser={setUser}/>} />
+
+      <Route path="profile">
+        <Route path=":pageUserId" element={<Profile user={user} setUser={setUser}></Profile>}></Route>
+      </Route>
 
       <Route path="notfound" element={<NotFoundPage user={user} setUser={setUser} />} />
 

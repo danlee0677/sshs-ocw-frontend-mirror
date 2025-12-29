@@ -53,6 +53,7 @@ function LessonViewer() {
         _id: parsed.data._id,
         title: parsed.data.title,
         likes: parsed.data.likes,
+        image_url: parsed.data.image_url,
         description: parsed.data.description,
         contents: parsed.data.contents,
       })
@@ -72,7 +73,7 @@ function LessonViewer() {
           <Title order={1}>{lesson.title}</Title>
           <Flex w="100%" justify="flex-end">
             <Title order={4}>{lesson.createdBy}</Title>
-          </Flex> 
+          </Flex>
         </Stack>
         } after={<></>} />  
       : 
