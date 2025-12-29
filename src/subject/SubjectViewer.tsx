@@ -1,6 +1,6 @@
 import { useEffect, useState, type SetStateAction } from "react";
-import { Link, useNavigate, useParams, type NavigateFunction } from "react-router";
-import { Group, Stack, Title, Button, SimpleGrid, UnstyledButton, Flex, Text, Image, ThemeIcon } from "@mantine/core";
+import { Link, useNavigate, useParams } from "react-router";
+import { Stack, Title, UnstyledButton, Flex, Text, Image } from "@mantine/core";
 import { IconHeart, IconPencilPlus } from "@tabler/icons-react";
 import { http } from "../libs/http";
 import { subjectSchema, type Subject, type User } from "../libs/types";

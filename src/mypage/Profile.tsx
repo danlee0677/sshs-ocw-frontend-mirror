@@ -1,5 +1,5 @@
 import { Image, Title } from "@mantine/core";
-import { userSchema, type User } from "../libs/types";
+import { type User } from "../libs/types";
 import MainPageAppshell from "../main/MainPageAppshell";
 import { useNavigate, useParams } from "react-router";
 import { http } from "../libs/http";

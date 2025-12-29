@@ -83,6 +83,7 @@ function addImage(editor: Editor | null) {
   if (!editor) alert("Editor not configured!");
   // todo: add image
   const url = prompt('이미지 링크를 첨부하세요.')
+  url
 }
 
 function addYoutubeVideo(editor: Editor | null) {
