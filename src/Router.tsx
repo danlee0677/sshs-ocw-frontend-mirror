@@ -13,7 +13,7 @@ import SubjectViewer from "./subject/SubjectViewer";
 import { canEdit } from "./libs/utils";
 import SubjectEditor from "./subject/SubjectEditor";
 
-function Router({user, setUser} : {user: User | null, setUser: React.Dispatch<User | null>}) {
+function Router({user, setUser} : {user: User | null, setUser: React.Dispatch<React.SetStateAction<User | null>>}) {
   return (
     <Routes>
       <Route index element = {<StartPage />} />

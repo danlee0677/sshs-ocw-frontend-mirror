@@ -42,7 +42,7 @@ function MainPageAppshell({ children, user, setUser }: { children: React.ReactNo
           <Flex w="20%" h="100%" justify="flex-end">
             <Group gap="md" align="center" w="100%" h="100%">
               {!isUser(user) ? <>
-                <Link to="/" style={linkStyle}>
+                <Link to="/login" style={linkStyle}>
                   <Title order={5}>Login</Title>
                 </Link>
                 <Title order={5}>|</Title>

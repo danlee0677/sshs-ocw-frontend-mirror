@@ -44,6 +44,7 @@ function LessonEditor({ mode, user, setUser } : { mode: "edit" | "create", user:
         _id: parsed.data._id,
         subject: parsed.data.subject,
       })
+      setTitle(parsed.data.title);
     }).catch((err) => {
       console.log(err)
       setInitialContent(null);
@@ -54,8 +55,8 @@ function LessonEditor({ mode, user, setUser } : { mode: "edit" | "create", user:
 
   return (
     <>
-      <LessonEditorBody markdown={markdown} setMarkdown={setMarkdown} content={initialContent} isMarkdown={isMarkdown}
-      Shell={(props) => (
+      <LessonEditorBody mode={mode} markdown={markdown} setMarkdown={setMarkdown} content={initialContent} 
+      isMarkdown={isMarkdown} setIsMarkdown={setIsMarkdown} Shell={(props) => (
         <MainPageAppshell {...props} user={user} setUser={setUser}></MainPageAppshell>
       )}
       before={<LessonHeadingCard editable={true} title={title} setTitle={setTitle} content={initialContent} />} 

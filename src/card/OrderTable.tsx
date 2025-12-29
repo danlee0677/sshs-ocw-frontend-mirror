@@ -15,16 +15,19 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { IconGripVertical } from '@tabler/icons-react';
-import { Table } from '@mantine/core';
+import { Button, Table } from '@mantine/core';
 import { type UseListStateHandlers } from '@mantine/hooks';
 import classes from './OrderTable.module.css';
-import type { OrderData, OrderDataRow } from '../../libs/types';
+import type { OrderData, OrderDataRow } from '../libs/types';
+import type { NavigateFunction } from 'react-router';
 
 interface RowProps {
   item: OrderData[number];
+  navigate: NavigateFunction;
+  subjectId: string;
 }
 
-function SortableRow({ item }: RowProps) {
+function SortableRow({ item, navigate, subjectId }: RowProps) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
     id: item._id,
   });
@@ -42,11 +45,16 @@ function SortableRow({ item }: RowProps) {
         </div>
       </Table.Td>
       <Table.Td w={200}>{item.title}</Table.Td>
+      <Table.Td w={200}>
+        <Button onClick={() => {
+          navigate(`/lesson/${item._id}/edit?subjectId=${subjectId}`)
+        }}>수정</Button>
+      </Table.Td>
     </Table.Tr>
   );
 }
 
-function OrderTable({ state, handlers }: { state: OrderData, handlers: UseListStateHandlers<OrderDataRow> }) {
+function OrderTable({ state, handlers, navigate, subjectId }: { state: OrderData, handlers: UseListStateHandlers<OrderDataRow>, navigate: NavigateFunction, subjectId: string }) {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor)
@@ -70,6 +78,7 @@ function OrderTable({ state, handlers }: { state: OrderData, handlers: UseListSt
             <Table.Tr>
               <Table.Th w={40} />
               <Table.Th w={200}>제목</Table.Th>
+              <Table.Th w={200}>강의 수정</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <SortableContext
@@ -78,7 +87,7 @@ function OrderTable({ state, handlers }: { state: OrderData, handlers: UseListSt
           >
             <Table.Tbody>
               {state.map((item) => (
-                <SortableRow key={item._id} item={item} />
+                <SortableRow key={item._id} item={item} subjectId={subjectId} navigate={navigate} />
               ))}
             </Table.Tbody>
           </SortableContext>

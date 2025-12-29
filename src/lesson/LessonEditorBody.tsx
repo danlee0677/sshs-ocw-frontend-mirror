@@ -1,4 +1,6 @@
-import { type ReactNode, useEffect, useMemo, useCallback, type SetStateAction } from "react";
+import React, { type ReactNode, useEffect, useMemo, useCallback, type SetStateAction } from "react";
+import { Button, Group, ScrollArea, Stack, Textarea, Text, Flex, Divider, Card, Paper } from "@mantine/core";
+import { modals } from "@mantine/modals";
 import { useEditor } from '@tiptap/react'
 import { RichTextEditor, Link } from '@mantine/tiptap'
 import StarterKit from "@tiptap/starter-kit";
@@ -11,6 +13,7 @@ import { Highlight } from '@tiptap/extension-highlight';
 import { Image } from '@tiptap/extension-image'
 import { Details, DetailsContent, DetailsSummary } from '@tiptap/extension-details';
 import { addYoutubeVideo } from "../libs/editorUtils";
+import TextAlign from '@tiptap/extension-text-align'
 // todo: subscript/superscript
 // todo: useMemo for optimizing editor?
 
@@ -19,15 +22,15 @@ import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 // load all language: change if necessary
 import { createLowlight, all } from 'lowlight'
 import 'highlight.js/styles/github-dark.css' // todo: change when dark mode
-import { Button, Group, ScrollArea, Stack, Textarea } from "@mantine/core";
-import type { ShellComponent } from "../libs/types";
+import type { Lesson, ShellComponent } from "../libs/types";
+
+import { PLACEHOLDER_MARKDOWN } from "../libs/utils";
 
 
 const lowlight = createLowlight(all);
 
 export const LESSON_STORAGE_KEY = "LectureEditor_v01"
 export const MARKDOWN_STORAGE_KEY = "Markdown_v01"
-
 
 function getTiptapContentFromLocalStorage() {
   try {
@@ -41,9 +44,9 @@ function getTiptapContentFromLocalStorage() {
 function getMarkdownContentFromLocalStorage() {
   try {
     const raw = localStorage.getItem(MARKDOWN_STORAGE_KEY);
-    return raw ? raw : "여기에 강의를 작성하세요!"
+    return raw ? raw : PLACEHOLDER_MARKDOWN
   } catch {
-    return "여기에 강의를 작성하세요!"
+    return PLACEHOLDER_MARKDOWN
   }
 }
 
@@ -53,6 +56,28 @@ function useDebounce<T extends (...args: any[]) => void>(fn: T, delay: number) {
     if (timeout.id) clearTimeout(timeout.id);
     timeout.id = window.setTimeout(() => fn(...args), delay)
   }, [fn, delay, timeout])
+}
+
+function handleMarkdownChange(isMarkdown: boolean, setIsMarkdown: React.Dispatch<SetStateAction<boolean>>, setMarkdown: React.Dispatch<SetStateAction<string>>, getEditorAsMarkdown: () => (string)) {
+  modals.openConfirmModal({
+    title: "Change Markdown Mode",
+    children: (<>
+      <Text>{ isMarkdown ?
+        "마크다운 모드를 해제하시겠습니까? 현재까지 작성된 마크다운은 사라집니다!"
+      : 
+        "마크다운 모드로 전환하시겠습니까?"
+      }</Text>
+    </>),
+    labels: { confirm: "전환", cancel: "취소" },
+    onCancel: () => {
+      modals.closeAll();
+    },
+    onConfirm: () => {
+      if (!isMarkdown) setMarkdown(getEditorAsMarkdown());
+      setIsMarkdown((v) => (!v));
+      modals.closeAll();
+    }
+  })
 }
 
 function getEditor() {
@@ -76,6 +101,13 @@ function getEditor() {
           <RichTextEditor.Link />
           <RichTextEditor.Unlink />
         </RichTextEditor.ControlsGroup>
+
+        <RichTextEditor.ControlsGroup>
+          <RichTextEditor.AlignLeft />
+          <RichTextEditor.AlignCenter />
+          <RichTextEditor.AlignRight />
+          <RichTextEditor.AlignJustify />
+        </RichTextEditor.ControlsGroup>
       </RichTextEditor.Toolbar>
 
       <RichTextEditor.Content />
@@ -83,17 +115,24 @@ function getEditor() {
   )
 }
 
-function LessonEditorBody({ isMarkdown, markdown, setMarkdown, content, Shell, before, after }: { isMarkdown: boolean, markdown: string, setMarkdown: React.Dispatch<SetStateAction<string>>, content: object | null, Shell: ShellComponent, before: ReactNode, after: ReactNode }) {
+function LessonEditorBody({ mode, setIsMarkdown, isMarkdown, markdown, setMarkdown, content, Shell, before, after }: { mode: "edit" | "create", setIsMarkdown: React.Dispatch<SetStateAction<boolean>>, isMarkdown: boolean, markdown: string, setMarkdown: React.Dispatch<SetStateAction<string>>, content: Lesson | null, Shell: ShellComponent, before: ReactNode, after: ReactNode }) {
 	// persist through refresh: save 
 
 	const debounceSave = useDebounce((json: any) => {
 		try {
 			localStorage.setItem(LESSON_STORAGE_KEY, JSON.stringify(json));
-      localStorage.setItem(MARKDOWN_STORAGE_KEY, markdown);
 		} catch (err) {
 			console.log('Failed to save document', err);
 		}
 	}, 800);
+
+  const debounceMarkdownSave = useDebounce((markdown: string) => {
+    try {
+      localStorage.setItem(MARKDOWN_STORAGE_KEY, markdown)
+    } catch (err) {
+      console.log('Failed to save markdown', err);
+    }
+  }, 800)
 
 	const editor = useEditor({
 		shouldRerenderOnTransaction: true,
@@ -111,6 +150,9 @@ function LessonEditorBody({ isMarkdown, markdown, setMarkdown, content, Shell, b
         persist: true,
       }),
       DetailsSummary,
+      TextAlign.configure({
+        types: ['heading', 'paragraph']
+      }),
       DetailsContent,
 			Mathematics.configure({
 				inlineOptions: {
@@ -139,7 +181,7 @@ function LessonEditorBody({ isMarkdown, markdown, setMarkdown, content, Shell, b
 			}),
 		],
 		// try to fetch from localStorage
-		content: (content ?? getTiptapContentFromLocalStorage()),
+		content: (content ? content.content : getTiptapContentFromLocalStorage()),
 		onUpdate: ({ editor, transaction }) => {
 			if (transaction.docChanged) debounceSave(editor.getJSON());
 		},
@@ -147,33 +189,70 @@ function LessonEditorBody({ isMarkdown, markdown, setMarkdown, content, Shell, b
 	})
 
 	useEffect(() => {
-		if (!editor) return;
-		if (content == null) return;
-		editor.commands.setContent(content as any, { emitUpdate: false });
     setMarkdown(getMarkdownContentFromLocalStorage());
-	}, [content, editor]);
+    if (mode === "edit") {
+      if (editor && content) {
+        editor.commands.setContent(content.content, { contentType: 'json' })
+      }
+      setMarkdown(getEditorAsMarkdown());
+    }
+	}, [content]);
+
+  const parseMarkdown = () => {
+    if (!editor || !editor.markdown) {
+      console.error('Editor or MarkdownManager not available')
+      return
+    }
+    try {
+      editor.commands.setContent(markdown, { contentType: 'markdown' })
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  const getEditorAsMarkdown = () => {
+    if (!editor) return "";
+    try {
+      return editor.getMarkdown();
+    } catch {
+      return editor.getText();
+    }
+  }
 
 	return (
 		<RichTextEditor editor={editor} >
 			<Shell>
-        <Stack w="100%" h="100%" gap="md">
+        <Stack w="100%" h="85vh" gap="md">
           {before}
 
-          <Group h="40%" gap="md" >
-            <Button onClick={() => addYoutubeVideo(editor)} >Add Youtube Video</Button>
-            {/* 클릭으로 markdown 전환 */}
+          <Group gap="md" >
+            <Button onClick={() => addYoutubeVideo(editor)} >유튜브 영상 추가</Button>
+            <Button onClick={() => handleMarkdownChange(isMarkdown, setIsMarkdown, setMarkdown, getEditorAsMarkdown)}>마크다운 모드 전환</Button>
+            
+            { isMarkdown ? <Button onClick={parseMarkdown}>마크다운 컴파일</Button> : <></> }
+            { isMarkdown ? 
+            <Button onClick={() => {
+              setMarkdown(getEditorAsMarkdown());
+            }}>에디터를 마크다운으로</Button> : <></> }
           </Group>
 
-          {isMarkdown ? 
-            <Group h="100%" w="100%">
-              <ScrollArea w="50%" h="100%" scrollbarSize={5} >  
-                <Textarea onChange={(event) => setMarkdown(event.currentTarget.value)}
-                autosize minRows={20}/>
-              </ScrollArea>
-              <ScrollArea w="50%" h="100%" scrollbarSize={5}>
+          {isMarkdown ?
+            <Flex w="100%" h="100%" gap="md" align="center" justify="center"
+            style={{ flex: 1 }}>
+              <Paper h="100%" w="45%" withBorder>
+                <ScrollArea w="100%" h="100%" scrollbarSize={5} >  
+                  <Textarea value={markdown} onChange={(event) => {
+                    setMarkdown(event.currentTarget.value)
+                    debounceMarkdownSave(event.currentTarget.value)
+                  }} 
+                    autosize minRows={20} variant="unstyled" />
+                </ScrollArea>
+              </Paper>
+              <Divider orientation="vertical" />
+              <ScrollArea w="45%" h="100%" scrollbarSize={5}>
                 {getEditor()}
               </ScrollArea>
-            </Group>
+            </Flex>
           : 
             <ScrollArea w="50%" h="100%" scrollbarSize={5}>
               {getEditor()}

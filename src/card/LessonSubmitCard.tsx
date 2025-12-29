@@ -4,7 +4,7 @@ import { Editor } from "@tiptap/react";
 import { useRichTextEditorContext } from '@mantine/tiptap'
 import type { User } from "../libs/types";
 import { http } from "../libs/http";
-import { LESSON_STORAGE_KEY } from "../lesson/LessonEditorBody";
+import { LESSON_STORAGE_KEY, MARKDOWN_STORAGE_KEY } from "../lesson/LessonEditorBody";
 
 export function handleLessonSubmit(mode: "edit" | "create", lessonId: string | undefined, editor: Editor, title: string, navigate: NavigateFunction, subjectId: string, user: User) {
   // todo: alert?
@@ -19,6 +19,7 @@ export function handleLessonSubmit(mode: "edit" | "create", lessonId: string | u
       createdBy: user._id
     }).then(() => {
       localStorage.removeItem(LESSON_STORAGE_KEY);
+      localStorage.removeItem(MARKDOWN_STORAGE_KEY);
       navigate(`/subject/${subjectId}`)
     }).catch((err) => {
       console.log(err);

@@ -17,7 +17,7 @@ function handleSubjectEdit(navigate: NavigateFunction, subject: Subject, state: 
     contents: state,
   }).then(() => {
     // todo: popup
-    navigate(`/subjects/${subject._id}`)
+    navigate(`/subject/${subject._id}`)
   }).catch((err) => {
     console.log(err);
   })
@@ -77,7 +77,7 @@ function SubjectEditor({ mode, user, setUser }: { mode: "edit" | "create", user:
             })
           }} />
 
-          <OrderTable state={state} handlers={handlers} />
+          <OrderTable state={state} handlers={handlers} navigate={navigate} subjectId={subject._id} />
           <Button onClick={() => navigate(`/lesson/create?subjectId=${subjectId}`)} >새 강의 생성</Button>
           <Button onClick={() => handleSubjectEdit(navigate, subject, state)}>과목 수정</Button>
           

@@ -6,6 +6,7 @@ import { http } from './libs/http'
 import Router from './Router';
 import { MantineProvider, createTheme } from '@mantine/core';
 import type { User } from './libs/types'
+import { ModalsProvider } from '@mantine/modals'
 
 function App() {
   const theme = createTheme({
@@ -26,7 +27,9 @@ function App() {
   return (
     <MantineProvider theme={theme} >
       <BrowserRouter>
-        <Router user={user} setUser={setUser} /> 
+        <ModalsProvider>
+          <Router user={user} setUser={setUser} /> 
+        </ModalsProvider>
       </BrowserRouter>
     </MantineProvider>
   );
