@@ -1,7 +1,7 @@
 import React, { type ReactNode, useEffect, useMemo, useCallback, type SetStateAction } from "react";
-import { Button, Group, ScrollArea, Stack, Textarea, Text, Flex, Divider, Card, Paper } from "@mantine/core";
+import { Button, Group, ScrollArea, Stack, Textarea, Text, Flex, Divider, Paper } from "@mantine/core";
 import { modals } from "@mantine/modals";
-import { useEditor } from '@tiptap/react'
+import { Editor, useEditor } from '@tiptap/react'
 import { RichTextEditor, Link } from '@mantine/tiptap'
 import StarterKit from "@tiptap/starter-kit";
 import { Mathematics } from '@tiptap/extension-mathematics'
@@ -12,7 +12,6 @@ import { TableKit } from '@tiptap/extension-table';
 import { Highlight } from '@tiptap/extension-highlight';
 import { Image } from '@tiptap/extension-image'
 import { Details, DetailsContent, DetailsSummary } from '@tiptap/extension-details';
-import { addYoutubeVideo } from "../libs/editorUtils";
 import TextAlign from '@tiptap/extension-text-align'
 // todo: subscript/superscript
 // todo: useMemo for optimizing editor?
@@ -80,6 +79,24 @@ function handleMarkdownChange(isMarkdown: boolean, setIsMarkdown: React.Dispatch
   })
 }
 
+function addImage(editor: Editor | null) {
+  if (!editor) alert("Editor not configured!");
+
+  const url = prompt('이미지 링크를 첨부하세요.')
+}
+
+function addYoutubeVideo(editor: Editor | null) {
+  if (!editor) return;
+
+  const url = prompt('Enter Youtube URL')
+
+  if (url) {
+    editor.commands.setYoutubeVideo({
+      src: url,
+    })
+  }
+}
+
 function getEditor() {
   return (
     <>
@@ -88,8 +105,6 @@ function getEditor() {
           <RichTextEditor.Bold />
           <RichTextEditor.Italic />
           <RichTextEditor.Underline />
-          <RichTextEditor.Subscript />
-          <RichTextEditor.Superscript />
         </RichTextEditor.ControlsGroup>
 
         <RichTextEditor.ControlsGroup>
@@ -226,7 +241,6 @@ function LessonEditorBody({ mode, setIsMarkdown, isMarkdown, markdown, setMarkdo
           {before}
 
           <Group gap="md" >
-            <Button onClick={() => addYoutubeVideo(editor)} >유튜브 영상 추가</Button>
             <Button onClick={() => handleMarkdownChange(isMarkdown, setIsMarkdown, setMarkdown, getEditorAsMarkdown)}>마크다운 모드 전환</Button>
             
             { isMarkdown ? <Button onClick={parseMarkdown}>마크다운 컴파일</Button> : <></> }
@@ -234,6 +248,9 @@ function LessonEditorBody({ mode, setIsMarkdown, isMarkdown, markdown, setMarkdo
             <Button onClick={() => {
               setMarkdown(getEditorAsMarkdown());
             }}>에디터를 마크다운으로</Button> : <></> }
+
+            <Button onClick={() => addYoutubeVideo(editor)} >유튜브 영상 추가</Button>
+            <Button onClick={() => addImage(editor)}>이미지 추가</Button>
           </Group>
 
           {isMarkdown ?

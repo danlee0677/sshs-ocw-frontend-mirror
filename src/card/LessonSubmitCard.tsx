@@ -8,7 +8,14 @@ import { LESSON_STORAGE_KEY, MARKDOWN_STORAGE_KEY } from "../lesson/LessonEditor
 
 export function handleLessonSubmit(mode: "edit" | "create", lessonId: string | undefined, editor: Editor, title: string, navigate: NavigateFunction, subjectId: string, user: User) {
   // todo: alert?
-  if (!title || !editor.getJSON()) return;
+  if (!title) {
+    alert("제목을 입력해 주세요!")
+    return;
+  }
+  if (!editor.getJSON()) {
+    alert("강의 내용을 입력해 주세요! 혹시 마크다운 작성만 하였다면 '마크다운 컴파일' 버튼을 눌렀는지 확인해 주세요!")
+    return;
+  }
 
   // when endpoint is /lessons/create i.e. creating new lesson
   if (mode === "create") {
@@ -37,7 +44,16 @@ export function handleLessonSubmit(mode: "edit" | "create", lessonId: string | u
   }
 }
 
-function LessonSubmitCard({ mode, lessonId, title, subjectId, navigate, user }: { mode: "edit" | "create", lessonId: string | undefined, title: string, subjectId: string, navigate: NavigateFunction, user: User }) {
+interface LessonSubmitCardProps { 
+  mode: "edit" | "create", 
+  lessonId: string | undefined, 
+  title: string, 
+  subjectId: string, 
+  navigate: NavigateFunction, 
+  user: User,
+}
+
+function LessonSubmitCard({ mode, lessonId, title, subjectId, navigate, user }: LessonSubmitCardProps) {
   const { editor } = useRichTextEditorContext();
 
   return (

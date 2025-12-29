@@ -10,7 +10,7 @@ import { ModalsProvider } from '@mantine/modals'
 
 function App() {
   const theme = createTheme({
-    fontFamily: 'Noto Sans KR, Inter, system-ui, Avenir, Helvetica, Arial, sans-serif',
+    fontFamily: 'Pretendard, Inter, system-ui, Avenir, Helvetica, Arial, sans-serif',
   });
   const [user, setUser] = useState<User | null>(null);
 
