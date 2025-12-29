@@ -68,7 +68,7 @@ function SubjectViewer({ user, setUser }: { user: User | null, setUser: React.Di
 
 
   return (
-    <MainPageAppshell user={user} setUser={setUser}>
+    <MainPageAppshell user={user} setUser={setUser} navigate={navigate}>
       {subjectId ?
         <Flex w={'100%'} justify={'center'} gap={'md'}>
           <Stack w={'30%'} align={'center'} gap={'xs'}>

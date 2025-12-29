@@ -57,7 +57,7 @@ function LessonEditor({ mode, user, setUser } : { mode: "edit" | "create", user:
     <>
       <LessonEditorBody mode={mode} markdown={markdown} setMarkdown={setMarkdown} content={initialContent} 
       isMarkdown={isMarkdown} setIsMarkdown={setIsMarkdown} Shell={(props) => (
-        <MainPageAppshell {...props} user={user} setUser={setUser}></MainPageAppshell>
+        <MainPageAppshell {...props} user={user} setUser={setUser} navigate={navigate}></MainPageAppshell>
       )}
       before={<LessonHeadingCard editable={true} title={title} setTitle={setTitle} content={initialContent} />} 
       after={<LessonSubmitCard mode={mode} lessonId={lessonId} title={title} subjectId={subjectId} navigate={navigate} user={user} />} />

@@ -71,7 +71,7 @@ function SubjectEditor({ mode, user, setUser }: { mode: "edit" | "create", user:
   }, [mode, subjectId, navigate])
 
   return (
-    <MainPageAppshell user={user} setUser={setUser}>{
+    <MainPageAppshell user={user} setUser={setUser} navigate={navigate}>{
       mode === "edit" ? // edit
         <Flex w={'100%'} justify={'center'} gap={'md'}>
           <Stack w="30%" gap="xs" align="center">

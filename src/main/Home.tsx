@@ -6,15 +6,17 @@ import { ProgressCard } from '../main/Progress'
 import { CustomBadge } from "./CustomBadge";
 import { isUser } from "../libs/utils";
 import { type User } from "../libs/types";
+import { useNavigate } from "react-router";
 
 const array = [0, 1, 2, 3]
 
 function Home({ user, setUser }: { user: User | null, setUser: React.Dispatch<User | null> }) {
     const { ref, width } = useElementSize()
     const isNarrow = width < 150;
+    const navigate = useNavigate();
 
     return (
-        <MainPageAppshell user={user} setUser={setUser}>
+        <MainPageAppshell user={user} setUser={setUser} navigate={navigate}>
             <Group className={`${classes.Vertical_align} ${classes.Main1}`} w={'100%'} h={'65vh'}>
                 <Stack w={'50%'} h={'100%'}>
                     <Paper w={'100%'} h={'50%'} className={`${classes.Box1}`} bg={'#cbd6eaff'}>
