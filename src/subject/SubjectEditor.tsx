@@ -75,7 +75,7 @@ function SubjectEditor({ mode, user, setUser }: { mode: "edit" | "create", user:
       mode === "edit" ? // edit
         <Flex w={'100%'} justify={'center'} gap={'md'}>
           <Stack w="30%" gap="xs" align="center">
-            <Image w={'160px'} src={subject.image_url}></Image>
+            <Image w={'160px'}   src={subject.image_url}></Image>
             <TextInput value={subject.title} placeholder="변경할 과목 제목을 입력하세요(예: 2025 고급프로그래밍 강좌)"
               onChange={(e) => {
                 const val = e.currentTarget.value
