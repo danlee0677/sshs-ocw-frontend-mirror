@@ -1,6 +1,5 @@
 import { IconUserPlus, IconUserCheck } from '@tabler/icons-react';
 import { Badge } from '@mantine/core';
-import classes from './main.module.css';
 
 export function CustomBadge({ type }: { type: number }) {
     const icon1 = <IconUserPlus></IconUserPlus>;

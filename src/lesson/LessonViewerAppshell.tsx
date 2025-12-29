@@ -1,4 +1,4 @@
-import { AppShell, Box, Divider, Group, Flex, Image, Stack, ScrollArea, Space, Text, Title, Center, } from "@mantine/core";
+import { AppShell, Box, Divider, Group, Flex, Image, Stack, ScrollArea, Space, Text, Title } from "@mantine/core";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import { linkStyle } from "../libs/styles";
 import { useState, useEffect } from "react";
