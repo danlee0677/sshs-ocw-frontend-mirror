@@ -1,4 +1,28 @@
+# How to upload to server
+
+1vCPU라서 잘 build 안되므로 로컬에서 build하고 scp로 보내기!
+
+서버에서 저장된 디렉토리 지우고 실행(/var/www/ocw.sshs.work)
+
+```shell
+sudo rm -rf /var/www/ocw.sshs.work/*
+sudo chown -R $USER:$USER /var/www/ocw.sshs.work
+```
+```shell
+scp -r dist/* sshs@178.128.48.134:/var/www/ocw.sshs.work/
+```
+```shell
+sudo chown -R www-data:www-data /var/www/ocw.sshs.work
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+
+
 # React + TypeScript + Vite
+
+
+
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 

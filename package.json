@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "postbuild": "rsync -avz --delete dist/ /var/www/ocw.sshs.work/",
     "lint": "eslint .",
     "preview": "vite preview"
   },
