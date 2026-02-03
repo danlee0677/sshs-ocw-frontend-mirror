@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 import LessonEditorBody from "./LessonEditorBody";
 import { type Lesson, lessonSchema, type User } from "../libs/types";
-import LessonSubmitCard from "../card/LessonSubmitCard";
+import LessonSubmitCard from "./LessonSubmitCard";
 import { http } from "../libs/http";
-import LessonHeadingCard from "../card/LessonHeadingCard";
+import LessonHeadingCard from "./LessonHeadingCard";
 import MainPageAppshell from "../main/MainPageAppshell";
 
 function LessonEditor({ mode, user, setUser } : { mode: "edit" | "create", user: User | null, setUser: React.Dispatch<User | null> }) {

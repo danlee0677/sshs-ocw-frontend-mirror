@@ -3,7 +3,7 @@ import { Title, Stack, Flex } from "@mantine/core";
 import LessonViewerAppshell from "./LessonViewerAppshell";
 import { type Lesson, lessonSchema, type Subject, subjectSchema } from "../libs/types";
 import { useNavigate, useParams, useSearchParams } from "react-router";
-import LessonViewerNavigateCard from "../card/LessonViewerNavigateCard";
+import LessonViewerNavigateCard from "./LessonViewerNavigateCard";
 import { http } from '../libs/http'
 import LessonViewerBody from "./LessonViewerBody";
 import { PLACEHOLDER_LESSON, PLACEHOLDER_SUBJECT } from "../libs/utils";
