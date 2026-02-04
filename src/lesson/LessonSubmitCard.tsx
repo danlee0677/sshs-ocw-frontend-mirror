@@ -1,7 +1,6 @@
 import { Button, Group, Text } from "@mantine/core"
 import type { NavigateFunction } from "react-router";
 import { Editor } from "@tiptap/react";
-import { useRichTextEditorContext } from '@mantine/tiptap'
 import type { User } from "../libs/types";
 import { http } from "../libs/http";
 import { LESSON_STORAGE_KEY, MARKDOWN_STORAGE_KEY } from "./LessonEditorBody";
@@ -51,11 +50,10 @@ interface LessonSubmitCardProps {
   subjectId: string, 
   navigate: NavigateFunction, 
   user: User,
+  editor: Editor,
 }
 
-function LessonSubmitCard({ mode, lessonId, title, subjectId, navigate, user }: LessonSubmitCardProps) {
-  const { editor } = useRichTextEditorContext();
-
+function LessonSubmitCard({ mode, lessonId, title, subjectId, navigate, user, editor }: LessonSubmitCardProps) {
   return (
     <>
       { editor ? 

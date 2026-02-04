@@ -35,9 +35,10 @@ function MainPageAppshell({ children, user, setUser, navigate }: { children: Rea
   return (
     <AppShell
       padding="md"
-      header={{ height: 120 }}
+      header={{ height: "10dvh" }}
+      style={{ height: "100dvh", display: "flex", flexDirection: 'column' }}
     >
-      <AppShell.Header h={120}>
+      <AppShell.Header h="10dvh">
         <Group h="100%" w="100%" gap={0}>
           <Flex w="20%">
             <Space w="sm" />
@@ -86,6 +87,7 @@ function MainPageAppshell({ children, user, setUser, navigate }: { children: Rea
                 <Button onClick={() => {
                   http.post(`${import.meta.env.VITE_API_URL}/api/auth/logout`).then(() => {
                     setUser(null);
+                    navigate('/')
                   })
                 }}>로그아웃</Button>
               </>
@@ -96,7 +98,7 @@ function MainPageAppshell({ children, user, setUser, navigate }: { children: Rea
         </Group>
       </AppShell.Header>
 
-      <AppShell.Main>
+      <AppShell.Main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         {children}
       </AppShell.Main>
     </AppShell>)

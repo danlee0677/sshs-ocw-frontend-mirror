@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 import LessonEditorBody from "./LessonEditorBody";
 import { type Lesson, lessonSchema, type User } from "../libs/types";
-import LessonSubmitCard from "./LessonSubmitCard";
 import { http } from "../libs/http";
 import LessonHeadingCard from "./LessonHeadingCard";
 import MainPageAppshell from "../main/MainPageAppshell";
@@ -60,7 +59,7 @@ function LessonEditor({ mode, user, setUser } : { mode: "edit" | "create", user:
         <MainPageAppshell {...props} user={user} setUser={setUser} navigate={navigate}></MainPageAppshell>
       )}
       before={<LessonHeadingCard editable={true} title={title} setTitle={setTitle} content={initialContent} />} 
-      after={<LessonSubmitCard mode={mode} lessonId={lessonId} title={title} subjectId={subjectId} navigate={navigate} user={user} />} />
+      lessonId={lessonId} title={title} subjectId={subjectId} user={user} navigate={navigate} />
     </>
     
   )

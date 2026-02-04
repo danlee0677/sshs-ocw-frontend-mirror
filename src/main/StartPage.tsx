@@ -3,7 +3,6 @@ import { useMediaQuery } from '@mantine/hooks'
 import NewUser from "./NewUser";
 import Join from "./Join"
 import { useNavigate } from 'react-router';
-import type { User } from '../libs/types';
 
 
 function StartPage() {
