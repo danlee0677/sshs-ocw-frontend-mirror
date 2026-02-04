@@ -17,7 +17,9 @@ import SearchResult from "./search/SearchResult";
 function Router({user, setUser} : {user: User | null, setUser: React.Dispatch<React.SetStateAction<User | null>>}) {
   return (
     <Routes>
-      <Route index element = {<StartPage />} />
+      <Route index element = {
+        user ? <Home user={user} setUser={setUser} /> : <StartPage />
+      } />
 
       <Route path="login">
         <Route index element={<Login />} />
@@ -36,7 +38,6 @@ function Router({user, setUser} : {user: User | null, setUser: React.Dispatch<Re
         <Route path="create" element={canEdit(user) ? <SubjectEditor mode="create" user={user} setUser={setUser}/> : <></>} />
       </Route>
 
-      <Route path="Home" element={<Home user={user} setUser={setUser} />}></Route>
       <Route path="setting" element={<Setting user={user} setUser={setUser}/>}></Route>
 
       <Route path="search" element={<SearchResult user={user} setUser={setUser}/>} />

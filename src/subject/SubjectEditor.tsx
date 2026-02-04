@@ -5,7 +5,7 @@ import { useListState } from "@mantine/hooks";
 import { http } from "../libs/http";
 import { type OrderData, type Subject, subjectSchema, type User } from "../libs/types";
 import { PLACEHOLDER_SUBJECT } from "../libs/utils";
-import OrderTable from "../card/OrderTable";
+import OrderTable from "./OrderTable";
 import classes from "./subjectViewer.module.css"
 import z from "zod";
 import MainPageAppshell from "../main/MainPageAppshell";

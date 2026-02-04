@@ -4,6 +4,7 @@ import { useNavigate } from "react-router"
 import { setAccessToken } from "../libs/http"
 import { userSchema, type User } from "../libs/types"
 import React, { useEffect } from "react"
+import { Flex, Title } from "@mantine/core"
 
 
 function LoginComplete({ setUser } : {setUser: React.Dispatch<User | null>}) {
@@ -22,7 +23,7 @@ function LoginComplete({ setUser } : {setUser: React.Dispatch<User | null>}) {
       if (!typedUser.success) throw new Error("Incorrect Form of user in accessToken")
       
       setUser(typedUser.data)
-      navigate("/home")
+      navigate("/")
 
       // todo: add double check if the optimistic user matches /api/auth/verify
 
@@ -34,7 +35,9 @@ function LoginComplete({ setUser } : {setUser: React.Dispatch<User | null>}) {
     })
   })
   return (
-    <div>Signing you in...</div>
+    <Flex w="100%" h="100%" justify="center" align="center">
+      <Title order={1}>Signing you in...</Title>
+    </Flex>
   )
 }
 

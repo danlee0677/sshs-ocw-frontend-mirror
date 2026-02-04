@@ -4,9 +4,9 @@ import { IconArrowBack } from '@tabler/icons-react'
 import { type SetStateAction, useState } from 'react';
 
 
-function Join({step, setStep, username, setUsername}: {step: number, setStep: React.Dispatch<SetStateAction<number>>, username: string, setUsername: React.Dispatch<SetStateAction<string>>}) {
+function Join({ step, setStep, username, setUsername }: { step: number, setStep: React.Dispatch<SetStateAction<number>>, username: string, setUsername: React.Dispatch<SetStateAction<string>> }) {
   const [error, setError] = useState<string>("");
-  
+
   return (
     <>
       <Flex w={'100vw'} h={'100vh'} align={'center'} justify={'center'}>
@@ -19,14 +19,14 @@ function Join({step, setStep, username, setUsername}: {step: number, setStep: Re
           {step === 1 && (
             <>
               <Title className={classes.Title}>사용할 닉네임을 입력해 주세요</Title>
-              { error === "" ? 
-                <TextInput title="username" 
+              {error === "" ?
+                <TextInput title="username"
                   value={username} onChange={(e) => {
                     const value = e.currentTarget.value
                     if (value.length > 0) setError("");
                     setUsername(value)
                   }} />
-              :
+                :
                 <TextInput title="username" error={error}
                   value={username} onChange={(e) => setUsername(e.currentTarget.value)} />
               }

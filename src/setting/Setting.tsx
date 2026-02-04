@@ -27,7 +27,6 @@ function Setting({ user, setUser }: { user: User | null, setUser: React.Dispatch
             )}
           </FileButton>
         </Group>
-        <Group className={`${classes.Vertical_align}`} w={'80%'} h={'10vh'}>관심사 변경</Group>
       </Stack>
     </MainPageAppshell>
   )
