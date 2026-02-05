@@ -102,7 +102,8 @@ function addYoutubeVideo(editor: Editor | null) {
 
 function getEditor(editor: Editor) {
   return (
-    <RichTextEditor editor={editor} h="100%">
+    <RichTextEditor editor={editor} h="100%" w="100%"
+      style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <RichTextEditor.Toolbar sticky stickyOffset="var(--docs-header-height)">
         <RichTextEditor.ControlsGroup>
           <RichTextEditor.Bold />
@@ -128,7 +129,11 @@ function getEditor(editor: Editor) {
         </RichTextEditor.ControlsGroup>
       </RichTextEditor.Toolbar>
 
-      <RichTextEditor.Content />
+      <ScrollArea w="100%" scrollbarSize={5}
+        flex={1} style={{ minHeight: 0 }}>
+        <RichTextEditor.Content />
+      </ScrollArea>
+
     </RichTextEditor>
   )
 }
@@ -241,26 +246,34 @@ function LessonEditorBody({ mode, setIsMarkdown, isMarkdown, markdown, setMarkdo
 
   return (
     <Shell>
-      <Stack w="100%" h="100%">
+      <Stack w="100%" h="100%" gap="sm">
         {before}
 
-        <Group gap="md" h="15%">
-          <Button onClick={() => handleMarkdownChange(isMarkdown, setIsMarkdown, setMarkdown, getEditorAsMarkdown)}>마크다운 모드 전환</Button>
+        <Group justify="space-between" w="100%">
+          <Group gap="md">
+            <Button onClick={() => handleMarkdownChange(isMarkdown, setIsMarkdown, setMarkdown, getEditorAsMarkdown)}>
+              {isMarkdown ? "에디터 모드로" : "마크다운 모드로"}
+            </Button>
 
-          {isMarkdown ? <Button onClick={parseMarkdown}>마크다운 컴파일</Button> : <></>}
-          {isMarkdown ?
-            <Button onClick={() => {
-              setMarkdown(getEditorAsMarkdown());
-            }}>에디터를 마크다운으로</Button> : <></>}
+            {isMarkdown ? <Button onClick={parseMarkdown}>마크다운 컴파일</Button> : <></>}
+            {isMarkdown ?
+              <Button onClick={() => {
+                setMarkdown(getEditorAsMarkdown());
+              }}>에디터를 마크다운으로</Button> : <></>}
 
-          <Button onClick={() => addYoutubeVideo(editor)} >유튜브 영상 추가</Button>
-          <Button onClick={() => addImage(editor)}>이미지 추가</Button>
+            <Button onClick={() => addYoutubeVideo(editor)} >유튜브 영상 추가</Button>
+            <Button onClick={() => addImage(editor)}>이미지 추가</Button>
+          </Group>
+
+          <LessonSubmitCard mode={mode} lessonId={lessonId} title={title} subjectId={subjectId}
+            navigate={navigate} user={user} editor={editor} />
         </Group>
+
 
         {isMarkdown ?
           <Flex w="100%" gap="md" align="center" justify="center"
             flex={1} direction='row' style={{ minHeight: 0 }}>
-            <Paper h="100%" w="45%" withBorder>
+            <Paper h="100%" w="50%" withBorder>
               <ScrollArea w="100%" h="100%" scrollbarSize={5} >
                 <Textarea value={markdown} onChange={(event) => {
                   setMarkdown(event.currentTarget.value)
@@ -270,17 +283,19 @@ function LessonEditorBody({ mode, setIsMarkdown, isMarkdown, markdown, setMarkdo
               </ScrollArea>
             </Paper>
             <Divider orientation="vertical" />
-            <ScrollArea w="45%" h="100%" scrollbarSize={5}>
+            <Paper h="100%" w="50%">
               {getEditor(editor)}
-            </ScrollArea>
+            </Paper>
           </Flex>
           :
-          <ScrollArea w="50%" h="100%" scrollbarSize={5}>
-            {getEditor(editor)}
-          </ScrollArea>
+          <Flex w="100%" gap="md" align="center" justify="center"
+            flex={1} direction='row' style={{ minHeight: 0 }}>
+            <Paper h="100%" w="70%">
+              {getEditor(editor)}
+            </Paper>
+          </Flex>
+
         }
-        <LessonSubmitCard mode={mode} lessonId={lessonId} title={title} subjectId={subjectId} 
-        navigate={navigate} user={user} editor={editor}/>
       </Stack>
     </Shell>
 

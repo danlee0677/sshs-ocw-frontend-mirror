@@ -71,11 +71,10 @@ http.interceptors.response.use((res) => res, async (err: AxiosError) => {
       if (!newToken) {
         throw new Error("Failed to get new valid accessToken");
       }
-      accessToken = newToken;
       config.headers = config.headers ?? {};
       config.headers.Authorization = `Bearer ${newToken}`;
 
-      return http(config)
+      return http.request(config)
 
     } catch (error) {
       console.log(error)
