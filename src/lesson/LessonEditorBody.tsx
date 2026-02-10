@@ -21,9 +21,11 @@ import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 // load all language: change if necessary
 import { createLowlight, all } from 'lowlight'
 import 'highlight.js/styles/github-dark.css' // todo: change when dark mode
-import type { Lesson, ShellComponent } from "../libs/types";
+import type { Lesson, ShellComponent, User } from "../libs/types";
 
 import { PLACEHOLDER_MARKDOWN } from "../libs/utils";
+import LessonSubmitCard from "./LessonSubmitCard";
+import type { NavigateFunction } from "react-router";
 
 
 const lowlight = createLowlight(all);
@@ -50,7 +52,7 @@ function getMarkdownContentFromLocalStorage() {
 }
 
 function useDebounce<T extends (...args: any[]) => void>(fn: T, delay: number) {
-  const timeout = useMemo<{ id: number | null }>(() => ({id: null}), [])
+  const timeout = useMemo<{ id: number | null }>(() => ({ id: null }), [])
   return useCallback((...args: Parameters<T>) => {
     if (timeout.id) clearTimeout(timeout.id);
     timeout.id = window.setTimeout(() => fn(...args), delay)
@@ -61,9 +63,9 @@ function handleMarkdownChange(isMarkdown: boolean, setIsMarkdown: React.Dispatch
   modals.openConfirmModal({
     title: "Change Markdown Mode",
     children: (<>
-      <Text>{ isMarkdown ?
+      <Text>{isMarkdown ?
         "마크다운 모드를 해제하시겠습니까? 현재까지 작성된 마크다운은 사라집니다!"
-      : 
+        :
         "마크다운 모드로 전환하시겠습니까?"
       }</Text>
     </>),
@@ -98,9 +100,10 @@ function addYoutubeVideo(editor: Editor | null) {
   }
 }
 
-function getEditor() {
+function getEditor(editor: Editor) {
   return (
-    <>
+    <RichTextEditor editor={editor} h="100%" w="100%"
+      style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <RichTextEditor.Toolbar sticky stickyOffset="var(--docs-header-height)">
         <RichTextEditor.ControlsGroup>
           <RichTextEditor.Bold />
@@ -126,21 +129,25 @@ function getEditor() {
         </RichTextEditor.ControlsGroup>
       </RichTextEditor.Toolbar>
 
-      <RichTextEditor.Content />
-    </>
+      <ScrollArea w="100%" scrollbarSize={5}
+        flex={1} style={{ minHeight: 0 }}>
+        <RichTextEditor.Content />
+      </ScrollArea>
+
+    </RichTextEditor>
   )
 }
 
-function LessonEditorBody({ mode, setIsMarkdown, isMarkdown, markdown, setMarkdown, content, Shell, before, after }: { mode: "edit" | "create", setIsMarkdown: React.Dispatch<SetStateAction<boolean>>, isMarkdown: boolean, markdown: string, setMarkdown: React.Dispatch<SetStateAction<string>>, content: Lesson | null, Shell: ShellComponent, before: ReactNode, after: ReactNode }) {
-	// persist through refresh: save 
+function LessonEditorBody({ mode, setIsMarkdown, isMarkdown, markdown, setMarkdown, content, Shell, before, lessonId, title, subjectId, user, navigate }: { mode: "edit" | "create", setIsMarkdown: React.Dispatch<SetStateAction<boolean>>, isMarkdown: boolean, markdown: string, setMarkdown: React.Dispatch<SetStateAction<string>>, content: Lesson | null, Shell: ShellComponent, before: ReactNode, lessonId: string | undefined, subjectId: string, title: string, user: User | null, navigate: NavigateFunction }) {
+  // persist through refresh: save 
 
-	const debounceSave = useDebounce((json: any) => {
-		try {
-			localStorage.setItem(LESSON_STORAGE_KEY, JSON.stringify(json));
-		} catch (err) {
-			console.log('Failed to save document', err);
-		}
-	}, 800);
+  const debounceSave = useDebounce((json: any) => {
+    try {
+      localStorage.setItem(LESSON_STORAGE_KEY, JSON.stringify(json));
+    } catch (err) {
+      console.log('Failed to save document', err);
+    }
+  }, 800);
 
   const debounceMarkdownSave = useDebounce((markdown: string) => {
     try {
@@ -150,15 +157,15 @@ function LessonEditorBody({ mode, setIsMarkdown, isMarkdown, markdown, setMarkdo
     }
   }, 800)
 
-	const editor = useEditor({
-		shouldRerenderOnTransaction: true,
-		extensions: [
-			StarterKit.configure({
-				codeBlock: false,
-				link: false,
-			}),
-			Link,
-			Markdown,
+  const editor = useEditor({
+    shouldRerenderOnTransaction: true,
+    extensions: [
+      StarterKit.configure({
+        codeBlock: false,
+        link: false,
+      }),
+      Link,
+      Markdown,
       TableKit,
       Image,
       Highlight,
@@ -170,41 +177,41 @@ function LessonEditorBody({ mode, setIsMarkdown, isMarkdown, markdown, setMarkdo
         types: ['heading', 'paragraph']
       }),
       DetailsContent,
-			Mathematics.configure({
-				inlineOptions: {
-					// d
-				},
-				blockOptions: {
-					// d
-				},
-				katexOptions: {
-					throwOnError: false,
-				},
+      Mathematics.configure({
+        inlineOptions: {
+          // d
+        },
+        blockOptions: {
+          // d
+        },
+        katexOptions: {
+          throwOnError: false,
+        },
 
-			}),
-			Youtube.configure({
-				width: 640,
-				height: 360,
-				controls: false,
-				nocookie: true,
-				allowFullscreen: true,
+      }),
+      Youtube.configure({
+        width: 640,
+        height: 360,
+        controls: false,
+        nocookie: true,
+        allowFullscreen: true,
 
-			}),
-			CodeBlockLowlight.configure({
-				lowlight: lowlight,
-				enableTabIndentation: true,
-				tabSize: 4,
-			}),
-		],
-		// try to fetch from localStorage
-		content: (content ? content.content : getTiptapContentFromLocalStorage()),
-		onUpdate: ({ editor, transaction }) => {
-			if (transaction.docChanged) debounceSave(editor.getJSON());
-		},
-		editable: true,
-	})
+      }),
+      CodeBlockLowlight.configure({
+        lowlight: lowlight,
+        enableTabIndentation: true,
+        tabSize: 4,
+      }),
+    ],
+    // try to fetch from localStorage
+    content: (content ? content.content : getTiptapContentFromLocalStorage()),
+    onUpdate: ({ editor, transaction }) => {
+      if (transaction.docChanged) debounceSave(editor.getJSON());
+    },
+    editable: true,
+  })
 
-	useEffect(() => {
+  useEffect(() => {
     setMarkdown(getMarkdownContentFromLocalStorage());
     if (mode === "edit") {
       if (editor && content) {
@@ -212,7 +219,7 @@ function LessonEditorBody({ mode, setIsMarkdown, isMarkdown, markdown, setMarkdo
       }
       setMarkdown(getEditorAsMarkdown());
     }
-	}, [content]);
+  }, [content]);
 
   const parseMarkdown = () => {
     if (!editor || !editor.markdown) {
@@ -235,52 +242,64 @@ function LessonEditorBody({ mode, setIsMarkdown, isMarkdown, markdown, setMarkdo
     }
   }
 
-	return (
-		<RichTextEditor editor={editor} >
-			<Shell>
-        <Stack w="100%" h="85vh" gap="md">
-          {before}
+  if (!user) return;
 
-          <Group gap="md" >
-            <Button onClick={() => handleMarkdownChange(isMarkdown, setIsMarkdown, setMarkdown, getEditorAsMarkdown)}>마크다운 모드 전환</Button>
-            
-            { isMarkdown ? <Button onClick={parseMarkdown}>마크다운 컴파일</Button> : <></> }
-            { isMarkdown ? 
-            <Button onClick={() => {
-              setMarkdown(getEditorAsMarkdown());
-            }}>에디터를 마크다운으로</Button> : <></> }
+  return (
+    <Shell>
+      <Stack w="100%" h="100%" gap="sm">
+        {before}
+
+        <Group justify="space-between" w="100%">
+          <Group gap="md">
+            <Button onClick={() => handleMarkdownChange(isMarkdown, setIsMarkdown, setMarkdown, getEditorAsMarkdown)}>
+              {isMarkdown ? "에디터 모드로" : "마크다운 모드로"}
+            </Button>
+
+            {isMarkdown ? <Button onClick={parseMarkdown}>마크다운 컴파일</Button> : <></>}
+            {isMarkdown ?
+              <Button onClick={() => {
+                setMarkdown(getEditorAsMarkdown());
+              }}>에디터를 마크다운으로</Button> : <></>}
 
             <Button onClick={() => addYoutubeVideo(editor)} >유튜브 영상 추가</Button>
             <Button onClick={() => addImage(editor)}>이미지 추가</Button>
           </Group>
 
-          {isMarkdown ?
-            <Flex w="100%" h="100%" gap="md" align="center" justify="center"
-            style={{ flex: 1 }}>
-              <Paper h="100%" w="45%" withBorder>
-                <ScrollArea w="100%" h="100%" scrollbarSize={5} >  
-                  <Textarea value={markdown} onChange={(event) => {
-                    setMarkdown(event.currentTarget.value)
-                    debounceMarkdownSave(event.currentTarget.value)
-                  }} 
-                    autosize minRows={20} variant="unstyled" />
-                </ScrollArea>
-              </Paper>
-              <Divider orientation="vertical" />
-              <ScrollArea w="45%" h="100%" scrollbarSize={5}>
-                {getEditor()}
+          <LessonSubmitCard mode={mode} lessonId={lessonId} title={title} subjectId={subjectId}
+            navigate={navigate} user={user} editor={editor} />
+        </Group>
+
+
+        {isMarkdown ?
+          <Flex w="100%" gap="md" align="center" justify="center"
+            flex={1} direction='row' style={{ minHeight: 0 }}>
+            <Paper h="100%" w="50%" withBorder>
+              <ScrollArea w="100%" h="100%" scrollbarSize={5} >
+                <Textarea value={markdown} onChange={(event) => {
+                  setMarkdown(event.currentTarget.value)
+                  debounceMarkdownSave(event.currentTarget.value)
+                }}
+                  autosize minRows={20} variant="unstyled" />
               </ScrollArea>
-            </Flex>
-          : 
-            <ScrollArea w="50%" h="100%" scrollbarSize={5}>
-              {getEditor()}
-            </ScrollArea>
-          }
-          {after}
-        </Stack>
-			</Shell>
-		</RichTextEditor>
-	)
+            </Paper>
+            <Divider orientation="vertical" />
+            <Paper h="100%" w="50%">
+              {getEditor(editor)}
+            </Paper>
+          </Flex>
+          :
+          <Flex w="100%" gap="md" align="center" justify="center"
+            flex={1} direction='row' style={{ minHeight: 0 }}>
+            <Paper h="100%" w="70%">
+              {getEditor(editor)}
+            </Paper>
+          </Flex>
+
+        }
+      </Stack>
+    </Shell>
+
+  )
 }
 
 export default LessonEditorBody;

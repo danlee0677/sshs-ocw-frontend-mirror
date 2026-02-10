@@ -38,7 +38,7 @@ function SortableRow({ item, navigate, subjectId }: RowProps) {
   };
 
   return (
-    <Table.Tr w={'100%'} ref={setNodeRef} style={style} className={classes.item} {...attributes}>
+    <Table.Tr w={'100%'} ref={setNodeRef} style={style} className={classes.item} {...attributes} key={item._id}>
       <Table.Td w={'10%'}>
         <div className={classes.dragHandle} {...listeners}>
           <IconGripVertical size={18} stroke={1.5} />

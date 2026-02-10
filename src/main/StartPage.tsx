@@ -17,7 +17,6 @@ function StartPage() {
         }
     }, [step, navigate, username])
 
-
     const isMobile = useMediaQuery('(max-width: 60em)')
 
     return (
