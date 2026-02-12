@@ -19,6 +19,7 @@ function LoginComplete({ setUser } : {setUser: React.Dispatch<User | null>}) {
       setAccessToken(token);
       
       const userFromJWT = jwtDecode(token)
+      console.log(userFromJWT)
       const typedUser = userSchema.safeParse(userFromJWT)
       if (!typedUser.success) throw new Error("Incorrect Form of user in accessToken")
       

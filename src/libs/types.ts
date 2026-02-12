@@ -12,7 +12,7 @@ export interface LectureHeading {
 export const recentViewSchema = z.object({
   lessonId: z.string(),
   subjectId: z.string(),
-  viewedAt: z.date(),
+  viewedAt: z.coerce.date(),
   subject_title: z.string(),
   lesson_title: z.string(),
   image_url: z.string(),

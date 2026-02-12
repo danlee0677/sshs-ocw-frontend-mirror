@@ -25,12 +25,19 @@ function Home({ user, setUser }: { user: User | null, setUser: React.Dispatch<Us
   const padArray = (array: Array<RecentView>, minLength: number): Array<RecentView> => {
     const safeArray = array ?? []
     if (safeArray.length === 0) return [PLACEHOLDER_RECENT_VIEW]
-    const copy: Array<RecentView> = [...safeArray].slice(0, minLength);
+
+    const copy: Array<RecentView> = [
+      ...(safeArray.sort(
+        (a: RecentView, b: RecentView) =>
+          (new Date(b.viewedAt).getTime() - new Date(a.viewedAt).getTime())))
+    ].slice(0, minLength);
+
     if (copy.length < minLength) {
       const originalLength = copy.length
       copy.length = minLength;
       copy.fill(PLACEHOLDER_RECENT_VIEW, originalLength);
     }
+
     return copy;
   }
 
@@ -77,11 +84,22 @@ function Home({ user, setUser }: { user: User | null, setUser: React.Dispatch<Us
                 v.subjectId ?
                   <Box ref={ref} className={`${classes.Box2} ${classes.Vertical_align}`} w={'100%'} h={'20%'} miw={0}>
                     <Group wrap='nowrap' w={'80%'} h={'100%'}>
-                      <Image fit='contain' w={'auto'} h={'80%'} src={v.image_url}></Image>
+                      <Link to={`/subject/${v.subjectId}`} className="block"
+                        style={{
+                          display: 'flex',       // Makes the <a> tag a flex container
+                          alignItems: 'center',  // Centers the image vertically
+                          height: '100%',        // Forces <a> to fill the Group's height
+                        }}>
+                        <Image fit='contain' w={'auto'} h={'80%'} src={v.image_url} className={classes.Image1}/>
+                      </Link>
                       {!isNarrow && (
                         <Stack gap={0} miw={0}>
-                          <Text truncate fw={'bold'}>{v.subject_title}</Text>
-                          <Text>{v.lesson_title}</Text>
+                          <Link to={`/subject/${v.subjectId}`}>
+                            <Text style={{ color: "black" }} truncate fw={'bold'}>{v.subject_title}</Text>
+                          </Link>
+                          <Link to={`/lesson/${v.lessonId}?subjectId=${v.subjectId}`}>
+                            <Text style={{ color: "black" }} truncate>{v.lesson_title}</Text>
+                          </Link>
                         </Stack>
                       )}
                     </Group>
