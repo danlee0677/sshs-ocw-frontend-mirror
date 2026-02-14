@@ -1,5 +1,5 @@
 import React, { useEffect, type SetStateAction } from "react";
-import { AppShell, Group, Image, Title, Space, Flex, Button, TextInput } from "@mantine/core";
+import { AppShell, Group, Image, Title, Space, Flex, Button, Stack, TextInput, UnstyledButton } from "@mantine/core";
 import { IconSearch } from '@tabler/icons-react';
 import { Link, type NavigateFunction } from "react-router";
 import { useState } from "react";
@@ -35,10 +35,10 @@ function MainPageAppshell({ children, user, setUser, navigate }: { children: Rea
   return (
     <AppShell
       padding="md"
-      header={{ height: "10dvh" }}
+      header={{ height: "18dvh" }}
       style={{ height: "100dvh", display: "flex", flexDirection: 'column' }}
     >
-      <AppShell.Header h="10dvh">
+      <AppShell.Header h="18dvh">
         <Group h="100%" w="100%" gap={0}>
           <Flex w="20%">
             <Space w="sm" />
@@ -51,45 +51,53 @@ function MainPageAppshell({ children, user, setUser, navigate }: { children: Rea
           </Flex>
 
           <Flex w="60%" h="100%" align={"center"} justify="center">
-            <Group w='80%' justify="center" className={`${classes.searchArea}`}>
-              <IconSearch className={`${classes.searchIcon}`} 
-              onClick={() => handleSearch(value, navigate, setError)}></IconSearch>
-              { error.length === 0 ?
-                <TextInput placeholder="검색어를 입력해 주세요."
-                  value={value}
-                  onChange={(e) => { setValue(e.target.value) }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleSearch(e.currentTarget.value, navigate, setError);
-                    }
-                  }}
-                  className={`${value ? classes.searchBar : classes.searchBar_animate}`} />
-                :
-                <TextInput placeholder="검색어를 입력해 주세요."
-                  value={value} error={error}
-                  onChange={(e) => { setValue(e.target.value) }}
-                  className={`${value ? classes.searchBar : classes.searchBar_animate}`} />
-              }
-            </Group>
+            <Stack w='100%' justify="center">
+              <Group w='100%' justify="center" className={`${classes.searchArea}`}>
+                <IconSearch className={`${classes.searchIcon}`}
+                  onClick={() => handleSearch(value, navigate, setError)}></IconSearch>
+                {error.length === 0 ?
+                  <TextInput placeholder="검색어를 입력해 주세요."
+                    value={value}
+                    onChange={(e) => { setValue(e.target.value) }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSearch(e.currentTarget.value, navigate, setError);
+                      }
+                    }}
+                    className={`${value ? classes.searchBar : classes.searchBar_animate}`} />
+                  :
+                  <TextInput placeholder="검색어를 입력해 주세요."
+                    value={value} error={error}
+                    onChange={(e) => { setValue(e.target.value) }}
+                    className={`${value ? classes.searchBar : classes.searchBar_animate}`} />
+                }
+              </Group>
+              <Group w={'100%'} justify="center" gap={'xl'}>
+                <UnstyledButton>물리</UnstyledButton>
+                <UnstyledButton>화학</UnstyledButton>
+                <UnstyledButton>생명과학</UnstyledButton>
+                <UnstyledButton>지구과학</UnstyledButton>
+              </Group>
+            </Stack>
           </Flex>
 
           <Flex w="20%" h="100%" justify="flex-end">
             <Group gap="md" align="center" w="100%" h="100%">
               {!isUser(user) ? <>
-                <Link to="/login" style={linkStyle}>
-                  <Title order={5}>Login</Title>
-                </Link>
+                <UnstyledButton component={Link} className={classes.LogOutButton} to="/login" style={linkStyle}>
+                  로그인
+                </UnstyledButton>
                 <Title order={5}>|</Title>
-                <Link to="/" style={linkStyle}>
-                  <Title order={5}>Register</Title>
-                </Link>
+                <UnstyledButton component={Link} className={classes.LogOutButton} to="/" style={linkStyle}>
+                  회원가입
+                </UnstyledButton>
               </> : <>
-                <Button onClick={() => {
+                <UnstyledButton className={classes.LogOutButton} onClick={() => {
                   http.post(`${import.meta.env.VITE_API_URL}/api/auth/logout`).then(() => {
                     setUser(null);
                     navigate('/')
                   })
-                }}>로그아웃</Button>
+                }}>로그아웃</UnstyledButton>
               </>
               }
               <Space w={0} />

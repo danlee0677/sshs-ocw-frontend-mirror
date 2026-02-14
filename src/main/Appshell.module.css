@@ -1,3 +1,18 @@
+.LogOutButton {
+    transition: all 0.4s ease-in-out;
+    width: 100px;
+    height: 35px;
+    border: 2px solid gray;
+    text-align: center;
+}
+
+.LogOutButton:hover {
+    transition: all 0.4s ease-in-out;
+    transform: translateY(-5px);
+    box-shadow: 0px 2px 2px 1px rgba(0, 0, 0, 0.262);
+    border: 2px solid gray;
+}
+
 .searchIcon:hover {
     cursor: pointer;
 }
