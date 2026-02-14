@@ -1,7 +1,9 @@
 import type { User, Lesson, Subject } from './types'
 
-export function isUser(user: User | null) {
-  if (user && user.username && user._id.length > 0) return true;
+export function isUser(user: User | null): user is User {
+  if (user && user._id.length > 0) {
+    return true;
+  }
   return false;
 }
 
@@ -19,7 +21,8 @@ export const PLACEHOLDER_USER: User = {
   username: "",
   pfp_url: "",
   liked_subject: [],
-  roles: []
+  roles: [],
+  recent_viewed: [],
 }
 
 export const PLACEHOLDER_SUBJECT: Subject = {

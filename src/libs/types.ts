@@ -9,12 +9,24 @@ export interface LectureHeading {
   justify: 'flex-start' | 'center' | 'flex-end';
 }
 
+export const recentViewSchema = z.object({
+  lessonId: z.string(),
+  subjectId: z.string(),
+  viewedAt: z.coerce.date(),
+  subject_title: z.string(),
+  lesson_title: z.string(),
+  image_url: z.string(),
+})
+
+export type RecentView = z.infer<typeof recentViewSchema>
+
 export const userSchema = z.object({
   _id: z.string(),
   username: z.string(),
   pfp_url: z.string(),
   roles: z.array(z.string()),
   liked_subject: z.array(z.string()),
+  recent_viewed: z.array(recentViewSchema)
 })
 
 export type User = z.infer<typeof userSchema>

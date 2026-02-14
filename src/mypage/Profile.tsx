@@ -26,7 +26,7 @@ function Profile({ user, setUser }: { user: User | null, setUser: React.Dispatch
 
   const navigate = useNavigate()
 
-  const likedSubjectPageCnt = 5;
+  const likedSubjectPageCnt = 5; // show this amount of subjects for a page(liked subjects)
 
   useEffect(() => {
     if (!pageUserId) {
@@ -68,7 +68,7 @@ function Profile({ user, setUser }: { user: User | null, setUser: React.Dispatch
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            {likedSubjects.map((sub) => {
+            {likedSubjects.slice((likedSubjectPage - 1) * likedSubjectPageCnt, likedSubjectPage * likedSubjectPageCnt).map((sub) => {
               return <Table.Tr key={sub._id}>
                 <Table.Td><Link to={`/subject/${sub._id}`}>{sub.title}</Link></Table.Td>
                 <Table.Td>{sub.description}</Table.Td>
