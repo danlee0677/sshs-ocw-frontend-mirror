@@ -1,5 +1,5 @@
 import React, { useEffect, type SetStateAction } from "react";
-import { AppShell, Group, Image, Title, Space, Flex, Button, Stack, TextInput, UnstyledButton } from "@mantine/core";
+import { AppShell, Group, Image, Title, Space, Flex, Stack, TextInput, UnstyledButton } from "@mantine/core";
 import { IconSearch } from '@tabler/icons-react';
 import { Link, type NavigateFunction } from "react-router";
 import { useState } from "react";
