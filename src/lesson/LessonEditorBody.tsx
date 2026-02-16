@@ -454,7 +454,7 @@ function LessonEditorBody({ mode, setIsMarkdown, isMarkdown, markdown, setMarkdo
 
   return (
     <Shell>
-      <Stack w="100%" h="100%" gap="sm">
+      <Stack w="100%" h="100%" gap="sm" p="md">
         {before}
 
         <Group justify="space-between" w="100%">

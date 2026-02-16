@@ -80,9 +80,9 @@ function LessonViewerBody({ content, Shell, before, after }: { content: object |
   }, [content, editor]);
 
   return (
-    <RichTextEditor editor={editor} >
-      <Shell>
-        <ScrollArea w="100%" h="100%" scrollbarSize={10} >
+    <Shell>
+      <ScrollArea w="100%" h="100%" scrollbarSize={10} >
+        <RichTextEditor editor={editor} >
           <Flex h="100%" w="100%" justify="center">
             <Stack h="100%" w="700" align="stretch" gap={0}>
               <Space h="sm" />
@@ -95,9 +95,9 @@ function LessonViewerBody({ content, Shell, before, after }: { content: object |
               {after}
             </Stack>
           </Flex>
-        </ScrollArea>
-      </Shell>
-    </RichTextEditor>
+        </RichTextEditor>
+      </ScrollArea>
+    </Shell>
   )
 }
 

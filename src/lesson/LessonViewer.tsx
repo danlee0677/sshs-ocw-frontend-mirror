@@ -47,7 +47,7 @@ function LessonViewer() {
       console.log(err)
       navigate('/notfound');
     })
-    
+
     http.get(`${import.meta.env.VITE_API_URL}/api/subjects/${subjectId}`).then((res) => {
       const parsed = subjectSchema.safeParse(res.data);
       if (!parsed.success) throw new Error("Fetched Subject does not meet type");
@@ -68,8 +68,8 @@ function LessonViewer() {
   // todo: give the appshell `module` fetched with useEffect
   return (
     <>
-      { lesson._id ? 
-        <LessonViewerBody content={lesson.content} Shell={LessonViewerAppshell}
+      { lesson._id && (
+      <LessonViewerBody content={lesson.content} Shell={LessonViewerAppshell}
         before={
         <Stack gap="md" w="100%">
           <LessonViewerNavigateCard subject={subject} lesson={lesson} />
@@ -78,9 +78,7 @@ function LessonViewer() {
             <Title order={4}>{lesson.createdBy}</Title>
           </Flex>
         </Stack>
-        } after={<></>} />  
-      : 
-        <></>
+        } after={<></>} /> )
       }
     </>
   )
