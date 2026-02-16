@@ -106,6 +106,7 @@ function Profile({ user, setUser }: { user: User | null, setUser: React.Dispatch
                   <Stack gap={0} miw={0}>
                     <Link to={`/subject/${v.subject._id}`}>
                       <Text style={{ color: "black" }} truncate fw={'bold'}>{v.subject.title}</Text>
+                      <Text style={{ color: "black" }} truncate>{v.subject.description}</Text>
                     </Link>
                     <Link to={`/lesson/${v.lesson._id}?subjectId=${v.subject._id}`}>
                       <Text style={{ color: "black" }} truncate>{v.lesson.title}</Text>

@@ -3,6 +3,8 @@ import { http } from './http';
 import type { User, Lesson, Subject } from './types'
 import axios from 'axios';
 
+export const useableTags = ['Math', 'Physics', 'Informatics', 'Chemistry', 'Biology', 'Earch Science']
+
 export function isUser(user: User | null): user is User {
   if (user && user._id.length > 0) {
     return true;
@@ -66,6 +68,7 @@ export const PLACEHOLDER_SUBJECT: Subject = {
   description: "",
   contents: [],
   likes: 0,
+  tags: [],
   image_url: null,
 }
 

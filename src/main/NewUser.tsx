@@ -32,7 +32,8 @@ function NewUser({ setStep, isMobile, navigate }: { setStep: Function, isMobile:
 
                   <Button onClick={() => setStep((st: number) => (st + 1))}>시작하기</Button>
 
-                  <Text className={classes.Text2}>이미 계정이 있으신가요? <Text onClick={() => navigate("/login")} className={classes.Link}>로그인 하러 가기</Text></Text>
+                  <Text className={classes.Text2}>이미 계정이 있으신가요?</Text>
+                  <Text onClick={() => navigate("/login")} className={classes.Link}>로그인 하러 가기</Text>
                 </Stack>
               </Flex>
             </Stack>

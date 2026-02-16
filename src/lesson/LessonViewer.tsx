@@ -59,6 +59,7 @@ function LessonViewer() {
         image_url: parsed.data.image_url,
         description: parsed.data.description,
         contents: parsed.data.contents,
+        tags: parsed.data.tags,
       })
     }).catch((err) => {
       console.log(err);

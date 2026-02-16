@@ -12,16 +12,11 @@ import { isUser } from "../libs/utils";
 
 
 function handleSearch(value: string, navigate: NavigateFunction, setError: React.Dispatch<SetStateAction<string>>) {
-  if (value.length === 0) return;
-  if (value.length < 2 && value.length !== 0) {
-    setError("검색어 길이는 2자 이상이어야 합니다!")
-    return;
-  }
   if (value.length > 20) {
     setError("검색어 길이는 20자 이하여야 합니다!")
     return;
   }
-  navigate('/search', { state: { keyword: value } });
+  navigate('/search', { state: { keyword: value, tags: [] } });
 }
 
 function MainPageAppshell({ children, user, setUser, navigate }: { children: React.ReactNode, user: User | null, setUser: React.Dispatch<User | null>, navigate: NavigateFunction }) {
@@ -72,10 +67,10 @@ function MainPageAppshell({ children, user, setUser, navigate }: { children: Rea
                 }
               </Group>
               <Group w={'100%'} justify="center" gap={'xl'}>
-                <UnstyledButton>물리</UnstyledButton>
-                <UnstyledButton>화학</UnstyledButton>
-                <UnstyledButton>생명과학</UnstyledButton>
-                <UnstyledButton>지구과학</UnstyledButton>
+                <UnstyledButton onClick={() => navigate('/search', { state: { keyword: "", tags: ["Physics"] } })}>물리</UnstyledButton>
+                <UnstyledButton onClick={() => navigate('/search', { state: { keyword: "", tags: ["Chemistry"] } })}>화학</UnstyledButton>
+                <UnstyledButton onClick={() => navigate('/search', { state: { keyword: "", tags: ["Biology"] } })}>생명과학</UnstyledButton>
+                <UnstyledButton onClick={() => navigate('/search', { state: { keyword: "", tags: ["Earth Science"] } })}>지구과학</UnstyledButton>
               </Group>
             </Stack>
           </Flex>

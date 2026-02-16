@@ -6,7 +6,7 @@ import { BrowserRouter } from 'react-router';
 import { http } from './libs/http'
 import Router from './Router';
 import { MantineProvider, createTheme } from '@mantine/core';
-import type { User } from './libs/types'
+import { userSchema, type User } from './libs/types'
 import { ModalsProvider } from '@mantine/modals'
 
 function App() {
@@ -16,20 +16,27 @@ function App() {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    http.get(`${import.meta.env.VITE_API_URL}/api/auth/verify`).then((res) => {
-      // user-defined: withCredentials: true & attach refreshtoken as default
-      setUser(res.data)
-    }).catch((err) => {
-      setUser(null);
-      console.log(err)
-    });
+    const fetchUser = async () => {
+      try {
+        // user-defined: withCredentials: true & attach refreshtoken as default
+        const res = await http.get(`${import.meta.env.VITE_API_URL}/api/auth/verify`)
+        const parsed = userSchema.safeParse(res.data)
+        if (!parsed.success) throw new Error("User does not meet type");
+        setUser(parsed.data);
+      } catch (err) {
+        setUser(null);
+        console.error(err);
+      }
+    }
+
+    fetchUser();
   }, [])
 
   return (
     <MantineProvider theme={theme} >
       <BrowserRouter>
         <ModalsProvider>
-          <Router user={user} setUser={setUser} /> 
+          <Router user={user} setUser={setUser} />
         </ModalsProvider>
       </BrowserRouter>
     </MantineProvider>

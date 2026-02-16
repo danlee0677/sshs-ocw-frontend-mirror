@@ -1,0 +1,7 @@
+.searchIcon:hover {
+    cursor: pointer;
+}
+
+.searchBar {
+    width: 50%;
+}

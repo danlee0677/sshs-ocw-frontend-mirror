@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { type NavigateFunction, useNavigate, useParams } from "react-router";
-import { Button, Stack, TextInput, Flex, Title, Image, Group, Text, Loader, ThemeIcon, Modal, ScrollArea, Space, Box } from "@mantine/core";
+import { Button, Stack, TextInput, Flex, Title, Image, Group, Text, Loader, ThemeIcon, Modal, ScrollArea, Space, Box, PillsInput, Pill, Combobox, useCombobox, CheckIcon } from "@mantine/core";
 import { useDisclosure, useListState } from "@mantine/hooks";
 import { http } from "../libs/http";
 import { type OrderData, type Subject, subjectSchema, type User } from "../libs/types";
@@ -11,14 +11,16 @@ import z from "zod";
 import MainPageAppshell from "../main/MainPageAppshell";
 import { Dropzone, IMAGE_MIME_TYPE } from "@mantine/dropzone";
 import { IconCheck, IconPhoto, IconUpload, IconX } from "@tabler/icons-react";
+import { useableTags } from "../libs/utils";
 
-function handleSubjectEdit(navigate: NavigateFunction, subject: Subject, state: OrderData) {
+function handleSubjectEdit(navigate: NavigateFunction, subject: Subject, state: OrderData, tags: Array<string>) {
   http.patch(`${import.meta.env.VITE_API_URL}/api/subjects/${subject._id}`, {
     title: subject.title,
     image_url: subject.image_url,
     description: subject.description,
     likes: subject.likes,
     contents: state,
+    tags: tags,
   }).then(() => {
     // todo: popup
     navigate(`/subject/${subject._id}`)
@@ -27,12 +29,13 @@ function handleSubjectEdit(navigate: NavigateFunction, subject: Subject, state: 
   })
 }
 
-function handleSubjectCreate(navigate: NavigateFunction, subject: Subject) {
+function handleSubjectCreate(navigate: NavigateFunction, subject: Subject, tags: Array<string>) {
   http.post(`${import.meta.env.VITE_API_URL}/api/subjects`, {
     title: subject.title,
     image_url: subject.image_url,
     description: subject.description,
     likes: 0,
+    tags: tags,
   }).then((res) => {
     const parsed = z.object({ _id: z.string() }).safeParse(res.data);
     if (!parsed.success) throw new Error("Failed to fetch subject id");
@@ -57,6 +60,13 @@ function SubjectEditor({ mode, user, setUser }: { mode: "edit" | "create", user:
   const [activeStep, setActiveStep] = useState<'select' | 'verify' | 'uploading' | 'success'>('select');
   const [previewURL, setPreviewURL] = useState<string | null>(null);
 
+  // for tag selection
+  const combobox = useCombobox({
+    onDropdownClose: () => combobox.resetSelectedOption(),
+    onDropdownOpen: () => combobox.updateSelectedOptionIndex('active'),
+  })
+  const [tags, setTags] = useState<string[]>([]);
+
   useEffect(() => {
     if (mode !== "edit") {
       setSubject((sub) => ({ ...sub, image_url: "https://res.cloudinary.com/dpcig7o5t/image/upload/v1767019358/base_study_o0o20v.png" }))
@@ -75,6 +85,7 @@ function SubjectEditor({ mode, user, setUser }: { mode: "edit" | "create", user:
       if (parsed.data._id !== subjectId) throw new Error("Id does not match")
 
       setSubject(parsed.data);
+      setTags(parsed.data.tags);
       handlers.setState(parsed.data.contents);
     }).catch((err) => {
       console.log(err);
@@ -127,6 +138,30 @@ function SubjectEditor({ mode, user, setUser }: { mode: "edit" | "create", user:
       setActiveStep('select');
     }, 2000);
   }
+
+  const handleValueSelect = (val: string) =>
+    setTags((cur) => 
+      cur.includes(val) ? cur.filter((v) => v !== val) : [...cur, val]
+    );
+
+  const handleValueRemove = (val: string) =>
+    setTags((cur) => cur.filter((v) => v !== val));
+
+  const displayTags = tags.map((item) => (
+    <Pill key={item} withRemoveButton onRemove={() => handleValueRemove(item)}>
+      {item}
+    </Pill>
+  ))
+
+  const options = useableTags
+    .map((item) => (
+      <Combobox.Option value={item} key={item} active={tags.includes(item)}>
+        <Group gap="sm">
+          {tags.includes(item) ? <CheckIcon size={12} /> : null}
+          <span>{item}</span>
+        </Group>
+      </Combobox.Option>
+    ))
 
   const renderSelectStep = () => (
     <Stack>
@@ -239,6 +274,33 @@ function SubjectEditor({ mode, user, setUser }: { mode: "edit" | "create", user:
                         return { ...sub, title: val }
                       })
                     }} />
+                  
+                  <Combobox store={combobox} onOptionSubmit={handleValueSelect}>
+                    <Combobox.DropdownTarget>
+                      <PillsInput onClick={() => combobox.openDropdown()}>
+                        <Pill.Group>
+                          {displayTags}
+
+                          <Combobox.EventsTarget>
+                            <PillsInput.Field 
+                              onFocus={() => combobox.openDropdown()}
+                              onBlur={() => combobox.closeDropdown()}
+                              onChange={() => {
+                                combobox.updateSelectedOptionIndex();
+                              }}
+                              placeholder="태그를 선택하세요"
+                            />
+                          </Combobox.EventsTarget>
+                        </Pill.Group>
+                      </PillsInput>
+                    </Combobox.DropdownTarget>
+
+                    <Combobox.Dropdown>
+                      <Combobox.Options>
+                        {options.length > 0 ? options : <Combobox.Empty>Nothing found...</Combobox.Empty>}
+                      </Combobox.Options>
+                    </Combobox.Dropdown>
+                  </Combobox>
                 </Stack>
                 <Stack w={'50%'} h={'100%'} gap={0} align="center">
                   <Title order={2} className={classes.JalnanGothic} m={"xl"}>목록</Title>
@@ -247,7 +309,7 @@ function SubjectEditor({ mode, user, setUser }: { mode: "edit" | "create", user:
 
                   <Group>
                     <Button variant="outline" onClick={() => navigate(`/lesson/create?subjectId=${subjectId}`)} >새 강의 생성</Button>
-                    <Button variant="outline" onClick={() => handleSubjectEdit(navigate, subject, state)}>과목 수정</Button>
+                    <Button variant="outline" onClick={() => handleSubjectEdit(navigate, subject, state, tags)}>과목 수정</Button>
                   </Group>
                   <Space h="sm" />
                 </Stack>
@@ -268,8 +330,35 @@ function SubjectEditor({ mode, user, setUser }: { mode: "edit" | "create", user:
                       const v = e.currentTarget?.value ?? "";
                       setSubject((sub) => ({ ...sub, description: v }))
                     }} />
+                  
+                  <Combobox store={combobox} onOptionSubmit={handleValueSelect}>
+                    <Combobox.DropdownTarget>
+                      <PillsInput onClick={() => combobox.openDropdown()}>
+                        <Pill.Group>
+                          {displayTags}
 
-                  <Button onClick={() => handleSubjectCreate(navigate, subject)}>과목 생성</Button>
+                          <Combobox.EventsTarget>
+                            <PillsInput.Field 
+                              onFocus={() => combobox.openDropdown()}
+                              onBlur={() => combobox.closeDropdown()}
+                              onChange={() => {
+                                combobox.updateSelectedOptionIndex();
+                              }}
+                              placeholder="태그를 선택하세요"
+                            />
+                          </Combobox.EventsTarget>
+                        </Pill.Group>
+                      </PillsInput>
+                    </Combobox.DropdownTarget>
+
+                    <Combobox.Dropdown>
+                      <Combobox.Options>
+                        {options.length > 0 ? options : <Combobox.Empty>Nothing found...</Combobox.Empty>}
+                      </Combobox.Options>
+                    </Combobox.Dropdown>
+                  </Combobox>
+
+                  <Button onClick={() => handleSubjectCreate(navigate, subject, tags)}>과목 생성</Button>
                   <Space h="sm" />
                 </Stack>
               </Flex>

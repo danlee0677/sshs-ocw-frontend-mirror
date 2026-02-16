@@ -1,6 +1,6 @@
 import { useEffect, useState, type SetStateAction } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import { Stack, Title, UnstyledButton, Flex, Text, Image, Pagination, Space } from "@mantine/core";
+import { Stack, Title, UnstyledButton, Flex, Text, Image, Pagination, Space, Pill, Group } from "@mantine/core";
 import { IconHeart, IconPencilPlus } from "@tabler/icons-react";
 import { http } from "../libs/http";
 import { subjectSchema, type Subject, type User } from "../libs/types";
@@ -100,6 +100,9 @@ function SubjectViewer({ user, setUser }: { user: User | null, setUser: React.Di
             <Image mt={'lg'} w={'160px'} src={subject.image_url}></Image>
             <Title order={1} className={classes.JalnanGothic}>{subject.title}</Title>
             <Text className={classes.Paperozi}>{subject.description}</Text>
+            <Group gap={1}>
+              {subject.tags.map((tag) => (<Pill key={tag}>{tag}</Pill>))}
+            </Group>
             {(user && user.roles.includes('admin')) ?
               <UnstyledButton component={Link} to={`/subject/${subjectId}/edit`}  >
                 <IconPencilPlus></IconPencilPlus>

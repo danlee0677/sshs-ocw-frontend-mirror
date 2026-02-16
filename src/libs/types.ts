@@ -67,6 +67,7 @@ export const subjectSchema = z.object({
   image_url: z.string().nullable(),
   description: z.string(),
   likes: z.number(),
+  tags: z.array(z.string()),
   contents: z.array(z.object({
     _id: z.string(),
     title: z.string(),
