@@ -5,7 +5,7 @@ import type { User } from "../libs/types";
 import { http } from "../libs/http";
 import { LESSON_STORAGE_KEY, MARKDOWN_STORAGE_KEY } from "./LessonEditorBody";
 
-export function handleLessonSubmit(mode: "edit" | "create", lessonId: string | undefined, editor: Editor, title: string, navigate: NavigateFunction, subjectId: string, user: User) {
+export function handleLessonSubmit(mode: "edit" | "create", lessonId: string | undefined, editor: Editor, title: string, navigate: NavigateFunction, subjectId: string, user: User, student_only: boolean) {
   // todo: alert?
   if (!title) {
     alert("제목을 입력해 주세요!")
@@ -22,7 +22,8 @@ export function handleLessonSubmit(mode: "edit" | "create", lessonId: string | u
       subject: subjectId,
       title: title,
       content: JSON.stringify(editor.getJSON()),
-      createdBy: user._id
+      createdBy: user._id,
+      student_only: student_only,
     }).then(() => {
       localStorage.removeItem(LESSON_STORAGE_KEY);
       localStorage.removeItem(MARKDOWN_STORAGE_KEY);
@@ -34,6 +35,7 @@ export function handleLessonSubmit(mode: "edit" | "create", lessonId: string | u
     http.patch(`${import.meta.env.VITE_API_URL}/api/lessons/${lessonId}`, {
       title: title,
       content: JSON.stringify(editor.getJSON()),
+      student_only: student_only,
     }).then(() => {
       localStorage.removeItem(LESSON_STORAGE_KEY);
       navigate(`/subject/${subjectId}`)
@@ -51,14 +53,15 @@ interface LessonSubmitCardProps {
   navigate: NavigateFunction, 
   user: User,
   editor: Editor,
+  student_only: boolean,
 }
 
-function LessonSubmitCard({ mode, lessonId, title, subjectId, navigate, user, editor }: LessonSubmitCardProps) {
+function LessonSubmitCard({ mode, lessonId, title, subjectId, navigate, user, editor, student_only }: LessonSubmitCardProps) {
   return (
     <>
       { editor ? 
         <Group >
-          <Button onClick={() => handleLessonSubmit(mode, lessonId, editor, title, navigate, subjectId, user)}>
+          <Button onClick={() => handleLessonSubmit(mode, lessonId, editor, title, navigate, subjectId, user, student_only)}>
             {mode === "create" ? "강의 생성" : "강의 수정"}
           </Button>
         </Group>

@@ -8,3 +8,7 @@
 .JalnanGothic {
     font-family: 'JalnanGothic';
 }
+
+.Box2:hover {
+    background-color: rgb(226, 226, 226);
+}

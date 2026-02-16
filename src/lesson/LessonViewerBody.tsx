@@ -82,9 +82,10 @@ function LessonViewerBody({ content, Shell, before, after }: { content: object |
   return (
     <RichTextEditor editor={editor} >
       <Shell>
-        <ScrollArea w="100%" h="100%" scrollbarSize={5} >
+        <ScrollArea w="100%" h="100%" scrollbarSize={10} >
           <Flex h="100%" w="100%" justify="center">
             <Stack h="100%" w="700" align="stretch" gap={0}>
+              <Space h="sm" />
               {before}
               <Space h="md" />
 

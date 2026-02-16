@@ -5,8 +5,9 @@ import { useState, useEffect } from "react";
 import { PLACEHOLDER_SUBJECT } from "../libs/utils";
 import { http } from "../libs/http";
 import classes from "./lessonViewer.module.css"
-import { subjectSchema, type Subject } from "../libs/types";
+import { type RecentView, subjectSchema, type Subject, recentViewSchema } from "../libs/types";
 import logo from '../assets/app-logo.png'
+import z from "zod";
 
 function LessonViewerAppshell({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
@@ -15,7 +16,8 @@ function LessonViewerAppshell({ children }: { children: React.ReactNode }) {
   const [subject, setSubject] = useState<Subject>(PLACEHOLDER_SUBJECT);
   const { lessonId } = useParams();
   const subjectId = searchParams.get('subjectId');
-  const ind = subject.contents.findIndex((val) => val._id === lessonId)
+
+  const [viewed, setViewed] = useState<RecentView[]>([]);
 
   useEffect(() => {
     if (!subjectId || !lessonId) navigate('/notfound');
@@ -29,20 +31,32 @@ function LessonViewerAppshell({ children }: { children: React.ReactNode }) {
       console.log(err);
       navigate('/notfound');
     })
+
+    http.get(`${import.meta.env.VITE_API_URL}/api/progress?subjectId=${subjectId}`).then((res) => {
+      const parsed = z.array(recentViewSchema).safeParse(res.data);
+      if (!parsed.success) throw new Error("Failed to fetch View History(Progress)");
+      setViewed(parsed.data);
+    }).catch((err) => {
+      console.log(err);
+      navigate('/notfound');
+    })
   }, [subjectId, subject, navigate])
 
+  const ind = subject.contents.findIndex((val) => val._id === lessonId)
+
+  const highlightArray = subject.contents.map((v) => viewed.some(item => item.lesson._id === v._id));
 
   return (
     <AppShell
       navbar={{ width: 300, breakpoint: 'sm' }}
       styles={{
         main: {
-          height: "100vh",
+          height: "100dvh",
           display: "flex",
           flexDirection: "column"
         },
         navbar: {
-          height: "100vh",
+          height: "100dvh",
           display: "flex",
           flexDirection: "column"
         }
@@ -73,7 +87,7 @@ function LessonViewerAppshell({ children }: { children: React.ReactNode }) {
                       className={`${classes.ProgressGroup} ${i === ind ? classes.selected : ''}`}
                       h={'60px'} align="center">
                       <Box ml={'sm'} w={'4px'} h={'90%'}
-                        bg={i <= ind ? '#007bffff' : '#aaaaaa'}
+                        bg={ highlightArray[i] ? '#007bffff' : '#aaaaaa'}
                         className={`${classes.ProgressRect}`}></Box>
                       <Text
                         className={`${classes.ProgressText}`}

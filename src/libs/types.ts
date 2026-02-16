@@ -10,12 +10,18 @@ export interface LectureHeading {
 }
 
 export const recentViewSchema = z.object({
-  lessonId: z.string(),
-  subjectId: z.string(),
+  lesson: z.object({
+    _id: z.coerce.string(),
+    title: z.string(),
+  }),
+  subject: z.object({
+    _id: z.coerce.string(),
+    title: z.string(),
+    image_url: z.string(),
+    description: z.string(),
+  }),
   viewedAt: z.coerce.date(),
-  subject_title: z.string(),
-  lesson_title: z.string(),
-  image_url: z.string(),
+  userId: z.coerce.string(),
 })
 
 export type RecentView = z.infer<typeof recentViewSchema>
@@ -26,7 +32,7 @@ export const userSchema = z.object({
   pfp_url: z.string(),
   roles: z.array(z.string()),
   liked_subject: z.array(z.string()),
-  recent_viewed: z.array(recentViewSchema)
+  email: z.string(),
 })
 
 export type User = z.infer<typeof userSchema>
@@ -37,9 +43,12 @@ export type ShellComponent = (props: ShellProps) => JSX.Element
 export const lessonSchema = z.object({
   title: z.string(),
   content: z.string(),
-  createdBy: z.string(),
+  createdBy: z.object({
+    username: z.string(),
+  }),
   _id: z.string(),
-  subject: z.string()
+  subject: z.string(),
+  student_only: z.boolean(),
 })
 
 export type LessonResponse = z.infer<typeof lessonSchema>
@@ -55,7 +64,7 @@ export interface Lesson {
 export const subjectSchema = z.object({
   _id: z.string(),
   title: z.string(),
-  image_url: z.string(),
+  image_url: z.string().nullable(),
   description: z.string(),
   likes: z.number(),
   contents: z.array(z.object({

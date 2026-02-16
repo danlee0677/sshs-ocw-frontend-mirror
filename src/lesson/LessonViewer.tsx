@@ -28,6 +28,8 @@ function LessonViewer() {
     http.get(`${import.meta.env.VITE_API_URL}/api/lessons/${lessonId}`).then((res) => {
       const parsed = lessonSchema.safeParse(res.data)
 
+      console.log(res.data)
+
       if (!parsed.success) {
         throw new Error("Fetched lesson does not meet res type")
       }
@@ -36,7 +38,7 @@ function LessonViewer() {
       setLesson({
         title: parsed.data.title,
         content: contentJSON,
-        createdBy: parsed.data.createdBy,
+        createdBy: parsed.data.createdBy.username,
         _id: parsed.data._id,
         subject: parsed.data.subject
       })
@@ -45,6 +47,7 @@ function LessonViewer() {
       console.log(err)
       navigate('/notfound');
     })
+    
     http.get(`${import.meta.env.VITE_API_URL}/api/subjects/${subjectId}`).then((res) => {
       const parsed = subjectSchema.safeParse(res.data);
       if (!parsed.success) throw new Error("Fetched Subject does not meet type");

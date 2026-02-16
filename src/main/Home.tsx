@@ -5,22 +5,43 @@ import classes from './main.module.css'
 import { ProgressCard } from '../main/Progress'
 import { CustomBadge } from "./CustomBadge";
 import { isUser } from "../libs/utils";
-import { type RecentView, type User } from "../libs/types";
+import { recentViewSchema, type RecentView, type User } from "../libs/types";
 import { Link, useNavigate } from "react-router";
+import { useEffect, useState } from "react";
+import { http } from "../libs/http";
+import z from "zod";
 
 const PLACEHOLDER_RECENT_VIEW: RecentView = {
-  subjectId: "",
-  lessonId: "",
-  image_url: "https://res.cloudinary.com/dpcig7o5t/image/upload/v1760317295/samples/cloudinary-icon.png",
-  subject_title: "",
-  lesson_title: "",
+  subject: {
+    _id: "",
+    title: "",
+    image_url: "https://res.cloudinary.com/dpcig7o5t/image/upload/v1760317295/samples/cloudinary-icon.png",
+    description: "",
+  },
+  lesson: {
+    _id: "",
+    title: "",
+  },
   viewedAt: new Date(),
+  userId: "",
 }
 
 function Home({ user, setUser }: { user: User | null, setUser: React.Dispatch<User | null> }) {
   const { ref, width } = useElementSize()
   const isNarrow = width < 150;
   const navigate = useNavigate();
+
+  const [recentViewed, setRecentViewed] = useState<RecentView[]>([]);
+
+  useEffect(() => {
+    http.get(`${import.meta.env.VITE_API_URL}/api/progress?count=4`).then((res) => {
+      const parsed = z.array(recentViewSchema).safeParse(res.data);
+      if (!parsed.success) throw new Error("recentView does not match type");
+      setRecentViewed(parsed.data);
+    }).catch((err) => {
+      console.error(err);
+    })
+  }, [recentViewed])
 
   const padArray = (array: Array<RecentView>, minLength: number): Array<RecentView> => {
     const safeArray = array ?? []
@@ -45,6 +66,7 @@ function Home({ user, setUser }: { user: User | null, setUser: React.Dispatch<Us
 
   return (
     <MainPageAppshell user={user} setUser={setUser} navigate={navigate}>
+      <Box p="md" w="100%" h="100%">
       {isUser(user) ?
         <Group className={`${classes.Vertical_align} ${classes.Main1}`} w={'100%'} h={'65vh'}>
           <Stack w={'50%'} h={'100%'}>
@@ -80,25 +102,25 @@ function Home({ user, setUser }: { user: User | null, setUser: React.Dispatch<Us
           <Group className={`${classes.Box1}`} w={'25%'} h={'100%'}>
             <Stack w={'100%'} h={'100%'} className={`${classes.Vertical_align}`} gap={0}>
               <Text className={`${classes.JalnanGothic}`}>최근 이용한 강좌</Text>
-              {padArray(user.recent_viewed, minLength).map((v, i) => (
-                v.subjectId ?
+              {padArray(recentViewed, minLength).map((v, i) => (
+                v.subject._id ?
                   <Box ref={ref} className={`${classes.Box2} ${classes.Vertical_align}`} w={'100%'} h={'20%'} miw={0}>
                     <Group wrap='nowrap' w={'80%'} h={'100%'}>
-                      <Link to={`/subject/${v.subjectId}`} className="block"
+                      <Link to={`/subject/${v.subject._id}`} className="block"
                         style={{
                           display: 'flex',       // Makes the <a> tag a flex container
                           alignItems: 'center',  // Centers the image vertically
                           height: '100%',        // Forces <a> to fill the Group's height
                         }}>
-                        <Image fit='contain' w={'auto'} h={'80%'} src={v.image_url} className={classes.Image1}/>
+                        <Image fit='contain' w={'auto'} h={'80%'} src={v.subject.image_url} className={classes.Image1}/>
                       </Link>
                       {!isNarrow && (
                         <Stack gap={0} miw={0}>
-                          <Link to={`/subject/${v.subjectId}`}>
-                            <Text style={{ color: "black" }} truncate fw={'bold'}>{v.subject_title}</Text>
+                          <Link to={`/subject/${v.subject._id}`}>
+                            <Text style={{ color: "black" }} truncate fw={'bold'}>{v.subject.title}</Text>
                           </Link>
-                          <Link to={`/lesson/${v.lessonId}?subjectId=${v.subjectId}`}>
-                            <Text style={{ color: "black" }} truncate>{v.lesson_title}</Text>
+                          <Link to={`/lesson/${v.lesson._id}?subjectId=${v.subject._id}`}>
+                            <Text style={{ color: "black" }} truncate>{v.lesson.title}</Text>
                           </Link>
                         </Stack>
                       )}
@@ -119,6 +141,7 @@ function Home({ user, setUser }: { user: User | null, setUser: React.Dispatch<Us
           </Group>
         </Group>
         : <Title className={classes.JalnanGothic}>로그인 후 이용할 수 있는 곳입니다.</Title>}
+      </Box>
     </MainPageAppshell>
   )
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState, type SetStateAction } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import { Stack, Title, UnstyledButton, Flex, Text, Image } from "@mantine/core";
+import { Stack, Title, UnstyledButton, Flex, Text, Image, Pagination, Space } from "@mantine/core";
 import { IconHeart, IconPencilPlus } from "@tabler/icons-react";
 import { http } from "../libs/http";
 import { subjectSchema, type Subject, type User } from "../libs/types";
@@ -11,12 +11,23 @@ import classes from "./subjectViewer.module.css"
 
 async function handleSubjectLike(subject: Subject) {
   const res = await http.post(`${import.meta.env.VITE_API_URL}/api/subjects/${subject._id}/like`);
-  return res.data as {liked: boolean, likes: number}
+  return res.data as { liked: boolean, likes: number }
+}
+
+const PLACEHOLDER_LESSON_IN_SUBJECT = {
+  _id: "",
+  title: "",
+}
+
+interface LessonInSubject {
+  _id: string,
+  title: string,
 }
 
 function SubjectViewer({ user, setUser }: { user: User | null, setUser: React.Dispatch<SetStateAction<User | null>> }) {
-  const [subject, setSubject] = useState<Subject>(PLACEHOLDER_SUBJECT); 
-  const [likeLoading, setLikeLoading] = useState(false);
+  const [subject, setSubject] = useState<Subject>(PLACEHOLDER_SUBJECT);
+  const [likeLoading, setLikeLoading] = useState<boolean>(false);
+  const [page, setPage] = useState<number>(1);
   const { subjectId } = useParams()
   const navigate = useNavigate();
 
@@ -65,6 +76,21 @@ function SubjectViewer({ user, setUser }: { user: User | null, setUser: React.Di
     }
   };
 
+  const pageNum = 5
+
+  const padArray = (array: Array<LessonInSubject>): Array<LessonInSubject> => {
+    const copy = [...array]
+
+    if (copy.length % pageNum !== 0) {
+      const originalLength = copy.length
+      copy.length = copy.length + (pageNum - copy.length % 5);
+      copy.fill(PLACEHOLDER_LESSON_IN_SUBJECT, originalLength);
+    }
+
+    return copy;
+  }
+
+  const paddedLessons = padArray(subject.contents);
 
   return (
     <MainPageAppshell user={user} setUser={setUser} navigate={navigate}>
@@ -74,38 +100,55 @@ function SubjectViewer({ user, setUser }: { user: User | null, setUser: React.Di
             <Image mt={'lg'} w={'160px'} src={subject.image_url}></Image>
             <Title order={1} className={classes.JalnanGothic}>{subject.title}</Title>
             <Text className={classes.Paperozi}>{subject.description}</Text>
-            {(user && user.roles.includes('admin')) ? 
+            {(user && user.roles.includes('admin')) ?
               <UnstyledButton component={Link} to={`/subject/${subjectId}/edit`}  >
                 <IconPencilPlus></IconPencilPlus>
               </UnstyledButton>
-            : 
-            <></>}
+              :
+              <></>}
             <UnstyledButton onClick={onClickLike} disabled={likeLoading}>
-                <IconHeart
+              <IconHeart
                 color="red"
                 fill={isLiked ? "red" : "none"}></IconHeart>
             </UnstyledButton>
             <Text>{subject.likes}</Text>
           </Stack>
+
           <Stack w={'50%'} h={'100%'} gap={0} align={'center'}>
             <Title order={2} className={classes.JalnanGothic} m={"xl"}>목록</Title>
-            {subject.contents.map((lesson, i) => {
+            {paddedLessons.slice((page - 1) * pageNum, page * pageNum).map((lesson, i) => {
               return (
-                <UnstyledButton h="100%" w="100%"
-                  style={{
-                    backgroundColor: i % 2 === 0 ? "#f1f3f5" : "#ffffffff",
-                    color: "inherit",
-                    "&:hover": {
-                      color: "inherit"
-                    }
-                  }}
-                  component={Link} to={`/lesson/${lesson._id}?subjectId=${subject._id}`}>
-                  <Flex className={classes.List} h="100%" w="100%" justify="center" align={'center'}>
-                    <Text mt={'lg'} mb={'lg'} className={`${classes.JalnanGothic}`}>{lesson.title}</Text>
-                  </Flex>
-                </UnstyledButton>
+                lesson._id ?
+                  <UnstyledButton h="66.4px" w="100%"
+                    style={{
+                      backgroundColor: i % 2 === 0 ? "#f1f3f5" : "#ffffffff",
+                      color: "inherit",
+                      "&:hover": {
+                        color: "inherit"
+                      }
+                    }}
+                    component={Link} to={`/lesson/${lesson._id}?subjectId=${subject._id}`}>
+                    <Flex className={classes.List} h="100%" w="100%" justify="center" align={'center'}>
+                      <Text mt={'lg'} mb={'lg'} className={`${classes.JalnanGothic}`}>{lesson.title}</Text>
+                    </Flex>
+                  </UnstyledButton>
+                  :
+                  <UnstyledButton h="66.4px" w="100%"
+                    style={{
+                      backgroundColor: i % 2 === 0 ? "#f1f3f5" : "#ffffffff",
+                      color: "inherit",
+                      "&:hover": {
+                        color: "inherit"
+                      }
+                    }}>
+                    <Flex className={classes.List} h="100%" w="100%" justify="center" align={'center'}>
+                      <Text mt={'lg'} mb={'lg'} className={`${classes.JalnanGothic}`}>{lesson.title}</Text>
+                    </Flex>
+                  </UnstyledButton>
               )
             })}
+            <Space h="sm" />
+            <Pagination value={page} onChange={setPage} total={paddedLessons.length / 5} />
           </Stack>
         </Flex>
         :

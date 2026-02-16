@@ -34,7 +34,6 @@ function MainPageAppshell({ children, user, setUser, navigate }: { children: Rea
 
   return (
     <AppShell
-      padding="md"
       header={{ height: "18dvh" }}
       style={{ height: "100dvh", display: "flex", flexDirection: 'column' }}
     >

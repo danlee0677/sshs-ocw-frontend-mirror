@@ -1,5 +1,5 @@
-import React, { type ReactNode, useEffect, useMemo, useCallback, type SetStateAction } from "react";
-import { Button, Group, ScrollArea, Stack, Textarea, Text, Flex, Divider, Paper } from "@mantine/core";
+import React, { type ReactNode, useEffect, useMemo, useCallback, type SetStateAction, useState, useRef } from "react";
+import { Button, Group, ScrollArea, Stack, Textarea, Text, Flex, Divider, Paper, Modal, Image as ImageComponent, Loader, ThemeIcon, TextInput, Switch } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import { Editor, useEditor } from '@tiptap/react'
 import { RichTextEditor, Link } from '@mantine/tiptap'
@@ -26,6 +26,10 @@ import type { Lesson, ShellComponent, User } from "../libs/types";
 import { PLACEHOLDER_MARKDOWN } from "../libs/utils";
 import LessonSubmitCard from "./LessonSubmitCard";
 import type { NavigateFunction } from "react-router";
+import { useDisclosure } from "@mantine/hooks";
+import { uploadImage } from "../libs/utils";
+import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone';
+import { IconCheck, IconPhoto, IconUpload, IconX } from "@tabler/icons-react";
 
 
 const lowlight = createLowlight(all);
@@ -81,25 +85,6 @@ function handleMarkdownChange(isMarkdown: boolean, setIsMarkdown: React.Dispatch
   })
 }
 
-function addImage(editor: Editor | null) {
-  if (!editor) alert("Editor not configured!");
-  // todo: add image
-  const url = prompt('이미지 링크를 첨부하세요.')
-  url
-}
-
-function addYoutubeVideo(editor: Editor | null) {
-  if (!editor) return;
-
-  const url = prompt('Enter Youtube URL')
-
-  if (url) {
-    editor.commands.setYoutubeVideo({
-      src: url,
-    })
-  }
-}
-
 function getEditor(editor: Editor) {
   return (
     <RichTextEditor editor={editor} h="100%" w="100%"
@@ -138,9 +123,22 @@ function getEditor(editor: Editor) {
   )
 }
 
-function LessonEditorBody({ mode, setIsMarkdown, isMarkdown, markdown, setMarkdown, content, Shell, before, lessonId, title, subjectId, user, navigate }: { mode: "edit" | "create", setIsMarkdown: React.Dispatch<SetStateAction<boolean>>, isMarkdown: boolean, markdown: string, setMarkdown: React.Dispatch<SetStateAction<string>>, content: Lesson | null, Shell: ShellComponent, before: ReactNode, lessonId: string | undefined, subjectId: string, title: string, user: User | null, navigate: NavigateFunction }) {
-  // persist through refresh: save 
+function LessonEditorBody({ mode, setIsMarkdown, isMarkdown, markdown, setMarkdown, content, Shell, before, lessonId, title, subjectId, user, navigate, studentOnly, setStudentOnly }: { mode: "edit" | "create", setIsMarkdown: React.Dispatch<SetStateAction<boolean>>, isMarkdown: boolean, markdown: string, setMarkdown: React.Dispatch<SetStateAction<string>>, content: Lesson | null, Shell: ShellComponent, before: ReactNode, lessonId: string | undefined, subjectId: string, title: string, user: User | null, navigate: NavigateFunction, studentOnly: boolean, setStudentOnly: React.Dispatch<SetStateAction<boolean>> }) {
+  // modal for image upload
+  const [opened, { open, close }] = useDisclosure(false);
+  const [youtubeOpened, { open: youtubeOpen, close: youtubeClose }] = useDisclosure(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [youtubeURL, setYoutubeURL] = useState<string>("");
 
+  // for modal for uploading files
+  const [activeStep, setActiveStep] = useState<'select' | 'verify' | 'uploading' | 'success'>('select');
+  const [previewURL, setPreviewURL] = useState<string | null>(null);
+
+  // for inserting image
+  const [lastActive, setLastActive] = useState<'tiptap' | 'markdown'>('tiptap');
+  const markdownRef = useRef<HTMLTextAreaElement>(null);
+
+  // persist through refresh: save 
   const debounceSave = useDebounce((json: any) => {
     try {
       localStorage.setItem(LESSON_STORAGE_KEY, JSON.stringify(json));
@@ -209,6 +207,7 @@ function LessonEditorBody({ mode, setIsMarkdown, isMarkdown, markdown, setMarkdo
       if (transaction.docChanged) debounceSave(editor.getJSON());
     },
     editable: true,
+    onFocus: () => setLastActive('tiptap'),
   })
 
   useEffect(() => {
@@ -220,6 +219,13 @@ function LessonEditorBody({ mode, setIsMarkdown, isMarkdown, markdown, setMarkdo
       setMarkdown(getEditorAsMarkdown());
     }
   }, [content]);
+
+  // garbage collector
+  useEffect(() => {
+    return () => {
+      if (previewURL) URL.revokeObjectURL(previewURL);
+    }
+  }, [previewURL]);
 
   const parseMarkdown = () => {
     if (!editor || !editor.markdown) {
@@ -242,6 +248,208 @@ function LessonEditorBody({ mode, setIsMarkdown, isMarkdown, markdown, setMarkdo
     }
   }
 
+
+  // for image uploads
+  const handleOpenModal = () => {
+    setFile(null);
+    setPreviewURL(null);
+    setActiveStep('select');
+    open();
+  }
+
+  const handleDrop = (files: Array<File>) => {
+    const selected = files[0];
+    setFile(selected);
+    setPreviewURL(URL.createObjectURL(selected));
+    setActiveStep('verify');
+  }
+
+  const handleUpload = async () => {
+    if (!file) return;
+
+    try {
+      setActiveStep('uploading')
+      const url: string = await uploadImage(file);
+
+      insertImage(url);
+      setActiveStep('success');
+    } catch (err) {
+      console.log(err);
+      setActiveStep('select');
+    }
+  }
+
+  const handleClose = () => {
+    close();
+
+    setTimeout(() => {
+      setFile(null);
+      setPreviewURL(null);
+      setActiveStep('select');
+    }, 2000);
+  }
+
+  const insertImage = (imageURL: string) => {
+    if (lastActive === 'tiptap' && editor) {
+      editor.chain().focus().setImage({ src: imageURL }).run();
+    } else if (lastActive === 'markdown' && markdownRef.current) {
+      const textarea = markdownRef.current;
+
+      if (!textarea) return;
+
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const text = textarea.value;
+
+      const charBefore = text.charAt(start - 1);
+      const needNewLineBefore = start > 0 && charBefore !== '\n';
+      
+      const charAfter = text.charAt(end);
+      const needNewLineAfter = end < text.length && charAfter !== '\n';
+
+      let insertText = `![Image](${imageURL})`
+      
+      if (needNewLineBefore) 
+        insertText = '\n' + insertText;
+
+      if (needNewLineAfter)
+        insertText = insertText + '\n';
+      
+      const newText = markdown.slice(0, start) + insertText + text.slice(end);
+      setMarkdown(newText);
+    }
+  }
+
+  const handleYoutubeOpen = () => {
+    setYoutubeURL("");
+    youtubeOpen();
+  }
+
+  const insertYoutube = (youtubeURL: string) => {
+    if (lastActive === 'tiptap' && editor) {
+      editor.chain().focus().setYoutubeVideo({ src: youtubeURL }).run();
+    } else if (lastActive === 'markdown' && markdownRef.current) {
+      const textarea = markdownRef.current;
+
+      if (!textarea) return;
+
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const text = textarea.value;
+
+      const charBefore = text.charAt(start - 1);
+      const needNewLineBefore = start > 0 && charBefore !== '\n';
+      
+      const charAfter = text.charAt(end);
+      const needNewLineAfter = end < text.length && charAfter !== '\n';
+
+      let insertText = `:::youtube {src="${youtubeURL}" width="640" height="360" start="0"} :::`
+      
+      if (needNewLineBefore) 
+        insertText = '\n' + insertText;
+
+      if (needNewLineAfter)
+        insertText = insertText + '\n';
+      
+      const newText = markdown.slice(0, start) + insertText + text.slice(end);
+      setMarkdown(newText);
+    } else {
+      console.error("failed to insert youtube url: editor or markdownRef missing!")
+    }
+    youtubeClose();
+  }
+
+  const handleYoutubeClose = () => {
+    setYoutubeURL("");
+    youtubeClose();
+  }
+
+  const renderSelectStep = () => (
+    <Stack>
+      <Dropzone
+        onDrop={handleDrop}
+        onReject={(files) => console.log('rejected files', files)}
+        maxSize={5 * 1024 * 1024}
+        accept={IMAGE_MIME_TYPE}
+        h={200}
+      >
+        <Group justify="center" gap="xl" style={{ minHeight: 200 }} >
+          <Dropzone.Accept>
+            <IconUpload size={50} stroke={1.5} color="var(--mantine-color-blue-6)" />
+          </Dropzone.Accept>
+          <Dropzone.Reject>
+            <IconX size={50} stroke={1.5} color="var(--mantine-color-red-6)" />
+          </Dropzone.Reject>
+          <Dropzone.Idle>
+            <IconPhoto size={50} stroke={1.5} />
+          </Dropzone.Idle>
+
+          <div style={{ textAlign: 'center' }} >
+            <Text size="xl" inline>
+              이미지를 드래그하거나 클릭해서 선택하세요!
+            </Text>
+            <Text size="lg">(최대 5MB)</Text>
+          </div>
+        </Group>
+      </Dropzone>
+
+      <Button variant="subtle" color="gray" onClick={handleClose}>
+        취소
+      </Button>
+    </Stack>
+  )
+
+  const renderVerifyStep = () => (
+    <Stack>
+      <Text size="sm" ta="center">업로드하려는 이미지가 맞는지 확인하세요</Text>
+      <div style={{ position: 'relative', height: 250, width: '100%', background: '#f8f9fa', borderRadius: 8 }}>
+        <ImageComponent
+          src={previewURL}
+          h={250}
+          fit="contain"
+          style={{ borderRadius: 8 }}
+        />
+      </div>
+
+      <Group grow mt="md">
+        <Button variant="default" onClick={() => setActiveStep('select')}>
+          뒤로
+        </Button>
+        <Button onClick={handleUpload}>
+          이미지 업로드
+        </Button>
+      </Group>
+    </Stack>
+  )
+
+  const renderUploadStep = () => (
+    <Stack align="center" justify="center" h={250}>
+      <Loader size="xl" type="bars" />
+      <Text c="dimmed" size="sm">Uploading to Cloudinary...</Text>
+    </Stack>
+  )
+
+  const renderSuccessStep = () => (
+    <Stack align="center" justify="center" h={250}>
+      <ThemeIcon color="green" size={80} radius="100%">
+        <IconCheck size={40} />
+      </ThemeIcon>
+      <Text fw={700} size="xl" mt="md">업로드가 완료되었습니다!</Text>
+      <Button onClick={handleClose} mt="md">
+        닫기
+      </Button>
+    </Stack>
+  );
+
+  const renderYoutubeInsertion = () => (
+    <Stack align="stretch" justify="center" h="100%" w="100%" gap="md">
+      <Text size="xl">업로드하려는 Youtube URL을 입력하세요!</Text>
+      <TextInput value={youtubeURL} 
+        onChange={(e) => setYoutubeURL(e.currentTarget.value)} />
+      <Button onClick={() => insertYoutube(youtubeURL)}>업로드</Button>
+    </Stack>
+  )
+
   if (!user) return;
 
   return (
@@ -261,12 +469,41 @@ function LessonEditorBody({ mode, setIsMarkdown, isMarkdown, markdown, setMarkdo
                 setMarkdown(getEditorAsMarkdown());
               }}>에디터를 마크다운으로</Button> : <></>}
 
-            <Button onClick={() => addYoutubeVideo(editor)} >유튜브 영상 추가</Button>
-            <Button onClick={() => addImage(editor)}>이미지 추가</Button>
+            <Button onClick={handleYoutubeOpen} >유튜브 영상 추가</Button>
+            <Button onClick={handleOpenModal}>이미지 추가</Button>
+            <Group>
+              <Switch checked={studentOnly} onChange={(e) => setStudentOnly(e.currentTarget.checked)} />
+              <Text>설곽 학생만 열람 제한</Text>
+            </Group>
           </Group>
 
+          <Modal
+            opened={opened}
+            onClose={handleClose}
+            title="Upload Image"
+            centered
+            size="lg"
+            closeOnClickOutside={activeStep !== 'uploading'}
+            withCloseButton={activeStep !== 'uploading'}
+          >
+            {activeStep === 'select' && renderSelectStep()}
+            {activeStep === 'verify' && renderVerifyStep()}
+            {activeStep === 'uploading' && renderUploadStep()}
+            {activeStep === 'success' && renderSuccessStep()}
+          </Modal>
+
+          <Modal
+            opened={youtubeOpened}
+            onClose={handleYoutubeClose}
+            title="Upload Youtube"
+            centered
+            size="lg"
+          >
+            {renderYoutubeInsertion()}
+          </Modal>
+
           <LessonSubmitCard mode={mode} lessonId={lessonId} title={title} subjectId={subjectId}
-            navigate={navigate} user={user} editor={editor} />
+            navigate={navigate} user={user} editor={editor} student_only={studentOnly} />
         </Group>
 
 
@@ -275,10 +512,11 @@ function LessonEditorBody({ mode, setIsMarkdown, isMarkdown, markdown, setMarkdo
             flex={1} direction='row' style={{ minHeight: 0 }}>
             <Paper h="100%" w="50%" withBorder>
               <ScrollArea w="100%" h="100%" scrollbarSize={5} >
-                <Textarea value={markdown} onChange={(event) => {
+                <Textarea ref={markdownRef} value={markdown} onChange={(event) => {
                   setMarkdown(event.currentTarget.value)
                   debounceMarkdownSave(event.currentTarget.value)
                 }}
+                  onFocus={() => setLastActive('markdown')}
                   autosize minRows={20} variant="unstyled" />
               </ScrollArea>
             </Paper>

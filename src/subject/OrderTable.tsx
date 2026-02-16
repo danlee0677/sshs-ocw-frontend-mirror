@@ -46,7 +46,7 @@ function SortableRow({ item, navigate, subjectId }: RowProps) {
       </Table.Td>
       <Table.Td pt={'lg'} pb={'lg'} w={'80%'} className={classes.JalnanGothic}>{item.title}</Table.Td>
       <Table.Td w={'10%'}>
-        <Button onClick={() => {
+        <Button variant="outline" onClick={() => {
           navigate(`/lesson/${item._id}/edit?subjectId=${subjectId}`)
         }}>수정</Button>
       </Table.Td>

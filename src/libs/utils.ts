@@ -1,4 +1,7 @@
+import z from 'zod';
+import { http } from './http';
 import type { User, Lesson, Subject } from './types'
+import axios from 'axios';
 
 export function isUser(user: User | null): user is User {
   if (user && user._id.length > 0) {
@@ -9,20 +12,52 @@ export function isUser(user: User | null): user is User {
 
 // for conditional render of Editing
 export function canEdit(user: User | null) {
-  // if (user && (user.roles.includes('admin'))) return true;
-  // return false;
-  user
-  // todo: change before deployment
-  return true;
+  if (user && (user.roles.includes('admin'))) return true;
+  return false;
+}
+
+export async function uploadImage(file: File) {
+  const res = await http.get(`${import.meta.env.VITE_API_URL}/api/image/sign-upload`)
+  const parsed = z.object({
+    timestamp: z.number(),
+    signature: z.string(),
+    cloud_name: z.string(),
+    api_key: z.string(),
+  }).safeParse(res.data);
+
+  if (res.status !== 200) 
+    throw new Error("failed to fetch valid cloudinary signature")
+
+  if (!parsed.success)
+    throw new Error("failed to parse cloudinary signature")
+
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('timestamp', parsed.data.timestamp.toString());
+  formData.append('signature', parsed.data.signature);
+  formData.append('api_key', parsed.data.api_key);
+
+  const uploadRes = await axios.post(`https://api.cloudinary.com/v1_1/${parsed.data.cloud_name}/image/upload`, formData)
+  
+  if (uploadRes.status / 100 !== 2) 
+    throw new Error("failed to upload in cloudinary")
+
+  const parsedRes = z.object({
+    secure_url: z.string(),
+  }).safeParse(uploadRes.data)
+
+  if (!parsedRes.success) throw new Error("failed to parse url from cloudinary response")
+
+  return parsedRes.data.secure_url;
 }
 
 export const PLACEHOLDER_USER: User = {
   _id: "",
   username: "",
-  pfp_url: "",
   liked_subject: [],
+  pfp_url: "",
   roles: [],
-  recent_viewed: [],
+  email: "",
 }
 
 export const PLACEHOLDER_SUBJECT: Subject = {
@@ -31,7 +66,7 @@ export const PLACEHOLDER_SUBJECT: Subject = {
   description: "",
   contents: [],
   likes: 0,
-  image_url: "",
+  image_url: null,
 }
 
 export const PLACEHOLDER_LESSON: Lesson = {

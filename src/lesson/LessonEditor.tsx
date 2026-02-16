@@ -9,6 +9,7 @@ import MainPageAppshell from "../main/MainPageAppshell";
 function LessonEditor({ mode, user, setUser } : { mode: "edit" | "create", user: User | null, setUser: React.Dispatch<User | null> }) {
   const [initialContent, setInitialContent] = useState<null | Lesson>(null)
   const [title, setTitle] = useState("");
+  const [studentOnly, setStudentOnly] = useState<boolean>(false);
   const [searchParams] = useSearchParams();
   const subjectId = searchParams.get('subjectId');
 
@@ -39,11 +40,12 @@ function LessonEditor({ mode, user, setUser } : { mode: "edit" | "create", user:
       setInitialContent({
         title: parsed.data.title,
         content: JSONcontent,
-        createdBy: parsed.data.createdBy,
+        createdBy: parsed.data.createdBy.username,
         _id: parsed.data._id,
         subject: parsed.data.subject,
       })
       setTitle(parsed.data.title);
+      setStudentOnly(parsed.data.student_only);
     }).catch((err) => {
       console.log(err)
       setInitialContent(null);
@@ -55,6 +57,7 @@ function LessonEditor({ mode, user, setUser } : { mode: "edit" | "create", user:
   return (
     <>
       <LessonEditorBody mode={mode} markdown={markdown} setMarkdown={setMarkdown} content={initialContent} 
+      studentOnly={studentOnly} setStudentOnly={setStudentOnly}
       isMarkdown={isMarkdown} setIsMarkdown={setIsMarkdown} Shell={(props) => (
         <MainPageAppshell {...props} user={user} setUser={setUser} navigate={navigate}></MainPageAppshell>
       )}

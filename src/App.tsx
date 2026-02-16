@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import '@mantine/core/styles.css';
 import '@mantine/tiptap/styles.css';
+import '@mantine/dropzone/styles.css';
 import { BrowserRouter } from 'react-router';
 import { http } from './libs/http'
 import Router from './Router';
