@@ -32,7 +32,7 @@ function SearchResult({ user, setUser }: { user: User | null, setUser: React.Dis
   const [error, setError] = useState<string>("")
   const [isOr, setIsOr] = useState<boolean>(false);
 
-  const [value, setValue] = useState<string>("");
+  const [value, setValue] = useState<string>(initalLocationState.keyword || '');
   const [tags, setTags] = useState<string[]>(initalLocationState.tags || []);
 
   const [searchResult, setSearchResult] = useState<ResultType>(PLACEHOLDER_RESULT);
