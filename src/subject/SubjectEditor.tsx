@@ -168,7 +168,7 @@ function SubjectEditor({ mode, user, setUser }: { mode: "edit" | "create", user:
       <Dropzone
         onDrop={handleDrop}
         onReject={(files) => console.log('rejected files', files)}
-        maxSize={5 * 1024 * 1024}
+        maxSize={3 * 1024 * 1024}
         accept={IMAGE_MIME_TYPE}
         h={200}
       >
@@ -187,7 +187,7 @@ function SubjectEditor({ mode, user, setUser }: { mode: "edit" | "create", user:
             <Text size="xl" inline>
               이미지를 드래그하거나 클릭해서 선택하세요!
             </Text>
-            <Text size="lg">(최대 5MB, 정사각형 이미지를 권장합니다.)</Text>
+            <Text size="lg">(최대 3MB, 정사각형 이미지를 권장합니다.)</Text>
           </div>
         </Group>
       </Dropzone>
