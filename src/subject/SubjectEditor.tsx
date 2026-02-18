@@ -140,7 +140,7 @@ function SubjectEditor({ mode, user, setUser }: { mode: "edit" | "create", user:
   }
 
   const handleValueSelect = (val: string) =>
-    setTags((cur) => 
+    setTags((cur) =>
       cur.includes(val) ? cur.filter((v) => v !== val) : [...cur, val]
     );
 
@@ -274,15 +274,21 @@ function SubjectEditor({ mode, user, setUser }: { mode: "edit" | "create", user:
                         return { ...sub, title: val }
                       })
                     }} />
-                  
-                  <Combobox store={combobox} onOptionSubmit={handleValueSelect}>
+
+                  <TextInput placeholder="과목 설명을 수정하세요" value={subject.description}
+                    onChange={(e) => {
+                      const val = e.currentTarget.value
+                      setSubject((sub) => ({ ...sub, description: val }))
+                    }} />
+
+                  <Combobox store={combobox} onOptionSubmit={handleValueSelect} >
                     <Combobox.DropdownTarget>
                       <PillsInput onClick={() => combobox.openDropdown()}>
                         <Pill.Group>
                           {displayTags}
 
                           <Combobox.EventsTarget>
-                            <PillsInput.Field 
+                            <PillsInput.Field
                               onFocus={() => combobox.openDropdown()}
                               onBlur={() => combobox.closeDropdown()}
                               onChange={() => {
@@ -330,7 +336,7 @@ function SubjectEditor({ mode, user, setUser }: { mode: "edit" | "create", user:
                       const v = e.currentTarget?.value ?? "";
                       setSubject((sub) => ({ ...sub, description: v }))
                     }} />
-                  
+
                   <Combobox store={combobox} onOptionSubmit={handleValueSelect}>
                     <Combobox.DropdownTarget>
                       <PillsInput onClick={() => combobox.openDropdown()}>
@@ -338,7 +344,7 @@ function SubjectEditor({ mode, user, setUser }: { mode: "edit" | "create", user:
                           {displayTags}
 
                           <Combobox.EventsTarget>
-                            <PillsInput.Field 
+                            <PillsInput.Field
                               onFocus={() => combobox.openDropdown()}
                               onBlur={() => combobox.closeDropdown()}
                               onChange={() => {

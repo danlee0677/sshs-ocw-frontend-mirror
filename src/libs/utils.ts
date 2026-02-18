@@ -3,7 +3,7 @@ import { http } from './http';
 import type { User, Lesson, Subject } from './types'
 import axios from 'axios';
 
-export const useableTags = ['Math', 'Physics', 'Informatics', 'Chemistry', 'Biology', 'Earch Science']
+export const useableTags = ['Math', 'Physics', 'Informatics', 'Chemistry', 'Biology', 'Earth Science']
 
 export function isUser(user: User | null): user is User {
   if (user && user._id.length > 0) {

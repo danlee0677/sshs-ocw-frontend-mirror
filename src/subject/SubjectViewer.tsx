@@ -122,7 +122,7 @@ function SubjectViewer({ user, setUser }: { user: User | null, setUser: React.Di
             {paddedLessons.slice((page - 1) * pageNum, page * pageNum).map((lesson, i) => {
               return (
                 lesson._id ?
-                  <UnstyledButton h="66.4px" w="100%"
+                  <UnstyledButton h="66.4px" w="100%" key={lesson._id}
                     style={{
                       backgroundColor: i % 2 === 0 ? "#f1f3f5" : "#ffffffff",
                       color: "inherit",

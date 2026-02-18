@@ -23,7 +23,7 @@ const PLACEHOLDER_RESULT: ResultType = {
 function SearchResult({ user, setUser }: { user: User | null, setUser: React.Dispatch<SetStateAction<User | null>> }) {
   const location = useLocation();
 
-  const initalLocationState = location.state || {};
+  const initalLocationState = location.state || { tags: [] };
 
   const [subjectTitle, setSubjectTitle] = useState<boolean>(true);
   const [subjectDescription, setSubjectDescription] = useState<boolean>(true);
@@ -33,7 +33,11 @@ function SearchResult({ user, setUser }: { user: User | null, setUser: React.Dis
   const [isOr, setIsOr] = useState<boolean>(false);
 
   const [value, setValue] = useState<string>(initalLocationState.keyword || '');
-  const [tags, setTags] = useState<string[]>(initalLocationState.tags || []);
+  const [tags, setTags] = useState<string[]>(initalLocationState.tags.map((tag: string) => {
+    const temp = decodeURIComponent(tag).replace(/\+/g, ' ').trim();
+    console.log(`Tag: "${temp}" | Codes: ${temp.split('').map(c => c.charCodeAt(0))}`);
+    return temp;
+  }) || []);
 
   const [searchResult, setSearchResult] = useState<ResultType>(PLACEHOLDER_RESULT);
 
