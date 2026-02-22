@@ -1,12 +1,14 @@
 import axios from "axios";
-import { useEffect, useState, type SetStateAction } from "react";
+import { useEffect, useState, useMemo, type SetStateAction } from "react";
 import { useLocation, useNavigate } from "react-router";
 import MainPageAppshell from "../main/MainPageAppshell";
 import type { User } from "../libs/types";
-import { Button, Checkbox, CheckIcon, Combobox, Flex, Group, Paper, Pill, PillsInput, ScrollArea, Stack, Table, Text, TextInput, Title, useCombobox } from "@mantine/core";
+import { Button, Checkbox, CheckIcon, Combobox, Flex, Group, Paper, Pill, PillsInput, ScrollArea, Stack, Table, Tabs, Text, TextInput, Title, useCombobox } from "@mantine/core";
 import { useableTags } from "../libs/utils";
 import { IconSearch } from "@tabler/icons-react";
 import classes from './search.module.css'
+
+type TabValue = "subjectTitle" | "subjectDescription" | "lessonTitle"
 
 interface ResultType {
   subjectTitle: { _id: string, title: string }[],
@@ -31,6 +33,8 @@ function SearchResult({ user, setUser }: { user: User | null, setUser: React.Dis
   const [keyword, setKeyword] = useState<string>(initalLocationState.keyword || '');
   const [error, setError] = useState<string>("")
   const [isOr, setIsOr] = useState<boolean>(false);
+
+  const [activeTab, setActiveTab] = useState<TabValue>("subjectTitle")
 
   const [value, setValue] = useState<string>(initalLocationState.keyword || '');
   const [tags, setTags] = useState<string[]>(initalLocationState.tags.map((tag: string) => {
@@ -125,147 +129,189 @@ function SearchResult({ user, setUser }: { user: User | null, setUser: React.Dis
       </Combobox.Option>
     ))
 
+  // make list for avaliable search type
+  const avaliableTabs = useMemo<TabValue[]>(() => {
+    const arr: (TabValue | false)[] = [
+      subjectTitle && "subjectTitle",
+      subjectDescription && "subjectDescription",
+      lessonTitle && "lessonTitle"
+    ]
+    return arr.filter(Boolean) as TabValue[];
+  }, [subjectTitle, subjectDescription, lessonTitle])
+
+  useEffect(() => {
+    if (avaliableTabs.length === 0) return;
+    if (!avaliableTabs.includes(activeTab)) {
+      setActiveTab(avaliableTabs[0])
+    }
+  }, [avaliableTabs, activeTab])
+
   return (
     <MainPageAppshell navigate={navigate} setUser={setUser} user={user}>
       <ScrollArea h="100%" w="100%" scrollbarSize={10}>
-        <Stack w="100%" h="100%" p="md">
-          <Group w='100%' justify="center">
-            <IconSearch onClick={handleSearch} className={classes.searchIcon} />
-            {error.length === 0 ?
-              <TextInput placeholder="검색어를 입력해 주세요."
-                value={value}
-                onChange={(e) => {
-                  setValue(e.currentTarget.value);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter')
-                    handleSearch();
-                }}
-                className={`${classes.searchBar}`} />
-              :
-              <TextInput placeholder="검색어를 입력해 주세요."
-                value={value} error={error}
-                onChange={(e) => {
-                  setValue(e.target.value);
-                  if (e.currentTarget.value.length < 20) setError("");
-                }}
-                className={`${classes.searchBar}`} />
-            }
-          </Group>
+        <Flex w="90%" h="100%" p="md" justify="center">
+          <Stack w='80%'>
+            <Group w={'100%'} justify="center">
+              <IconSearch onClick={handleSearch} className={classes.searchIcon} />
+              {error.length === 0 ?
+                <TextInput placeholder="검색어를 입력해 주세요."
+                  value={value}
+                  onChange={(e) => {
+                    setValue(e.currentTarget.value);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter')
+                      handleSearch();
+                  }}
+                  className={`${classes.searchBar}`} />
+                :
+                <TextInput placeholder="검색어를 입력해 주세요."
+                  value={value} error={error}
+                  onChange={(e) => {
+                    setValue(e.target.value);
+                    if (e.currentTarget.value.length < 20) setError("");
+                  }}
+                  className={`${classes.searchBar}`} />
+              }
+            </Group>
 
-          <Combobox store={combobox} onOptionSubmit={handleValueSelect}>
-            <Combobox.DropdownTarget>
-              <PillsInput onClick={() => combobox.openDropdown()}>
-                <Pill.Group>
-                  {displayTags}
+            <Group gap="md" w={'100%'} justify="center">
+              <Tabs w={'80%'} value={activeTab} onChange={(v) => v && setActiveTab(v as TabValue)} keepMounted={false}>
+                <Tabs.List>
+                  {subjectTitle && (
+                    <Tabs.Tab value="subjectTitle">과목 제목</Tabs.Tab>
+                  )}
+                  {subjectDescription && (
+                    <Tabs.Tab value="subjectDescription">과목 내용</Tabs.Tab>
+                  )}
+                  {lessonTitle && (
+                    <Tabs.Tab value="lessonTitle">강의 제목</Tabs.Tab>
+                  )}
+                </Tabs.List>
 
-                  <Combobox.EventsTarget>
-                    <PillsInput.Field
-                      onFocus={() => combobox.openDropdown()}
-                      onBlur={() => combobox.closeDropdown()}
-                      onChange={() => {
-                        combobox.updateSelectedOptionIndex();
-                      }}
-                      placeholder="태그를 선택하세요"
-                    />
-                  </Combobox.EventsTarget>
-                </Pill.Group>
-              </PillsInput>
-            </Combobox.DropdownTarget>
+                {subjectTitle && (
+                  <Tabs.Panel value="subjectTitle">
+                    <Flex>
+                      <Table>
+                        <Table.Thead>
+                          <Table.Tr>
+                            <Table.Td w={200}>제목</Table.Td>
+                            <Table.Td w={100}>링크</Table.Td>
+                          </Table.Tr>
+                        </Table.Thead>
+                        <Table.Tbody>
+                          {searchResult.subjectTitle.map((val) => {
+                            return <Table.Tr key={val._id}>
+                              <Table.Td>{texthighlight(val.title, keyword)}</Table.Td>
+                              <Table.Td>
+                                <Button onClick={() => navigate(`/subject/${val._id}`)}>바로가기</Button>
+                              </Table.Td>
+                            </Table.Tr>
+                          })}
+                        </Table.Tbody>
+                      </Table>
+                    </Flex>
+                  </Tabs.Panel>
+                )}
 
-            <Combobox.Dropdown>
-              <Combobox.Options>
-                {options.length > 0 ? options : <Combobox.Empty>Nothing found...</Combobox.Empty>}
-              </Combobox.Options>
-            </Combobox.Dropdown>
-          </Combobox>
+                {subjectDescription && (
+                  <Tabs.Panel value="subjectDescription">
+                    <Flex>
+                      <Table>
+                        <Table.Thead>
+                          <Table.Tr>
+                            <Table.Td w={200}>내용</Table.Td>
+                            <Table.Td w={100}>링크</Table.Td>
+                          </Table.Tr>
+                        </Table.Thead>
+                        <Table.Tbody>
+                          {searchResult.subjectDescription.map((val) => {
+                            return <Table.Tr key={val._id}>
+                              <Table.Td>{texthighlight(val.description, keyword)}</Table.Td>
+                              <Table.Td>
+                                <Button onClick={() => navigate(`/subject/${val._id}`)}>바로가기</Button>
+                              </Table.Td>
+                            </Table.Tr>
+                          })}
+                        </Table.Tbody>
+                      </Table>
+                    </Flex>
+                  </Tabs.Panel>
+                )}
 
-          <Paper>
-            <Checkbox label="과목 제목" checked={subjectTitle}
-              onChange={(e) => (setSubjectTitle(e.currentTarget.checked))} />
-            <Checkbox label="과목 내용" checked={subjectDescription}
-              onChange={(e) => (setSubjectDescription(e.currentTarget.checked))} />
-            <Checkbox label="강의 제목" checked={lessonTitle}
-              onChange={(e) => (setLessonTitle(e.currentTarget.checked))} />
-            <Checkbox label="태그 or로 검색" checked={isOr}
-              onChange={(e) => setIsOr(e.currentTarget.checked)} />
-          </Paper>
-          <Group gap="md">
-            {subjectTitle && (
-              <Flex>
-                <Stack>
-                  <Title order={3}>과목 제목</Title>
-                  <Table>
-                    <Table.Thead>
-                      <Table.Tr>
-                        <Table.Th w={300}>제목</Table.Th>
-                        <Table.Th w={100}>링크</Table.Th>
-                      </Table.Tr>
-                    </Table.Thead>
-                    <Table.Tbody>
-                      {searchResult.subjectTitle.map((val) => {
-                        return <Table.Tr key={val._id}>
-                          <Table.Td>{texthighlight(val.title, keyword)}</Table.Td>
-                          <Table.Td>
-                            <Button onClick={() => navigate(`/subject/${val._id}`)}>바로가기</Button>
-                          </Table.Td>
-                        </Table.Tr>
-                      })}
-                    </Table.Tbody>
-                  </Table>
-                </Stack>
-              </Flex>)
-            }
-            {subjectDescription && (
-              <Flex>
-                <Stack>
-                  <Title order={3}>과목 설명</Title>
-                  <Table>
-                    <Table.Thead>
-                      <Table.Tr>
-                        <Table.Td w={200}>설명</Table.Td>
-                        <Table.Td w={100}>링크</Table.Td>
-                      </Table.Tr>
-                    </Table.Thead>
-                    <Table.Tbody>
-                      {searchResult.subjectDescription.map((val) => {
-                        return <Table.Tr key={val._id}>
-                          <Table.Td>{texthighlight(val.description, keyword)}</Table.Td>
-                          <Table.Td>
-                            <Button onClick={() => navigate(`/subject/${val._id}`)}>바로가기</Button>
-                          </Table.Td>
-                        </Table.Tr>
-                      })}
-                    </Table.Tbody>
-                  </Table>
-                </Stack>
-              </Flex>)
-            }
-            {lessonTitle && (
-              <Flex>
-                <Stack>
-                  <Title order={3}>강의 제목</Title>
-                  <Table>
-                    <Table.Thead>
-                      <Table.Td w={200}>제목</Table.Td>
-                      <Table.Td w={100}>링크</Table.Td>
-                    </Table.Thead>
-                    <Table.Tbody>
-                      {searchResult.lessonTitle.map((val) => {
-                        return <Table.Tr key={val._id}>
-                          <Table.Td>{texthighlight(val.title, keyword)}</Table.Td>
-                          <Table.Td>
-                            <Button onClick={() => navigate(`/lesson/${val._id}?subjectId=${val.subject}`)}>바로가기</Button>
-                          </Table.Td>
-                        </Table.Tr>
-                      })}
-                    </Table.Tbody>
-                  </Table>
-                </Stack>
-              </Flex>)
-            }
-          </Group>
-        </Stack>
+                {lessonTitle && (
+                  <Tabs.Panel value="lessonTitle">
+                    <Flex>
+                      <Table>
+                        <Table.Thead>
+                          <Table.Td w={200}>제목</Table.Td>
+                          <Table.Td w={100}>링크</Table.Td>
+                        </Table.Thead>
+                        <Table.Tbody>
+                          {searchResult.lessonTitle.map((val) => {
+                            return <Table.Tr key={val._id}>
+                              <Table.Td>{texthighlight(val.title, keyword)}</Table.Td>
+                              <Table.Td>
+                                <Button onClick={() => navigate(`/lesson/${val._id}?subjectId=${val.subject}`)}>바로가기</Button>
+                              </Table.Td>
+                            </Table.Tr>
+                          })}
+                        </Table.Tbody>
+                      </Table>
+                    </Flex>
+                  </Tabs.Panel>
+                )}
+              </Tabs>
+            </Group>
+          </Stack>
+
+          <Stack w={'25%'} className={classes.GroupBox} align="center">
+            <Flex w={'80%'} direction={'column'} justify={'center'} h={'300px'} gap={'xl'} align={'center'}>
+              <Paper bg={'none'} w={'80%'}>
+                <Checkbox classNames={{label: classes.CheckBoxLabel, body: classes.CheckBox}}
+                label="과목 제목" checked={subjectTitle} color="white" iconColor="black"
+                  onChange={(e) => (setSubjectTitle(e.currentTarget.checked))} />
+                <Checkbox classNames={{label: classes.CheckBoxLabel, body: classes.CheckBox}}
+                label="과목 내용" checked={subjectDescription} color="white" iconColor="black"
+                  onChange={(e) => (setSubjectDescription(e.currentTarget.checked))} />
+                <Checkbox classNames={{label: classes.CheckBoxLabel, body: classes.CheckBox}}
+                label="강의 제목" checked={lessonTitle} color="white" iconColor="black"
+                  onChange={(e) => (setLessonTitle(e.currentTarget.checked))} />
+                <Checkbox classNames={{label: classes.CheckBoxLabel, body: classes.CheckBox}}
+                label="태그 or로 검색" checked={isOr}  color="white" iconColor="black"
+                  onChange={(e) => setIsOr(e.currentTarget.checked)} />
+              </Paper>
+              <Combobox store={combobox} onOptionSubmit={handleValueSelect}>
+                <Combobox.DropdownTarget>
+                  <PillsInput onClick={() => combobox.openDropdown()}>
+                    <Pill.Group>
+                      {displayTags}
+
+                      <Combobox.EventsTarget>
+                        <PillsInput.Field
+                          onFocus={() => combobox.openDropdown()}
+                          onBlur={() => combobox.closeDropdown()}
+                          onChange={() => {
+                            combobox.updateSelectedOptionIndex();
+                          }}
+                          placeholder={tags.length > 0 ? "" : "태그를 입력해 주세요"}
+                        />
+                      </Combobox.EventsTarget>
+                    </Pill.Group>
+                  </PillsInput>
+                </Combobox.DropdownTarget>
+
+                <Combobox.Dropdown>
+                  <Combobox.Options>
+                    {options.length > 0 ? options : <Combobox.Empty>Nothing found...</Combobox.Empty>}
+                  </Combobox.Options>
+                </Combobox.Dropdown>
+              </Combobox>
+            </Flex>
+          </Stack>
+
+
+        </Flex>
       </ScrollArea>
     </MainPageAppshell>
   )

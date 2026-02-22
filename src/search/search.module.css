@@ -1,3 +1,32 @@
+@font-face {
+    font-family: 'JalnanGothic';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_231029@1.1/JalnanGothic.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Paperozi_light';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-5Medium.woff2') format('woff2');
+    font-weight: 500;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Paperozi';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-display: swap;
+}
+
+.CheckBox {
+    height: 25px;
+}
+
+.CheckBoxLabel {
+    font-size: 18px;
+}
+
 .searchIcon:hover {
     cursor: pointer;
 }
@@ -5,3 +34,9 @@
 .searchBar {
     width: 50%;
 }
+
+.GroupBox {
+    font-family: 'Paperozi_light';
+    border: 3px rgb(147, 147, 147) solid;
+    border-radius: 10%;
+}  
