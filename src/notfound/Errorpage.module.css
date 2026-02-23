@@ -1,0 +1,251 @@
+/* ── Animations ─────────────────────────────────────────── */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) scale(1);    opacity: 0.4; }
+  50%       { transform: translateY(-20px) scale(1.2); opacity: 0.8; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(32px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes pulseRing {
+  0%   { transform: translate(-50%, -50%) scale(0.9); opacity: 0.6; }
+  100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0;   }
+}
+
+/* ── Entrance animation helpers ─────────────────────────── */
+.errorContainer {
+  opacity: 0;
+  animation: slideUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.d1 { animation-delay: 0.05s; }
+.d2 { animation-delay: 0.18s; }
+.d3 { animation-delay: 0.30s; }
+.d4 { animation-delay: 0.42s; }
+
+/* ── CSS custom properties: dark (default) ───────────────── */
+.page {
+  --bg:             #0d0d0d;
+  --glow-color:     rgba(224, 0, 0, 0.12);
+  --ring-border:    rgba(224, 0, 0, 0.18);
+  --line-primary:   rgba(224, 0, 0, 0.15);
+  --line-secondary: rgba(224, 0, 0, 0.07);
+  --particle-color: rgba(224, 0, 0, 0.25);
+  --code-stroke:    rgba(224, 0, 0, 0.5);
+  --divider-color:  rgba(224, 0, 0, 0.6);
+  --title-color:    #f5f0ee;
+  --desc-color:     rgba(200, 185, 180, 0.72);
+  --btn-border:     rgba(224, 0, 0, 0.55);
+  --btn-color:      #e00000;
+  --btn-hover-bg:   rgba(224, 0, 0, 0.08);
+  --btn-hover-border: rgba(224, 0, 0, 0.9);
+  --btn-home-color: rgba(200, 185, 180, 0.6);
+  --footer-color:   rgba(200, 185, 180, 0.25);
+
+  min-height: 100vh;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  font-family: Georgia, serif;
+  transition: background 0.3s ease;
+}
+
+/* ── CSS custom properties: light ────────────────────────── */
+.page.light {
+  --bg:             #faf7f5;
+  --glow-color:     rgba(200, 30, 30, 0.08);
+  --ring-border:    rgba(200, 30, 30, 0.15);
+  --line-primary:   rgba(200, 30, 30, 0.12);
+  --line-secondary: rgba(200, 30, 30, 0.05);
+  --particle-color: rgba(200, 30, 30, 0.18);
+  --code-stroke:    rgba(200, 30, 30, 0.35);
+  --divider-color:  rgba(200, 30, 30, 0.45);
+  --title-color:    #1a1210;
+  --desc-color:     rgba(80, 60, 55, 0.75);
+  --btn-border:     rgba(200, 30, 30, 0.45);
+  --btn-color:      #c01a1a;
+  --btn-hover-bg:   rgba(200, 30, 30, 0.06);
+  --btn-hover-border: rgba(200, 30, 30, 0.85);
+  --btn-home-color: rgba(80, 60, 55, 0.5);
+  --footer-color:   rgba(80, 60, 55, 0.3);
+}
+
+/* ── Background decorations ─────────────────────────────── */
+.glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--glow-color) 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.pulseRing {
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  border: 1px solid var(--ring-border);
+  top: 50%;
+  left: 50%;
+  animation: pulseRing 3s ease-out infinite;
+  pointer-events: none;
+}
+
+.lines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.line {
+  position: absolute;
+  top: -10%;
+  width: 1px;
+  height: 130%;
+  transform: rotate(12deg);
+}
+.linePrimary {
+  right: 15%;
+  background: linear-gradient(to bottom, transparent, var(--line-primary), transparent);
+}
+.lineSecondary {
+  right: 30%;
+  background: linear-gradient(to bottom, transparent, var(--line-secondary), transparent);
+}
+
+/* ── Particle ───────────────────────────────────────────── */
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--particle-color);
+  animation: float 6s ease-in-out infinite;
+}
+
+/* ── Content ────────────────────────────────────────────── */
+.content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+.code {
+  font-size: clamp(100px, 18vw, 160px);
+  font-weight: 900;
+  font-family: Georgia, serif;
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 2px var(--code-stroke);
+  letter-spacing: -0.04em;
+  user-select: none;
+  margin-bottom: -8px;
+}
+
+.dividerWrap {
+  width: 100%;
+  margin-top: 8px;
+  margin-bottom: 28px;
+}
+
+.divider {
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(to right, transparent, var(--divider-color), transparent);
+}
+
+.title {
+  color: var(--title-color);
+  font-size: clamp(1.6rem, 4vw, 2.4rem) !important;
+  font-weight: 400 !important;
+  font-style: italic;
+  letter-spacing: 0.01em;
+  line-height: 1.25 !important;
+  margin-bottom: 18px;
+}
+
+.descriptionWrap {
+  max-width: 460px;
+  margin: 0 auto;
+}
+
+.description {
+  color: var(--desc-color);
+  font-size: 0.92rem;
+  line-height: 1.75;
+  letter-spacing: 0.02em;
+  margin-bottom: 40px;
+}
+
+/* ── Buttons ────────────────────────────────────────────── */
+.btnRetry {
+  border-color: var(--btn-border) !important;
+  color: var(--btn-color) !important;
+  font-family: Georgia, serif !important;
+  font-style: italic !important;
+  letter-spacing: 0.06em !important;
+  font-size: 0.85rem !important;
+  padding: 10px 28px !important;
+  transition: all 0.25s ease !important;
+}
+.btnRetry:hover {
+  background: var(--btn-hover-bg) !important;
+  border-color: var(--btn-hover-border) !important;
+}
+
+.btnHome {
+  color: var(--btn-home-color) !important;
+  font-family: Georgia, serif !important;
+  font-style: italic !important;
+  letter-spacing: 0.06em !important;
+  font-size: 0.85rem !important;
+}
+
+/* ── Theme toggle button ─────────────────────────────────── */
+.themeToggle {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  z-index: 10;
+  background: transparent;
+  border: 1px solid var(--ring-border);
+  color: var(--desc-color);
+  font-family: Georgia, serif;
+  font-style: italic;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  border-radius: 2px;
+}
+.themeToggle:hover {
+  border-color: var(--btn-border);
+  color: var(--btn-color);
+}
+
+/* ── Footer ─────────────────────────────────────────────── */
+.footer {
+  position: absolute;
+  bottom: 24px;
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+
+.footerText {
+  color: var(--footer-color);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-family: Georgia, serif;
+}

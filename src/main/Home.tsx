@@ -68,6 +68,7 @@ function Home({ user, setUser }: { user: User | null, setUser: React.Dispatch<Us
   }
 
   const minLength = 4;
+  const paddedProgress = padArray(recentViewed, minLength);
 
   return (
     <MainPageAppshell user={user} setUser={setUser} navigate={navigate}>
@@ -105,11 +106,11 @@ function Home({ user, setUser }: { user: User | null, setUser: React.Dispatch<Us
               </Group>
             </Stack>
             <Group className={`${classes.Box1}`} w={'25%'} h={'100%'}>
-              <Stack w={'100%'} h={'100%'} className={`${classes.Vertical_align}`} gap={0}>
+              <Stack ref={ref} w={'100%'} h={'100%'} className={`${classes.Vertical_align}`} gap={0}>
                 <Text className={`${classes.JalnanGothic}`}>최근 이용한 강좌</Text>
-                {padArray(recentViewed, minLength).map((v, i) => (
+                {paddedProgress.map((v, i) => (
                   v.subject._id ?
-                    <Box ref={ref} className={`${classes.Box2} ${classes.Vertical_align}`} w={'100%'} h={'20%'} miw={0} key={v.lesson._id}>
+                    <Box className={`${classes.Box2} ${classes.Vertical_align}`} w={'100%'} h={'20%'} miw={0} key={v.lesson._id}>
                       <Group wrap='nowrap' w={'80%'} h={'100%'}>
                         <Link to={`/subject/${v.subject._id}`} className="block"
                           style={{

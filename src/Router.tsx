@@ -13,6 +13,7 @@ import SubjectViewer from "./subject/SubjectViewer";
 import { canEdit } from "./libs/utils";
 import SubjectEditor from "./subject/SubjectEditor";
 import SearchResult from "./search/SearchResult";
+import ErrorPage from "./notfound/ErrorPage";
 
 function Router({user, setUser} : {user: User | null, setUser: React.Dispatch<React.SetStateAction<User | null>>}) {
   return (
@@ -45,6 +46,8 @@ function Router({user, setUser} : {user: User | null, setUser: React.Dispatch<Re
       <Route path="profile">
         <Route path=":pageUserId" element={<Profile user={user} setUser={setUser}></Profile>}></Route>
       </Route>
+
+      <Route path="error" element={<ErrorPage />} />
 
       <Route path="notfound" element={<NotFoundPage user={user} setUser={setUser} />} />
 
