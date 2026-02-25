@@ -78,9 +78,7 @@ http.interceptors.response.use((res) => res, async (err: AxiosError) => {
 
     } catch (error) {
       console.log(error)
-      try {
-        await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/logout`, {}, { withCredentials: true }) 
-      } catch {}
+
       return Promise.reject(error);
     }
   }

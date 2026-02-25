@@ -1,3 +1,9 @@
+import { useNavigate, useParams, useSearchParams } from "react-router";
+import { http } from "../../libs/http";
+import LessonHeadingCard from "./LessonHeadingCard";
+import MainPageAppshell from "../appshell/MainPageAppshell";
+import { useUserContext } from "../../root";
+
 import React, { type ReactNode, useEffect, useMemo, useCallback, type SetStateAction, useState, useRef } from "react";
 import { Button, Group, ScrollArea, Stack, Textarea, Text, Flex, Divider, Paper, Modal, Image as ImageComponent, Loader, ThemeIcon, TextInput, Switch } from "@mantine/core";
 import { modals } from "@mantine/modals";
@@ -21,13 +27,12 @@ import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 // load all language: change if necessary
 import { createLowlight, all } from 'lowlight'
 import 'highlight.js/styles/github-dark.css' // todo: change when dark mode
-import type { Lesson, ShellComponent, User } from "../libs/types";
+import { lessonSchema, type Lesson, type ShellComponent, type User } from "../../libs/types";
 
-import { PLACEHOLDER_MARKDOWN } from "../libs/utils";
+import { PLACEHOLDER_MARKDOWN, uploadImage } from "../../libs/utils";
 import LessonSubmitCard from "./LessonSubmitCard";
 import type { NavigateFunction } from "react-router";
 import { useDisclosure } from "@mantine/hooks";
-import { uploadImage } from "../libs/utils";
 import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone';
 import { IconCheck, IconPhoto, IconUpload, IconX } from "@tabler/icons-react";
 
@@ -123,7 +128,12 @@ function getEditor(editor: Editor) {
   )
 }
 
-function LessonEditorBody({ mode, setIsMarkdown, isMarkdown, markdown, setMarkdown, content, Shell, before, lessonId, title, subjectId, user, navigate, studentOnly, setStudentOnly }: { mode: "edit" | "create", setIsMarkdown: React.Dispatch<SetStateAction<boolean>>, isMarkdown: boolean, markdown: string, setMarkdown: React.Dispatch<SetStateAction<string>>, content: Lesson | null, Shell: ShellComponent, before: ReactNode, lessonId: string | undefined, subjectId: string, title: string, user: User | null, navigate: NavigateFunction, studentOnly: boolean, setStudentOnly: React.Dispatch<SetStateAction<boolean>> }) {
+interface LessonEditorProps {
+  mode: "edit" | "create";
+}
+
+function LessonEditorBody({ mode, content, navigate }: { mode: "edit" | "create", setIsMarkdown: React.Dispatch<SetStateAction<boolean>>, isMarkdown: boolean, markdown: string, setMarkdown: React.Dispatch<SetStateAction<string>>, content: Lesson | null, Shell: ShellComponent, before: ReactNode, lessonId: string | undefined, subjectId: string, title: string, user: User | null, navigate: NavigateFunction, studentOnly: boolean, setStudentOnly: React.Dispatch<SetStateAction<boolean>> }) {
+  const { user } = useUserContext();
   // modal for image upload
   const [opened, { open, close }] = useDisclosure(false);
   const [youtubeOpened, { open: youtubeOpen, close: youtubeClose }] = useDisclosure(false);
@@ -137,6 +147,17 @@ function LessonEditorBody({ mode, setIsMarkdown, isMarkdown, markdown, setMarkdo
   // for inserting image
   const [lastActive, setLastActive] = useState<'tiptap' | 'markdown'>('tiptap');
   const markdownRef = useRef<HTMLTextAreaElement>(null);
+
+  // others
+  const [title, setTitle] = useState("");
+  const [studentOnly, setStudentOnly] = useState<boolean>(false);
+  const [searchParams] = useSearchParams();
+  const subjectId = searchParams.get('subjectId');
+
+  const [markdown, setMarkdown] = useState<string>("");
+  const [isMarkdown, setIsMarkdown] = useState<boolean>(true);
+
+  const { lessonId } = useParams();
 
   // persist through refresh: save 
   const debounceSave = useDebounce((json: any) => {
@@ -453,9 +474,10 @@ function LessonEditorBody({ mode, setIsMarkdown, isMarkdown, markdown, setMarkdo
   if (!user) return;
 
   return (
-    <Shell>
+    <MainPageAppshell navigate={navigate}>
       <Stack w="100%" h="100%" gap="sm" p="md">
-        {before}
+        <LessonHeadingCard editable={true} title={title} 
+        setTitle={setTitle} content={initialContent} />
 
         <Group justify="space-between" w="100%">
           <Group gap="md">
@@ -535,9 +557,69 @@ function LessonEditorBody({ mode, setIsMarkdown, isMarkdown, markdown, setMarkdo
 
         }
       </Stack>
-    </Shell>
+    </MainPageAppshell>
 
   )
 }
 
-export default LessonEditorBody;
+
+
+
+interface LessonEditorProps {
+  mode: "create" | "edit";
+  initialContent?: Lesson | null;
+}
+
+function LessonEditor({ mode, initialContent } : LessonEditorProps) {
+  const { user } = useUserContext();
+  
+  
+  const navigate = useNavigate();
+  useEffect(() => {
+    http.get(`${import.meta.env.VITE_API_URL}/api/auth/verify`).catch(() => {
+      navigate('/notfound');
+    })
+  })
+
+  useEffect(() => {
+    if (mode !== "edit") return;
+    
+    if (!lessonId || !subjectId) navigate('/notfound');
+
+    http.get(`${import.meta.env.VITE_API_URL}/api/lessons/${lessonId}`).then((res) => {
+      const parsed = lessonSchema.safeParse(res.data);
+      if (!parsed.success) throw new Error("Malformed lesson data on fetch");
+      if (!lessonId) throw new Error("no lessonId provided");
+
+      const JSONcontent = JSON.parse(parsed.data.content)
+
+      setInitialContent({
+        title: parsed.data.title,
+        content: JSONcontent,
+        createdBy: parsed.data.createdBy.username,
+        _id: parsed.data._id,
+        subject: parsed.data.subject,
+      })
+      setTitle(parsed.data.title);
+      setStudentOnly(parsed.data.student_only);
+    }).catch((err) => {
+      console.log(err)
+      setInitialContent(null);
+    })
+  }, [mode, lessonId, navigate, subjectId])
+
+  if ((mode === "edit" && !lessonId) || !subjectId || !user) return;
+
+  return (
+    <>
+      <LessonEditorBody mode={mode} markdown={markdown} setMarkdown={setMarkdown} content={initialContent} 
+      studentOnly={studentOnly} setStudentOnly={setStudentOnly}
+      isMarkdown={isMarkdown} setIsMarkdown={setIsMarkdown}
+      before={} 
+      lessonId={lessonId} title={title} subjectId={subjectId} user={user} navigate={navigate} />
+    </>
+    
+  )
+}
+
+export default LessonEditor

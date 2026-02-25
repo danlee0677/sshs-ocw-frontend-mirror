@@ -1,10 +1,10 @@
-import classes from './main.module.css'
+import classes from './newuser.module.css'
 import { Button, Flex, Group, Image, Stack, Space, Text, Title } from "@mantine/core";
 import { Link } from 'react-router';
 import type { NavigateFunction } from 'react-router';
 import logo from "@/assets/app-logo.png"
 
-function NewUser({ setStep, isMobile, navigate }: { setStep: Function, isMobile: boolean, navigate: NavigateFunction }) {
+export default function NewUser({ setStep, isMobile, navigate }: { setStep: Function, isMobile: boolean, navigate: NavigateFunction }) {
   return (
     <>
       {isMobile ? (
@@ -72,5 +72,3 @@ function NewUser({ setStep, isMobile, navigate }: { setStep: Function, isMobile:
     </>
   )
 }
-
-export default NewUser;

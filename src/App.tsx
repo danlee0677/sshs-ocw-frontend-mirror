@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import '@mantine/core/styles.css';
 import '@mantine/tiptap/styles.css';
 import '@mantine/dropzone/styles.css';
-import { BrowserRouter } from 'react-router';
 import { http } from './libs/http'
 import Router from './Router';
 import { MantineProvider, createTheme } from '@mantine/core';
@@ -34,11 +33,9 @@ function App() {
 
   return (
     <MantineProvider theme={theme} >
-      <BrowserRouter>
-        <ModalsProvider>
-          <Router user={user} setUser={setUser} />
-        </ModalsProvider>
-      </BrowserRouter>
+      <ModalsProvider>
+        <Router user={user} setUser={setUser} />
+      </ModalsProvider>
     </MantineProvider>
   );
 }

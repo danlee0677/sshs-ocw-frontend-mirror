@@ -3,7 +3,7 @@ import type { NavigateFunction } from "react-router";
 import { Editor } from "@tiptap/react";
 import type { User } from "../libs/types";
 import { http } from "../libs/http";
-import { LESSON_STORAGE_KEY, MARKDOWN_STORAGE_KEY } from "./LessonEditorBody";
+import { LESSON_STORAGE_KEY, MARKDOWN_STORAGE_KEY } from "../../routes/lesson/LessonEditorBody";
 
 export function handleLessonSubmit(mode: "edit" | "create", lessonId: string | undefined, editor: Editor, title: string, navigate: NavigateFunction, subjectId: string, user: User, student_only: boolean) {
   // todo: alert?

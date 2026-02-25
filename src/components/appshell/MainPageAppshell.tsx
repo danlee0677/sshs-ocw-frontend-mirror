@@ -1,14 +1,13 @@
 import React, { useEffect, type SetStateAction } from "react";
 import { AppShell, Group, Image, Title, Space, Flex, Stack, TextInput, UnstyledButton } from "@mantine/core";
 import { IconSearch } from '@tabler/icons-react';
-import { Link, type NavigateFunction } from "react-router";
+import { Link, type NavigateFunction, useFetcher } from "react-router";
 import { useState } from "react";
-import { linkStyle } from "../libs/styles";
+import { linkStyle } from "../../libs/styles";
 import classes from "./Appshell.module.css"
-import { http } from "../libs/http";
-import type { User } from "../libs/types";
 import logo from '@/assets/app-logo.png';
-import { isUser } from "../libs/utils";
+import { isUser } from "../../libs/utils";
+import { useUserContext } from "../../root";
 
 
 function handleSearch(value: string, navigate: NavigateFunction, setError: React.Dispatch<SetStateAction<string>>) {
@@ -19,9 +18,12 @@ function handleSearch(value: string, navigate: NavigateFunction, setError: React
   navigate('/search', { state: { keyword: value, tags: [] } });
 }
 
-function MainPageAppshell({ children, user, setUser, navigate }: { children: React.ReactNode, user: User | null, setUser: React.Dispatch<User | null>, navigate: NavigateFunction }) {
+function MainPageAppshell({ children, navigate }: { children: React.ReactNode, navigate: NavigateFunction }) {
   const [value, setValue] = useState("");
   const [error, setError] = useState("");
+
+  const { user } = useUserContext();
+  const fetcher = useFetcher();
 
   useEffect(() => {
     if (value.length === 0 || (2 <= value.length && value.length <= 20)) setError("");
@@ -86,12 +88,10 @@ function MainPageAppshell({ children, user, setUser, navigate }: { children: Rea
                   회원가입
                 </UnstyledButton>
               </> : <>
-                <UnstyledButton className={classes.LogOutButton} onClick={() => {
-                  http.post(`${import.meta.env.VITE_API_URL}/api/auth/logout`).then(() => {
-                    setUser(null);
-                    navigate('/')
-                  })
-                }}>로그아웃</UnstyledButton>
+                <fetcher.Form method="post" action="/action/auth/logout">
+                  <UnstyledButton type="submit" className={classes.LogOutButton}>로그아웃</UnstyledButton>
+                </fetcher.Form>
+
               </>
               }
               <Space w={0} />

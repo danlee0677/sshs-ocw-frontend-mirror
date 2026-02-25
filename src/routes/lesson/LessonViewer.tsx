@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { Title, Stack, Flex } from "@mantine/core";
-import LessonViewerAppshell from "./LessonViewerAppshell";
+import LessonViewerAppshell from "../../components/appshell/LessonViewerAppshell";
 import { type Lesson, lessonSchema, type Subject, subjectSchema } from "../libs/types";
 import { useNavigate, useParams, useSearchParams } from "react-router";
-import LessonViewerNavigateCard from "./LessonViewerNavigateCard";
+import LessonViewerNavigateCard from "../../components/lesson/LessonViewerNavigateCard";
 import { http } from '../libs/http'
-import LessonViewerBody from "./LessonViewerBody";
+import LessonViewerBody from "../../components/lesson/LessonViewerBody";
 import { PLACEHOLDER_LESSON, PLACEHOLDER_SUBJECT } from "../libs/utils";
 
 function LessonViewer() {

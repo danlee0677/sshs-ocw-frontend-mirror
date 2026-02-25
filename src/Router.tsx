@@ -1,11 +1,11 @@
 import { Routes, Route } from "react-router";
-import NotFoundPage from "./notfound/NotFoundPage";
+import NotFoundPage from "./error/NotFoundPage";
 import LessonViewer from "./lesson/LessonViewer";
 import Login from "./auth/Login";
 import type { User } from "./libs/types";
-import StartPage from "./main/StartPage";
+import StartPage from "./routes/startpage/StartPage";
 import LoginComplete from "./auth/LoginComplete";
-import Home from "./main/Home";
+import Home from "./routes/home/Home";
 import Profile from "./mypage/Profile"
 import Setting from "./setting/Setting"
 import LessonEditor from "./lesson/LessonEditor";
@@ -13,7 +13,7 @@ import SubjectViewer from "./subject/SubjectViewer";
 import { canEdit } from "./libs/utils";
 import SubjectEditor from "./subject/SubjectEditor";
 import SearchResult from "./search/SearchResult";
-import ErrorPage from "./notfound/ErrorPage";
+import ErrorPage from "./error/ErrorPage";
 
 function Router({user, setUser} : {user: User | null, setUser: React.Dispatch<React.SetStateAction<User | null>>}) {
   return (

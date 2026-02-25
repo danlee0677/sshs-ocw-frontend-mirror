@@ -1,9 +1,9 @@
 import { Box, Button, Container, Group, Stack, Text, Title, useMantineColorScheme } from "@mantine/core";
 import { useEffect, useState } from "react";
-import { useRouteError, isRouteErrorResponse, useNavigate } from "react-router";
+import { useNavigate, useRouteError, isRouteErrorResponse } from "react-router";
 import classes from './Errorpage.module.css'
 
-const particles = Array.from({ length: 18 }, (_, i) => ({
+const particles = Array.from({ length: 18 }, (_) => ({
   top: `${Math.random() * 100}%`,
   left: `${Math.random() * 100}%`,
   animationDelay: `${Math.random() * 6}s`,
@@ -14,6 +14,8 @@ const particles = Array.from({ length: 18 }, (_, i) => ({
 
 function ErrorPage() {
   const navigate = useNavigate();
+
+  const error = useRouteError();
   
   const [visible, setVisible] = useState(false);
   const { colorScheme } = useMantineColorScheme();
@@ -26,11 +28,27 @@ function ErrorPage() {
     return () => clearTimeout(t);
   }, []);
 
-  const title = "Something went wrong!"
-  const description = "We encountered an unexpected error while processing your request. Our team has been notified and is working on a fix. Please try again in a few moments, or contact support if the issue persists."
-  const code = "500"
-  const onRetry = () => navigate("/home");
-  const onGoHome = () => navigate("/home");
+  let title = "Something went wrong!"
+  let description = "We encountered an unexpected error while processing your request. Our team has been notified and is working on a fix. Please try again in a few moments, or contact support if the issue persists."
+  let code = "500"
+
+  if (isRouteErrorResponse(error)) {
+    code = error.status.toString();
+    title = error.statusText || "Oops!"
+    if (typeof error.data === "string") 
+      description = error.data;
+    else if (error.data?.message)
+      description = error.data.message;
+    else if (error.status === 404)
+      description = "The page you are looking for doesn't exist or has been moved.";
+  } else if (error instanceof Error) {
+    code = "Oops!"
+    title = "Application Error!"
+    description = error.message;
+  }
+
+  const onRetry = () => window.location.reload();
+  const onGoHome = () => navigate("/");
 
   return (
     <Box className={pageClass}>
