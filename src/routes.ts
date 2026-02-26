@@ -12,10 +12,11 @@ export default [
 
   // lesson
   ...prefix("lesson", [
-    //route("/create", "./routes/lesson/LessonEditor.tsx"),
+    route("/create", "./routes/lesson/LessonCreate.tsx"),
     route("/:lessonId", "./routes/lesson/LessonViewer.tsx"),
-    //route("/:lessonId/edit", "./routes/lesson/LessonEditor.tsx"),
+    route("/:lessonId/edit", "./routes/lesson/LessonEdit.tsx"),
   ]),
+  route("/action/lesson/submit", "./routes/lesson/action.lesson.submit.ts"),
 
   // catchall
   route("*", "./routes/catchall/Catchall.tsx"),

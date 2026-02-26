@@ -1,10 +1,8 @@
-import { useNavigate, useParams, useSearchParams } from "react-router";
-import { http } from "../../libs/http";
-import LessonHeadingCard from "./LessonHeadingCard";
+import { Form, useActionData, useNavigate, useNavigation } from "react-router";
 import MainPageAppshell from "../appshell/MainPageAppshell";
 import { useUserContext } from "../../root";
 
-import React, { type useEffect, useMemo, useCallback, type SetStateAction, useState, useRef } from "react";
+import React, { useMemo, useCallback, type SetStateAction, useEffect, useState, useRef } from "react";
 import { Button, Group, ScrollArea, Stack, Textarea, Text, Flex, Divider, Paper, Modal, Image as ImageComponent, Loader, ThemeIcon, TextInput, Switch } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import { Editor, useEditor } from '@tiptap/react'
@@ -27,37 +25,15 @@ import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 // load all language: change if necessary
 import { createLowlight, all } from 'lowlight'
 import 'highlight.js/styles/github-dark.css' // todo: change when dark mode
-import { lessonSchema, type Lesson } from "../../libs/types";
+import { type Lesson } from "../../libs/types";
 
-import { PLACEHOLDER_MARKDOWN, uploadImage } from "../../libs/utils";
-import LessonSubmitCard from "./LessonSubmitCard";
+import { LESSON_STORAGE_KEY, MARKDOWN_STORAGE_KEY, uploadImage } from "../../libs/utils";
 import { useDisclosure } from "@mantine/hooks";
 import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone';
 import { IconCheck, IconPhoto, IconUpload, IconX } from "@tabler/icons-react";
 
 
 const lowlight = createLowlight(all);
-
-export const LESSON_STORAGE_KEY = "LectureEditor_v01"
-export const MARKDOWN_STORAGE_KEY = "Markdown_v01"
-
-function getTiptapContentFromLocalStorage() {
-  try {
-    const raw = localStorage.getItem(LESSON_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : "여기에 강의를 작성하세요!"
-  } catch {
-    return "여기에 강의를 작성하세요!"
-  }
-}
-
-function getMarkdownContentFromLocalStorage() {
-  try {
-    const raw = localStorage.getItem(MARKDOWN_STORAGE_KEY);
-    return raw ? raw : PLACEHOLDER_MARKDOWN
-  } catch {
-    return PLACEHOLDER_MARKDOWN
-  }
-}
 
 function useDebounce<T extends (...args: any[]) => void>(fn: T, delay: number) {
   const timeout = useMemo<{ id: number | null }>(() => ({ id: null }), [])
@@ -129,12 +105,16 @@ function getEditor(editor: Editor) {
 
 interface LessonEditorProps {
   mode: "edit" | "create";
-  initialContent: Lesson;
+  initialContent: Lesson | null;
+  tiptapCached: object;
+  markdownCached: string;
+  subjectId: string;
 }
 
-function LessonEditorBody({ mode, initialContent }: LessonEditorProps) {
+export default function LessonEditor({ mode, initialContent, tiptapCached, markdownCached, subjectId }: LessonEditorProps) {
   const { user } = useUserContext();
   const navigate = useNavigate();
+
   // modal for image upload
   const [opened, { open, close }] = useDisclosure(false);
   const [youtubeOpened, { open: youtubeOpen, close: youtubeClose }] = useDisclosure(false);
@@ -149,16 +129,12 @@ function LessonEditorBody({ mode, initialContent }: LessonEditorProps) {
   const [lastActive, setLastActive] = useState<'tiptap' | 'markdown'>('tiptap');
   const markdownRef = useRef<HTMLTextAreaElement>(null);
 
-  // others
-  const [title, setTitle] = useState("");
-  const [studentOnly, setStudentOnly] = useState<boolean>(false);
-  const [searchParams] = useSearchParams();
-  const subjectId = searchParams.get('subjectId');
-
-  const [markdown, setMarkdown] = useState<string>("");
+  const [markdown, setMarkdown] = useState<string>(markdownCached);
   const [isMarkdown, setIsMarkdown] = useState<boolean>(true);
 
-  const { lessonId } = useParams();
+  const actionData = useActionData<{ error?: string }>();
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state !== "idle";
 
   // persist through refresh: save 
   const debounceSave = useDebounce((json: any) => {
@@ -176,6 +152,13 @@ function LessonEditorBody({ mode, initialContent }: LessonEditorProps) {
       console.log('Failed to save markdown', err);
     }
   }, 800)
+
+  // garbage collector
+  useEffect(() => {
+    return () => {
+      if (previewURL) URL.revokeObjectURL(previewURL);
+    }
+  }, [previewURL]);
 
   const editor = useEditor({
     shouldRerenderOnTransaction: true,
@@ -224,30 +207,13 @@ function LessonEditorBody({ mode, initialContent }: LessonEditorProps) {
       }),
     ],
     // try to fetch from localStorage
-    content: (initialContent.content ? initialContent.content : getTiptapContentFromLocalStorage()),
+    content: (initialContent ? initialContent.content : tiptapCached),
     onUpdate: ({ editor, transaction }) => {
       if (transaction.docChanged) debounceSave(editor.getJSON());
     },
     editable: true,
     onFocus: () => setLastActive('tiptap'),
   })
-
-  useEffect(() => {
-    setMarkdown(getMarkdownContentFromLocalStorage());
-    if (mode === "edit") {
-      if (editor && content) {
-        editor.commands.setContent(content.content, { contentType: 'json' })
-      }
-      setMarkdown(getEditorAsMarkdown());
-    }
-  }, [content]);
-
-  // garbage collector
-  useEffect(() => {
-    return () => {
-      if (previewURL) URL.revokeObjectURL(previewURL);
-    }
-  }, [previewURL]);
 
   const parseMarkdown = () => {
     if (!editor || !editor.markdown) {
@@ -262,14 +228,12 @@ function LessonEditorBody({ mode, initialContent }: LessonEditorProps) {
   }
 
   const getEditorAsMarkdown = () => {
-    if (!editor) return "";
     try {
       return editor.getMarkdown();
     } catch {
       return editor.getText();
     }
   }
-
 
   // for image uploads
   const handleOpenModal = () => {
@@ -325,18 +289,18 @@ function LessonEditorBody({ mode, initialContent }: LessonEditorProps) {
 
       const charBefore = text.charAt(start - 1);
       const needNewLineBefore = start > 0 && charBefore !== '\n';
-      
+
       const charAfter = text.charAt(end);
       const needNewLineAfter = end < text.length && charAfter !== '\n';
 
       let insertText = `![Image](${imageURL})`
-      
-      if (needNewLineBefore) 
+
+      if (needNewLineBefore)
         insertText = '\n' + insertText;
 
       if (needNewLineAfter)
         insertText = insertText + '\n';
-      
+
       const newText = markdown.slice(0, start) + insertText + text.slice(end);
       setMarkdown(newText);
     }
@@ -361,18 +325,18 @@ function LessonEditorBody({ mode, initialContent }: LessonEditorProps) {
 
       const charBefore = text.charAt(start - 1);
       const needNewLineBefore = start > 0 && charBefore !== '\n';
-      
+
       const charAfter = text.charAt(end);
       const needNewLineAfter = end < text.length && charAfter !== '\n';
 
       let insertText = `:::youtube {src="${youtubeURL}" width="640" height="360" start="0"} :::`
-      
-      if (needNewLineBefore) 
+
+      if (needNewLineBefore)
         insertText = '\n' + insertText;
 
       if (needNewLineAfter)
         insertText = insertText + '\n';
-      
+
       const newText = markdown.slice(0, start) + insertText + text.slice(end);
       setMarkdown(newText);
     } else {
@@ -415,7 +379,7 @@ function LessonEditorBody({ mode, initialContent }: LessonEditorProps) {
         </Group>
       </Dropzone>
 
-      <Button variant="subtle" color="gray" onClick={handleClose}>
+      <Button type="button" variant="subtle" color="gray" onClick={handleClose}>
         취소
       </Button>
     </Stack>
@@ -434,10 +398,10 @@ function LessonEditorBody({ mode, initialContent }: LessonEditorProps) {
       </div>
 
       <Group grow mt="md">
-        <Button variant="default" onClick={() => setActiveStep('select')}>
+        <Button type="button" variant="default" onClick={() => setActiveStep('select')}>
           뒤로
         </Button>
-        <Button onClick={handleUpload}>
+        <Button type="button" onClick={handleUpload}>
           이미지 업로드
         </Button>
       </Group>
@@ -457,7 +421,7 @@ function LessonEditorBody({ mode, initialContent }: LessonEditorProps) {
         <IconCheck size={40} />
       </ThemeIcon>
       <Text fw={700} size="xl" mt="md">업로드가 완료되었습니다!</Text>
-      <Button onClick={handleClose} mt="md">
+      <Button type="button" onClick={handleClose} mt="md">
         닫기
       </Button>
     </Stack>
@@ -466,161 +430,111 @@ function LessonEditorBody({ mode, initialContent }: LessonEditorProps) {
   const renderYoutubeInsertion = () => (
     <Stack align="stretch" justify="center" h="100%" w="100%" gap="md">
       <Text size="xl">업로드하려는 Youtube URL을 입력하세요!</Text>
-      <TextInput value={youtubeURL} 
+      <TextInput value={youtubeURL}
         onChange={(e) => setYoutubeURL(e.currentTarget.value)} />
-      <Button onClick={() => insertYoutube(youtubeURL)}>업로드</Button>
+      <Button type="button" onClick={() => insertYoutube(youtubeURL)}>업로드</Button>
     </Stack>
   )
 
-  if (!user) return;
+  if (!user) return null;
 
   return (
     <MainPageAppshell navigate={navigate}>
-      <Stack w="100%" h="100%" gap="sm" p="md">
-        <LessonHeadingCard editable={true} title={title} 
-        setTitle={setTitle} content={initialContent} />
+      <Form method={mode === "create" ? "post" : "patch"} style={{ width: '100%', height: '100%' }}
+        action="/action/lesson/submit">
+        <Stack w="100%" h="100%" gap="sm" p="md">
+          { /* hidden inputs for form submission */}
+          <input type="hidden" name="tiptapContent" value={editor ? JSON.stringify(editor.getJSON()) : ""} />
+          <input type="hidden" name="subjectId" value={subjectId} />
+          <input type="hidden" name="userId" value={user._id} />
+          <input type="hidden" name="lessonId" value={initialContent?._id || ""} />
 
-        <Group justify="space-between" w="100%">
-          <Group gap="md">
-            <Button onClick={() => handleMarkdownChange(isMarkdown, setIsMarkdown, setMarkdown, getEditorAsMarkdown)}>
-              {isMarkdown ? "에디터 모드로" : "마크다운 모드로"}
-            </Button>
+          {actionData?.error && (<Text c="red" ta="center">{actionData.error}</Text>)}
 
-            {isMarkdown ? <Button onClick={parseMarkdown}>마크다운 컴파일</Button> : <></>}
-            {isMarkdown ?
-              <Button onClick={() => {
-                setMarkdown(getEditorAsMarkdown());
-              }}>에디터를 마크다운으로</Button> : <></>}
+          <TextInput name="title" defaultValue={initialContent?.title || ""}
+            placeholder="강좌 제목을 입력하세요" required />
 
-            <Button onClick={handleYoutubeOpen} >유튜브 영상 추가</Button>
-            <Button onClick={handleOpenModal}>이미지 추가</Button>
-            <Group>
-              <Switch checked={studentOnly} onChange={(e) => setStudentOnly(e.currentTarget.checked)} />
-              <Text>설곽 학생만 열람 제한</Text>
+          <Group justify="space-between" w="100%">
+            <Group gap="md">
+              <Button type="button" onClick={() => handleMarkdownChange(isMarkdown, setIsMarkdown, setMarkdown, getEditorAsMarkdown)}>
+                {isMarkdown ? "에디터 모드로" : "마크다운 모드로"}
+              </Button>
+
+              {isMarkdown ? <Button type="button" onClick={parseMarkdown}>마크다운 컴파일</Button> : <></>}
+              {isMarkdown ?
+                <Button type="button" onClick={() => {
+                  setMarkdown(getEditorAsMarkdown());
+                }}>에디터를 마크다운으로</Button> : <></>}
+
+              <Button type="button" onClick={handleYoutubeOpen} >유튜브 영상 추가</Button>
+              <Button type="button" onClick={handleOpenModal}>이미지 추가</Button>
+              <Group>
+                <Switch name="studentOnly" defaultChecked={initialContent?.student_only || false} />
+                <Text>설곽 학생만 열람 제한</Text>
+              </Group>
             </Group>
+
+            <Modal
+              opened={opened}
+              onClose={handleClose}
+              title="Upload Image"
+              centered
+              size="lg"
+              closeOnClickOutside={activeStep !== 'uploading'}
+              withCloseButton={activeStep !== 'uploading'}
+            >
+              {activeStep === 'select' && renderSelectStep()}
+              {activeStep === 'verify' && renderVerifyStep()}
+              {activeStep === 'uploading' && renderUploadStep()}
+              {activeStep === 'success' && renderSuccessStep()}
+            </Modal>
+
+            <Modal
+              opened={youtubeOpened}
+              onClose={handleYoutubeClose}
+              title="Upload Youtube"
+              centered
+              size="lg"
+            >
+              {renderYoutubeInsertion()}
+            </Modal>
+
+            <Button type="submit" loading={isSubmitting}>
+              {mode === "create" ? "강의 생성" : "강의 수정"}
+            </Button>
           </Group>
 
-          <Modal
-            opened={opened}
-            onClose={handleClose}
-            title="Upload Image"
-            centered
-            size="lg"
-            closeOnClickOutside={activeStep !== 'uploading'}
-            withCloseButton={activeStep !== 'uploading'}
-          >
-            {activeStep === 'select' && renderSelectStep()}
-            {activeStep === 'verify' && renderVerifyStep()}
-            {activeStep === 'uploading' && renderUploadStep()}
-            {activeStep === 'success' && renderSuccessStep()}
-          </Modal>
 
-          <Modal
-            opened={youtubeOpened}
-            onClose={handleYoutubeClose}
-            title="Upload Youtube"
-            centered
-            size="lg"
-          >
-            {renderYoutubeInsertion()}
-          </Modal>
+          {isMarkdown ?
+            <Flex w="100%" gap="md" align="center" justify="center"
+              flex={1} direction='row' style={{ minHeight: 0 }}>
+              <Paper h="100%" w="50%" withBorder>
+                <ScrollArea w="100%" h="100%" scrollbarSize={5} >
+                  <Textarea ref={markdownRef} value={markdown} onChange={(event) => {
+                    setMarkdown(event.currentTarget.value)
+                    debounceMarkdownSave(event.currentTarget.value)
+                  }}
+                    onFocus={() => setLastActive('markdown')}
+                    autosize minRows={20} variant="unstyled" />
+                </ScrollArea>
+              </Paper>
+              <Divider orientation="vertical" />
+              <Paper h="100%" w="50%">
+                {getEditor(editor)}
+              </Paper>
+            </Flex>
+            :
+            <Flex w="100%" gap="md" align="center" justify="center"
+              flex={1} direction='row' style={{ minHeight: 0 }}>
+              <Paper h="100%" w="70%">
+                {getEditor(editor)}
+              </Paper>
+            </Flex>
 
-          <LessonSubmitCard mode={mode} lessonId={lessonId} title={title} subjectId={subjectId}
-            navigate={navigate} user={user} editor={editor} student_only={studentOnly} />
-        </Group>
-
-
-        {isMarkdown ?
-          <Flex w="100%" gap="md" align="center" justify="center"
-            flex={1} direction='row' style={{ minHeight: 0 }}>
-            <Paper h="100%" w="50%" withBorder>
-              <ScrollArea w="100%" h="100%" scrollbarSize={5} >
-                <Textarea ref={markdownRef} value={markdown} onChange={(event) => {
-                  setMarkdown(event.currentTarget.value)
-                  debounceMarkdownSave(event.currentTarget.value)
-                }}
-                  onFocus={() => setLastActive('markdown')}
-                  autosize minRows={20} variant="unstyled" />
-              </ScrollArea>
-            </Paper>
-            <Divider orientation="vertical" />
-            <Paper h="100%" w="50%">
-              {getEditor(editor)}
-            </Paper>
-          </Flex>
-          :
-          <Flex w="100%" gap="md" align="center" justify="center"
-            flex={1} direction='row' style={{ minHeight: 0 }}>
-            <Paper h="100%" w="70%">
-              {getEditor(editor)}
-            </Paper>
-          </Flex>
-
-        }
-      </Stack>
+          }
+        </Stack>
+      </Form>
     </MainPageAppshell>
 
   )
 }
-
-
-
-
-interface LessonEditorProps {
-  mode: "create" | "edit";
-  initialContent?: Lesson | null;
-}
-
-function LessonEditor({ mode, initialContent } : LessonEditorProps) {
-  const { user } = useUserContext();
-  
-  
-  const navigate = useNavigate();
-  useEffect(() => {
-    http.get(`${import.meta.env.VITE_API_URL}/api/auth/verify`).catch(() => {
-      navigate('/notfound');
-    })
-  })
-
-  useEffect(() => {
-    if (mode !== "edit") return;
-    
-    if (!lessonId || !subjectId) navigate('/notfound');
-
-    http.get(`${import.meta.env.VITE_API_URL}/api/lessons/${lessonId}`).then((res) => {
-      const parsed = lessonSchema.safeParse(res.data);
-      if (!parsed.success) throw new Error("Malformed lesson data on fetch");
-      if (!lessonId) throw new Error("no lessonId provided");
-
-      const JSONcontent = JSON.parse(parsed.data.content)
-
-      setInitialContent({
-        title: parsed.data.title,
-        content: JSONcontent,
-        createdBy: parsed.data.createdBy.username,
-        _id: parsed.data._id,
-        subject: parsed.data.subject,
-      })
-      setTitle(parsed.data.title);
-      setStudentOnly(parsed.data.student_only);
-    }).catch((err) => {
-      console.log(err)
-      setInitialContent(null);
-    })
-  }, [mode, lessonId, navigate, subjectId])
-
-  if ((mode === "edit" && !lessonId) || !subjectId || !user) return;
-
-  return (
-    <>
-      <LessonEditorBody mode={mode} markdown={markdown} setMarkdown={setMarkdown} content={initialContent} 
-      studentOnly={studentOnly} setStudentOnly={setStudentOnly}
-      isMarkdown={isMarkdown} setIsMarkdown={setIsMarkdown}
-      before={} 
-      lessonId={lessonId} title={title} subjectId={subjectId} user={user} navigate={navigate} />
-    </>
-    
-  )
-}
-
-export default LessonEditor

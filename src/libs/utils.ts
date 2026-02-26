@@ -5,6 +5,9 @@ import axios from 'axios';
 
 export const useableTags = ['Math', 'Physics', 'Informatics', 'Chemistry', 'Biology', 'Earth Science']
 
+export const LESSON_STORAGE_KEY = "LectureEditor_v01"
+export const MARKDOWN_STORAGE_KEY = "Markdown_v01"
+
 export function isUser(user: User | null): user is User {
   if (user && user._id.length > 0) {
     return true;
@@ -83,6 +86,7 @@ export const PLACEHOLDER_LESSON: Lesson = {
   createdBy: "anon",
   _id: "",
   subject: "",
+  student_only: false,
 }
 
 export const PLACEHOLDER_MARKDOWN: string = `
