@@ -1,7 +1,7 @@
-import { Group, Space, Text } from "@mantine/core";
+import { Group, Text } from "@mantine/core";
 import { Link } from "react-router";
-import { linkStyle } from "../libs/styles";
-import type { Lesson, Subject } from "../libs/types";
+import { linkStyle } from "../../libs/styles";
+import type { Lesson, Subject } from "../../libs/types";
 
 function LessonViewerNavigateCard({ subject, lesson }: { subject: Subject, lesson: Lesson }) {
   const prev = "< Prev";
@@ -11,16 +11,15 @@ function LessonViewerNavigateCard({ subject, lesson }: { subject: Subject, lesso
   const ind = subject.contents.findIndex((val) => val._id === lesson._id)
 
   return (
-    <Group gap={0}>
+    <Group gap={0} justify="space-between">
       {(ind - 1) >= pageMin ? 
       <Link to={`/lesson/${subject.contents[ind - 1]._id}?subjectId=${subject._id}`} style={linkStyle}>
-        <Text size="md" color="#000000">{prev}</Text>
+        <Text size="md" c="#000000">{prev}</Text>
       </Link> : <Text size="md" color="#999999">{prev}</Text>}
       
-      <Space w={600} />
       {(ind + 1) < pageMax ? 
       <Link to={`/lesson/${subject.contents[ind + 1]._id}?subjectId=${subject._id}`} style={linkStyle}>
-        <Text size="md" color="#000000">{next}</Text>
+        <Text size="md" c="#000000">{next}</Text>
       </Link> : <Text size="md" color="#999999">{next}</Text>}
     </Group>
   )

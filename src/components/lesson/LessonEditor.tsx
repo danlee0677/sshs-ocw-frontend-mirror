@@ -4,7 +4,7 @@ import LessonHeadingCard from "./LessonHeadingCard";
 import MainPageAppshell from "../appshell/MainPageAppshell";
 import { useUserContext } from "../../root";
 
-import React, { type ReactNode, useEffect, useMemo, useCallback, type SetStateAction, useState, useRef } from "react";
+import React, { type useEffect, useMemo, useCallback, type SetStateAction, useState, useRef } from "react";
 import { Button, Group, ScrollArea, Stack, Textarea, Text, Flex, Divider, Paper, Modal, Image as ImageComponent, Loader, ThemeIcon, TextInput, Switch } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import { Editor, useEditor } from '@tiptap/react'
@@ -27,11 +27,10 @@ import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 // load all language: change if necessary
 import { createLowlight, all } from 'lowlight'
 import 'highlight.js/styles/github-dark.css' // todo: change when dark mode
-import { lessonSchema, type Lesson, type ShellComponent, type User } from "../../libs/types";
+import { lessonSchema, type Lesson } from "../../libs/types";
 
 import { PLACEHOLDER_MARKDOWN, uploadImage } from "../../libs/utils";
 import LessonSubmitCard from "./LessonSubmitCard";
-import type { NavigateFunction } from "react-router";
 import { useDisclosure } from "@mantine/hooks";
 import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone';
 import { IconCheck, IconPhoto, IconUpload, IconX } from "@tabler/icons-react";
@@ -130,10 +129,12 @@ function getEditor(editor: Editor) {
 
 interface LessonEditorProps {
   mode: "edit" | "create";
+  initialContent: Lesson;
 }
 
-function LessonEditorBody({ mode, content, navigate }: { mode: "edit" | "create", setIsMarkdown: React.Dispatch<SetStateAction<boolean>>, isMarkdown: boolean, markdown: string, setMarkdown: React.Dispatch<SetStateAction<string>>, content: Lesson | null, Shell: ShellComponent, before: ReactNode, lessonId: string | undefined, subjectId: string, title: string, user: User | null, navigate: NavigateFunction, studentOnly: boolean, setStudentOnly: React.Dispatch<SetStateAction<boolean>> }) {
+function LessonEditorBody({ mode, initialContent }: LessonEditorProps) {
   const { user } = useUserContext();
+  const navigate = useNavigate();
   // modal for image upload
   const [opened, { open, close }] = useDisclosure(false);
   const [youtubeOpened, { open: youtubeOpen, close: youtubeClose }] = useDisclosure(false);
@@ -223,7 +224,7 @@ function LessonEditorBody({ mode, content, navigate }: { mode: "edit" | "create"
       }),
     ],
     // try to fetch from localStorage
-    content: (content ? content.content : getTiptapContentFromLocalStorage()),
+    content: (initialContent.content ? initialContent.content : getTiptapContentFromLocalStorage()),
     onUpdate: ({ editor, transaction }) => {
       if (transaction.docChanged) debounceSave(editor.getJSON());
     },

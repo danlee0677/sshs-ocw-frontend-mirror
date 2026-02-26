@@ -134,7 +134,7 @@ function Home() {
                           <Link to={`/subject/${v.subject._id}`}>
                             <Text style={{ color: "black" }} truncate fw={'bold'}>{v.subject.title}</Text>
                           </Link>
-                          <Link to={`/lesson/${v.lesson._id}?subjectId=${v.subject._id}`}>
+                          <Link to={`/lesson/${v.lesson._id}`}>
                             <Text style={{ color: "black" }} truncate>{v.lesson.title}</Text>
                           </Link>
                         </Stack>

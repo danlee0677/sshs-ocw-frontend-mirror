@@ -1,50 +1,21 @@
 import { AppShell, Box, Divider, Group, Flex, Image, Stack, ScrollArea, Space, Text, Title } from "@mantine/core";
-import { Link, useNavigate, useParams, useSearchParams } from "react-router";
-import { linkStyle } from "../libs/styles";
-import { useState, useEffect } from "react";
-import { PLACEHOLDER_SUBJECT } from "../libs/utils";
-import { http } from "../libs/http";
+import { Link } from "react-router";
+import { linkStyle } from "../../libs/styles";
 import classes from "./lessonViewer.module.css"
-import { type RecentView, subjectSchema, type Subject, recentViewSchema } from "../libs/types";
-import logo from '../assets/app-logo.png'
-import z from "zod";
+import { type RecentView, type Subject, type Lesson } from "../../libs/types";
+import logo from '../../assets/app-logo.png'
 
-function LessonViewerAppshell({ children }: { children: React.ReactNode }) {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+interface LessonViewerAppshellProps {
+  children: React.ReactNode;
+  subject: Subject;
+  lesson: Lesson;
+  progress: Array<RecentView>;
+}
 
-  const [subject, setSubject] = useState<Subject>(PLACEHOLDER_SUBJECT);
-  const { lessonId } = useParams();
-  const subjectId = searchParams.get('subjectId');
+export default function LessonViewerAppshell({ children, subject, lesson, progress }: LessonViewerAppshellProps) {
+  const ind = subject.contents.findIndex((val) => val._id === lesson._id)
 
-  const [viewed, setViewed] = useState<RecentView[]>([]);
-
-  useEffect(() => {
-    if (!subjectId || !lessonId) navigate('/notfound');
-
-    http.get(`${import.meta.env.VITE_API_URL}/api/subjects/${subjectId}`).then((res) => {
-      const parsed = subjectSchema.safeParse(res.data)
-
-      if (!parsed.success) throw new Error("Fetched subject does not meet Module type");
-      setSubject(parsed.data);
-    }).catch((err) => {
-      console.log(err);
-      navigate('/notfound');
-    })
-
-    http.get(`${import.meta.env.VITE_API_URL}/api/progress?subjectId=${subjectId}`).then((res) => {
-      const parsed = z.array(recentViewSchema).safeParse(res.data);
-      if (!parsed.success) throw new Error("Failed to fetch View History(Progress)");
-      setViewed(parsed.data);
-    }).catch((err) => {
-      console.log(err);
-      navigate('/notfound');
-    })
-  }, [subjectId, subject, navigate])
-
-  const ind = subject.contents.findIndex((val) => val._id === lessonId)
-
-  const highlightArray = subject.contents.map((v) => viewed.some(item => item.lesson._id === v._id));
+  const highlightArray = subject.contents.map((v) => progress.some(item => item.lesson._id === v._id));
 
   return (
     <AppShell
@@ -92,13 +63,13 @@ function LessonViewerAppshell({ children }: { children: React.ReactNode }) {
                       <Text
                         className={`${classes.ProgressText}`}
                         component={Link}
-                        to={`/lesson/${item._id}?subjectId=${subjectId}`}
+                        to={`/lesson/${item._id}`}
                         h={'100%'}>{item.title}</Text>
                     </Group>
                   </>
                 })}
                 <Flex h={'60px'} className={classes.ProgressGroup} align="center" justify="center">
-                  <Text h={'100%'} component={Link} to={`/subject/${subjectId}`} className={classes.ProgressText}>과목으로 돌아가기</Text>
+                  <Text h={'100%'} component={Link} to={`/subject/${subject._id}`} className={classes.ProgressText}>과목으로 돌아가기</Text>
                 </Flex>
               </Stack>
 
@@ -117,5 +88,3 @@ function LessonViewerAppshell({ children }: { children: React.ReactNode }) {
     </AppShell>
   )
 }
-
-export default LessonViewerAppshell;

@@ -1,7 +1,6 @@
-import { redirect, useLoaderData, type LoaderFunctionArgs } from "react-router";
+import { useLoaderData, type LoaderFunctionArgs } from "react-router";
 import LessonEditor from "../../components/lesson/LessonEditor"
 import { http } from "../../libs/http";
-import { isAxiosError } from "axios";
 import { lessonSchema, userSchema } from "../../libs/types";
 // import your Zod schemas here!
 
@@ -24,11 +23,11 @@ export async function clientLoader({ params }: LoaderFunctionArgs) {
       _id: parsed.data._id,
       content: JSON.parse(parsed.data.content),
       student_only: parsed.data.student_only,
-      createdBy: parsed.data.createdBy,
+      createdBy: parsed.data.createdBy.username,
     }};
   } catch (err) {
     if (err instanceof Response) throw err;
-    
+    // if AxiosError or any other - throw!
     throw err;
   }
 }

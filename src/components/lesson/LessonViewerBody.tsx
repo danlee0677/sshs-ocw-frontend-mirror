@@ -1,4 +1,3 @@
-import { type ReactNode, useEffect } from "react";
 import { useEditor } from '@tiptap/react'
 import { RichTextEditor, Link } from '@mantine/tiptap'
 import StarterKit from "@tiptap/starter-kit";
@@ -18,13 +17,21 @@ import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 // load all language: change if necessary
 import { createLowlight, all } from 'lowlight'
 import 'highlight.js/styles/github-dark.css' // todo: change when dark mode
-import { Flex, ScrollArea, Stack, Space } from "@mantine/core";
-import type { ShellComponent } from "../libs/types";
+import { Flex, ScrollArea, Stack, Space, Title } from "@mantine/core";
+import LessonViewerAppshell from "../appshell/LessonViewerAppshell";
+import type { Lesson, RecentView, Subject } from "../../libs/types";
+import LessonViewerNavigateCard from "./LessonViewerNavigateCard";
 
 
 const lowlight = createLowlight(all);
 
-function LessonViewerBody({ content, Shell, before, after }: { content: object | null, Shell: ShellComponent, before: ReactNode, after: ReactNode }) {
+interface LessonViewerProps {
+  lesson: Lesson;
+  subject: Subject;
+  progress: Array<RecentView>
+}
+
+function LessonViewerBody({ lesson, subject, progress }: LessonViewerProps) {
   const editor = useEditor({
     shouldRerenderOnTransaction: true,
     extensions: [
@@ -68,36 +75,35 @@ function LessonViewerBody({ content, Shell, before, after }: { content: object |
         tabSize: 4,
       }),
     ],
-    // try to fetch from localStorage
-    content: content,
+    content: lesson.content,
     editable: false,
   })
 
-  useEffect(() => {
-    if (!editor) return;
-    if (content == null) return;
-    editor.commands.setContent(content as any, { emitUpdate: false });
-  }, [content, editor]);
-
   return (
-    <Shell>
+    <LessonViewerAppshell subject={subject} lesson={lesson} progress={progress}>
       <ScrollArea w="100%" h="100%" scrollbarSize={10} >
         <RichTextEditor editor={editor} >
           <Flex h="100%" w="100%" justify="center">
-            <Stack h="100%" w="700" align="stretch" gap={0}>
-              <Space h="sm" />
-              {before}
+              <Stack w="70%" justify='center'>
+                <Space h="sm" />
+
+                <Stack gap="md" w="100%">
+                <LessonViewerNavigateCard subject={subject} lesson={lesson} />
+                <Title order={1}>{lesson.title}</Title>
+                <Flex w="100%" justify="flex-end">
+                  <Title order={4}>{lesson.createdBy}</Title>
+                </Flex>
+              </Stack>
               <Space h="md" />
 
               <RichTextEditor.Content />
 
               <Space h="md" />
-              {after}
             </Stack>
           </Flex>
         </RichTextEditor>
       </ScrollArea>
-    </Shell>
+    </LessonViewerAppshell>
   )
 }
 

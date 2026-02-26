@@ -59,6 +59,7 @@ export interface Lesson {
   createdBy: string,
   _id: string,
   subject: string,
+  student_only: boolean,
 }
 
 export const subjectSchema = z.object({

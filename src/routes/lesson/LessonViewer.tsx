@@ -1,88 +1,56 @@
-import { useEffect, useState } from "react";
-import { Title, Stack, Flex } from "@mantine/core";
-import LessonViewerAppshell from "../../components/appshell/LessonViewerAppshell";
-import { type Lesson, lessonSchema, type Subject, subjectSchema } from "../libs/types";
-import { useNavigate, useParams, useSearchParams } from "react-router";
-import LessonViewerNavigateCard from "../../components/lesson/LessonViewerNavigateCard";
-import { http } from '../libs/http'
+import { type Lesson, lessonSchema, recentViewSchema, subjectSchema } from "../../libs/types";
+import { useLoaderData, type LoaderFunctionArgs } from "react-router";
+import { http } from '../../libs/http'
 import LessonViewerBody from "../../components/lesson/LessonViewerBody";
-import { PLACEHOLDER_LESSON, PLACEHOLDER_SUBJECT } from "../libs/utils";
+import z from "zod";
 
-function LessonViewer() {
-  const { lessonId } = useParams()
-  const [searchParams] = useSearchParams();
-  const subjectId = searchParams.get('subjectId');
 
-  const [subject, setSubject] = useState<Subject>(PLACEHOLDER_SUBJECT);
-  const [lesson, setLesson] = useState<Lesson>(PLACEHOLDER_LESSON);
+export async function clientLoader({ params }: LoaderFunctionArgs) {
+  try {
+    const parsed = z.object({ lessonId: z.string() }).safeParse(params)
 
-  const navigate = useNavigate();
+    if (!parsed.success) throw new Response("존재하지 않는 강의입니다!", { status: 404 });
 
-  // fetch lesson from routes
-  useEffect(() => {
-    if (!lessonId) {
-      navigate('/notfound');
-      return;
+    const res = await http.get(`${import.meta.env.VITE_API_URL}/api/lessons/${parsed.data.lessonId}`)
+    const lessonParse = lessonSchema.safeParse(res.data);
+    console.log(res.data)
+
+    if (!lessonParse.success) throw new Response("Failed to parse lesson from server", { status: 400 })
+    const content = JSON.parse(lessonParse.data.content);
+
+    const lesson: Lesson = {
+      _id: lessonParse.data._id,
+      title: lessonParse.data.title,
+      content: content,
+      subject: lessonParse.data.subject,
+      createdBy: lessonParse.data.createdBy.username,
+      student_only: lessonParse.data.student_only,
     }
+
+    console.log(lesson)
+
+    const subRes = await http.get(`${import.meta.env.VITE_API_URL}/api/subjects/${lesson.subject}`)
+    const subjectParsed = subjectSchema.safeParse(subRes.data);
     
-    http.get(`${import.meta.env.VITE_API_URL}/api/lessons/${lessonId}`).then((res) => {
-      const parsed = lessonSchema.safeParse(res.data)
+    if (!subjectParsed.success) throw new Response("존재하지 않는 과목의 강의입니다!", { status: 404 });
 
-      console.log(res.data)
+    const progressRes = await http.get(`${import.meta.env.VITE_API_URL}/api/progress?subjectId=${lesson.subject}`)
+    const progressParsed = z.array(recentViewSchema).safeParse(progressRes.data);
+    console.log(progressRes.data);
 
-      if (!parsed.success) {
-        throw new Error("Fetched lesson does not meet res type")
-      }
+    if (!progressParsed.success) throw new Response("Failed to parse progress from server", { status: 400 })
 
-      const contentJSON = JSON.parse(parsed.data.content)
-      setLesson({
-        title: parsed.data.title,
-        content: contentJSON,
-        createdBy: parsed.data.createdBy.username,
-        _id: parsed.data._id,
-        subject: parsed.data.subject
-      })
-      // if (lesson._id !== lessonId || lesson.module !== moduleId) throw new Error("lesson Id mismatch");
-    }).catch((err) => {
-      console.log(err)
-      navigate('/notfound');
-    })
-
-    http.get(`${import.meta.env.VITE_API_URL}/api/subjects/${subjectId}`).then((res) => {
-      const parsed = subjectSchema.safeParse(res.data);
-      if (!parsed.success) throw new Error("Fetched Subject does not meet type");
-
-      setSubject({
-        _id: parsed.data._id,
-        title: parsed.data.title,
-        likes: parsed.data.likes,
-        image_url: parsed.data.image_url,
-        description: parsed.data.description,
-        contents: parsed.data.contents,
-        tags: parsed.data.tags,
-      })
-    }).catch((err) => {
-      console.log(err);
-      navigate("/notfound");
-    })
-  }, [lessonId, subjectId, navigate])
-  // todo: give the appshell `module` fetched with useEffect
-  return (
-    <>
-      { lesson._id && (
-      <LessonViewerBody content={lesson.content} Shell={LessonViewerAppshell}
-        before={
-        <Stack gap="md" w="100%">
-          <LessonViewerNavigateCard subject={subject} lesson={lesson} />
-          <Title order={1}>{lesson.title}</Title>
-          <Flex w="100%" justify="flex-end">
-            <Title order={4}>{lesson.createdBy}</Title>
-          </Flex>
-        </Stack>
-        } after={<></>} /> )
-      }
-    </>
-  )
+    return { lesson, subject: subjectParsed.data, progress: progressParsed.data};
+  } catch (err) {
+    if (err instanceof Response) throw err;
+    throw err;
+  }
 }
 
-export default LessonViewer;
+export default function LessonViewer() {
+  const { lesson, subject, progress } = useLoaderData<typeof clientLoader>();
+
+  return (
+    <LessonViewerBody lesson={lesson} subject={subject} progress={progress} />
+  )
+}

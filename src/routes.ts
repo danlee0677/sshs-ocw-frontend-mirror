@@ -1,8 +1,8 @@
-import { type RouteConfig, route, } from "@react-router/dev/routes";
+import { type RouteConfig, index, prefix, route, } from "@react-router/dev/routes";
 
 export default [
   // home
-  route("/", "./routes/startpage/StartPage.tsx"),
+  index("./routes/startpage/StartPage.tsx"),
   route("/home", "./routes/home/Home.tsx"),
 
   // auth
@@ -11,7 +11,12 @@ export default [
   route("/action/auth/logout", "./routes/auth/action.logout.ts"),
 
   // lesson
-  // route("/lesson/create", "./routes/lesson/LessonEditor.tsx"),
-  // route("/lesson/:lessonId", "./routes/lesson/LessonViewer.tsx"),
-  // route("/lesson/:lessonId/edit", "./routes/lesson/LessonEditor.tsx"),
+  ...prefix("lesson", [
+    //route("/create", "./routes/lesson/LessonEditor.tsx"),
+    route("/:lessonId", "./routes/lesson/LessonViewer.tsx"),
+    //route("/:lessonId/edit", "./routes/lesson/LessonEditor.tsx"),
+  ]),
+
+  // catchall
+  route("*", "./routes/catchall/Catchall.tsx"),
 ] satisfies RouteConfig;
