@@ -84,10 +84,10 @@ function LessonViewerBody({ lesson, subject, progress }: LessonViewerProps) {
       <ScrollArea w="100%" h="100%" scrollbarSize={10} >
         <RichTextEditor editor={editor} >
           <Flex h="100%" w="100%" justify="center">
-              <Stack w="70%" justify='center'>
-                <Space h="sm" />
+            <Stack w="70%" justify='center'>
+              <Space h="sm" />
 
-                <Stack gap="md" w="100%">
+              <Stack gap="md" w="100%">
                 <LessonViewerNavigateCard subject={subject} lesson={lesson} />
                 <Title order={1}>{lesson.title}</Title>
                 <Flex w="100%" justify="flex-end">
