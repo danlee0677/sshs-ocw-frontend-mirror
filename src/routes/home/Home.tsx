@@ -4,7 +4,7 @@ import { useElementSize } from '@mantine/hooks';
 import classes from './main.module.css'
 import { ProgressCard } from './Progress'
 import { CustomBadge } from "./CustomBadge";
-import { recentViewSchema, type RecentView } from "../../libs/types";
+import { recentViewSchema, userSchema, type RecentView } from "../../libs/types";
 import { Link, redirect, useLoaderData } from "react-router";
 import { http } from "../../libs/http";
 import z from "zod";
@@ -28,7 +28,12 @@ const PLACEHOLDER_RECENT_VIEW: RecentView = {
 
 export async function clientLoader() {
   try {
-    const res = await http.get(`${import.meta.env.VITE_API_URL}/api/progress?count=4`)
+    const userRes = await http.get(`${import.meta.env.VITE_API_URL}/api/auth/verify`);
+    const userParsed = userSchema.safeParse(userRes.data);
+
+    if (!userParsed.success) throw new Error("Failed to verify user")
+
+    const res = await http.get(`${import.meta.env.VITE_API_URL}/api/progress/${userParsed.data._id}?count=4`)
     const parsed = z.array(recentViewSchema).safeParse(res.data);
 
     if (!parsed.success) {

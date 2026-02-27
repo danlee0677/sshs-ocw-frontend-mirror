@@ -1,34 +1,16 @@
-import React, { useEffect, type SetStateAction } from "react";
-import { AppShell, Group, Image, Title, Space, Flex, Stack, TextInput, UnstyledButton } from "@mantine/core";
+import { type ReactNode } from "react";
+import { AppShell, Group, Image, Title, Space, Flex, Stack, TextInput, UnstyledButton, Button } from "@mantine/core";
 import { IconSearch } from '@tabler/icons-react';
-import { Link, type NavigateFunction, useFetcher, useNavigate } from "react-router";
-import { useState } from "react";
+import { Form, Link, useFetcher } from "react-router";
 import { linkStyle } from "../../libs/styles";
 import classes from "./Appshell.module.css"
 import logo from '@/assets/app-logo.png';
 import { isUser } from "../../libs/utils";
 import { useUserContext } from "../../root";
 
-
-function handleSearch(value: string, navigate: NavigateFunction, setError: React.Dispatch<SetStateAction<string>>) {
-  if (value.length > 20) {
-    setError("검색어 길이는 20자 이하여야 합니다!")
-    return;
-  }
-  navigate('/search', { state: { keyword: value, tags: [] } });
-}
-
-function MainPageAppshell({ children }: { children: React.ReactNode }) {
-  const [value, setValue] = useState("");
-  const [error, setError] = useState("");
-
+function MainPageAppshell({ children }: { children: ReactNode }) {
   const { user } = useUserContext();
   const fetcher = useFetcher();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (value.length === 0 || (2 <= value.length && value.length <= 20)) setError("");
-  }, [value])
 
   return (
     <AppShell
@@ -49,31 +31,22 @@ function MainPageAppshell({ children }: { children: React.ReactNode }) {
 
           <Flex w="60%" h="100%" align={"center"} justify="center">
             <Stack w='100%' justify="center">
-              <Group w='100%' justify="center" className={`${classes.searchArea}`}>
-                <IconSearch className={`${classes.searchIcon}`}
-                  onClick={() => handleSearch(value, navigate, setError)}></IconSearch>
-                {error.length === 0 ?
+              <Form action="/search" method="get" style={{ width: '100%' }}>
+                <Group w='100%' justify="center" className={`${classes.searchArea}`}>
+                  <Button type="submit" style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0 }}>
+                    <IconSearch className={`${classes.searchIcon}`} color="black" />
+                  </Button>
                   <TextInput placeholder="검색어를 입력해 주세요."
-                    value={value}
-                    onChange={(e) => { setValue(e.target.value) }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        handleSearch(e.currentTarget.value, navigate, setError);
-                      }
-                    }}
-                    className={`${value ? classes.searchBar : classes.searchBar_animate}`} />
-                  :
-                  <TextInput placeholder="검색어를 입력해 주세요."
-                    value={value} error={error}
-                    onChange={(e) => { setValue(e.target.value) }}
-                    className={`${value ? classes.searchBar : classes.searchBar_animate}`} />
-                }
-              </Group>
+                    name="keyword"
+                    maxLength={20}
+                    className={`${classes.dynamicSearchBar}`} />
+                </Group>
+              </Form>
               <Group w={'100%'} justify="center" gap={'xl'}>
-                <UnstyledButton onClick={() => navigate('/search', { state: { keyword: "", tags: ["Physics"] } })}>물리</UnstyledButton>
-                <UnstyledButton onClick={() => navigate('/search', { state: { keyword: "", tags: ["Chemistry"] } })}>화학</UnstyledButton>
-                <UnstyledButton onClick={() => navigate('/search', { state: { keyword: "", tags: ["Biology"] } })}>생명과학</UnstyledButton>
-                <UnstyledButton onClick={() => navigate('/search', { state: { keyword: "", tags: ["Earth Science"] } })}>지구과학</UnstyledButton>
+                <UnstyledButton component={Link} to="/search?tags=Physics" style={linkStyle}>물리</UnstyledButton>
+                <UnstyledButton component={Link} to="/search?tags=Chemistry" style={linkStyle}>화학</UnstyledButton>
+                <UnstyledButton component={Link} to="/search?tags=Biology" style={linkStyle}>생명과학</UnstyledButton>
+                <UnstyledButton component={Link} to="/search?tags=Earth+Science" style={linkStyle}>지구과학</UnstyledButton>
               </Group>
             </Stack>
           </Flex>

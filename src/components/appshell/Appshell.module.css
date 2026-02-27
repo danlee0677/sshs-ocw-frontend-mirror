@@ -7,27 +7,23 @@
 }
 
 .LogOutButton:hover {
-    transition: all 0.4s ease-in-out;
     transform: translateY(-5px);
     box-shadow: 0px 2px 2px 1px rgba(0, 0, 0, 0.262);
-    border: 2px solid gray;
 }
 
 .searchIcon:hover {
     cursor: pointer;
 }
 
-.searchArea:hover .searchBar_animate {
-    transition: all 0.4s ease-out;
-    width: 50%;
-}
 
-.searchBar_animate {
+.dynamicSearchBar {
     transition: all 0.4s ease-out;
     width: 0px;
     overflow: hidden;
 }
 
-.searchBar {
+.searchArea:hover .dynamicSearchBar,
+.dynamicSearchBar:focus-within,
+.dynamicSearchBar:has(input:not(:placeholder-shown)) {
     width: 50%;
 }

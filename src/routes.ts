@@ -21,6 +21,9 @@ export default [
   // profile
   route("/profile/:pageUserId", "./routes/mypage/Profile.tsx"),
 
+  // search
+  route("/search", "./routes/search/SearchResult.tsx"),
+
   // catchall
   route("*", "./routes/catchall/Catchall.tsx"),
 ] satisfies RouteConfig;

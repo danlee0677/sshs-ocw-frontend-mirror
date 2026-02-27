@@ -1,4 +1,4 @@
-import { type Lesson, lessonSchema, recentViewSchema, subjectSchema } from "../../libs/types";
+import { type Lesson, lessonSchema, recentViewSchema, subjectSchema, userSchema } from "../../libs/types";
 import { useLoaderData, type LoaderFunctionArgs } from "react-router";
 import { http } from '../../libs/http'
 import LessonViewerBody from "../../components/lesson/LessonViewerBody";
@@ -13,7 +13,6 @@ export async function clientLoader({ params }: LoaderFunctionArgs) {
 
     const res = await http.get(`${import.meta.env.VITE_API_URL}/api/lessons/${parsed.data.lessonId}`)
     const lessonParse = lessonSchema.safeParse(res.data);
-    console.log(res.data)
 
     if (!lessonParse.success) throw new Response("Failed to parse lesson from server", { status: 400 })
     const content = JSON.parse(lessonParse.data.content);
@@ -27,20 +26,26 @@ export async function clientLoader({ params }: LoaderFunctionArgs) {
       student_only: lessonParse.data.student_only,
     }
 
-    console.log(lesson)
-
     const subRes = await http.get(`${import.meta.env.VITE_API_URL}/api/subjects/${lesson.subject}`)
     const subjectParsed = subjectSchema.safeParse(subRes.data);
-    
+
     if (!subjectParsed.success) throw new Response("존재하지 않는 과목의 강의입니다!", { status: 404 });
 
-    const progressRes = await http.get(`${import.meta.env.VITE_API_URL}/api/progress?subjectId=${lesson.subject}`)
-    const progressParsed = z.array(recentViewSchema).safeParse(progressRes.data);
-    console.log(progressRes.data);
+    try {
+      const userRes = await http.get(`${import.meta.env.VITE_API_URL}/api/auth/verify`);
+      const userParse = userSchema.safeParse(userRes.data);
+      if (!userParse.success) throw new Error("no user");
 
-    if (!progressParsed.success) throw new Response("Failed to parse progress from server", { status: 400 })
+      const progressRes = await http.get(`${import.meta.env.VITE_API_URL}/api/progress/${userParse.data._id}?subjectId=${lesson.subject}`)
+      const progressParsed = z.array(recentViewSchema).safeParse(progressRes.data);
 
-    return { lesson, subject: subjectParsed.data, progress: progressParsed.data};
+      if (!progressParsed.success) throw new Response("Failed to parse progress from server", { status: 400 })
+      return { lesson, subject: subjectParsed.data, progress: progressParsed.data };
+    } catch (err) {
+      if (err instanceof Response) throw err;
+
+      return { lesson, subject: subjectParsed.data, progress: [] }
+    }
   } catch (err) {
     if (err instanceof Response) throw err;
     throw err;
