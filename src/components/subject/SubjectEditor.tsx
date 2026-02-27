@@ -4,7 +4,7 @@ import { useDisclosure, useListState } from "@mantine/hooks";
 import { type Subject } from "../../libs/types";
 import { PLACEHOLDER_SUBJECT, uploadImage, useableTags } from "../../libs/utils";
 import OrderTable from "./OrderTable";
-import classes from "./subjectViewer.module.css"
+import classes from "./subject.module.css"
 import MainPageAppshell from "../appshell/MainPageAppshell";
 import { Dropzone, IMAGE_MIME_TYPE } from "@mantine/dropzone";
 import { IconCheck, IconPhoto, IconUpload, IconX } from "@tabler/icons-react";
@@ -153,8 +153,7 @@ function SubjectEditor({ mode, initialContent }: SubjectEditorProps) {
       <div style={{ position: 'relative', height: 250, width: '100%', background: '#f8f9fa', borderRadius: 8 }}>
         <Image
           src={previewURL}
-          h={250}
-          fit="contain"
+          h={250} fit="contain"
           style={{ borderRadius: 8 }}
         />
       </div>
