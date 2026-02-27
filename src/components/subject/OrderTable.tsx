@@ -18,7 +18,7 @@ import { IconGripVertical } from '@tabler/icons-react';
 import { Button, Table } from '@mantine/core';
 import { type UseListStateHandlers } from '@mantine/hooks';
 import classes from './OrderTable.module.css';
-import type { OrderData, OrderDataRow } from '../libs/types';
+import type { OrderData, OrderDataRow } from '../../libs/types';
 import type { NavigateFunction } from 'react-router';
 
 interface RowProps {
@@ -46,7 +46,7 @@ function SortableRow({ item, navigate, subjectId }: RowProps) {
       </Table.Td>
       <Table.Td pt={'lg'} pb={'lg'} w={'80%'} className={classes.JalnanGothic}>{item.title}</Table.Td>
       <Table.Td w={'10%'}>
-        <Button variant="outline" onClick={() => {
+        <Button type="button" variant="outline" onClick={() => {
           navigate(`/lesson/${item._id}/edit?subjectId=${subjectId}`)
         }}>수정</Button>
       </Table.Td>

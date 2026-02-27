@@ -99,7 +99,7 @@ function Home() {
                       나의 생각
                     </Flex>
                   </Box>
-                  <Image w={'150px'} src={user.pfp_url} className={`${classes.Main_pfp_image}`} bdrs={'80px'} mr={'60px'}></Image>
+                  <Image w="150px" h="150px" fit="cover" src={user.pfp_url} className={`${classes.Main_pfp_image}`} radius="80px" mr={'60px'}></Image>
                   <Flex direction="column" justify={'center'}>
                     <Title className={`${classes.Inline} ${classes.JalnanGothic}`} mb={'lg'}>{user?.username}님</Title>
                     <Flex className={classes.Inline}>
@@ -131,7 +131,7 @@ function Home() {
                           alignItems: 'center',  // Centers the image vertically
                           height: '100%',        // Forces <a> to fill the Group's height
                         }}>
-                        <Image fit='contain' w={'auto'} h={'80%'} src={v.subject.image_url} className={classes.Image1} />
+                        <Image fit="cover" w='75' h={'75'} src={v.subject.image_url} className={classes.Image1} />
                       </Link>
                       {!isNarrow && (
                         <Stack gap={0} miw={0}>
