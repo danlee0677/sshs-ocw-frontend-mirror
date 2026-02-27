@@ -1,4 +1,4 @@
-import { Form, useActionData, useNavigate, useNavigation } from "react-router";
+import { Form, useActionData, useNavigation } from "react-router";
 import MainPageAppshell from "../appshell/MainPageAppshell";
 import { useUserContext } from "../../root";
 
@@ -113,7 +113,6 @@ interface LessonEditorProps {
 
 export default function LessonEditor({ mode, initialContent, tiptapCached, markdownCached, subjectId }: LessonEditorProps) {
   const { user } = useUserContext();
-  const navigate = useNavigate();
 
   // modal for image upload
   const [opened, { open, close }] = useDisclosure(false);
@@ -439,7 +438,7 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
   if (!user) return null;
 
   return (
-    <MainPageAppshell navigate={navigate}>
+    <MainPageAppshell>
       <Form method={mode === "create" ? "post" : "patch"} style={{ width: '100%', height: '100%' }}
         action="/action/lesson/submit">
         <Stack w="100%" h="100%" gap="sm" p="md">

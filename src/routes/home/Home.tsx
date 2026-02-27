@@ -5,7 +5,7 @@ import classes from './main.module.css'
 import { ProgressCard } from './Progress'
 import { CustomBadge } from "./CustomBadge";
 import { recentViewSchema, type RecentView } from "../../libs/types";
-import { Link, redirect, useLoaderData, useNavigate } from "react-router";
+import { Link, redirect, useLoaderData } from "react-router";
 import { http } from "../../libs/http";
 import z from "zod";
 import { useUserContext } from "../../root";
@@ -50,7 +50,6 @@ export async function clientLoader() {
 function Home() {
   const { ref, width } = useElementSize()
   const isNarrow = width < 150;
-  const navigate = useNavigate();
 
   const { recentViewed } = useLoaderData<typeof clientLoader>();
 
@@ -81,7 +80,7 @@ function Home() {
   if (!user) return null;
 
   return (
-    <MainPageAppshell navigate={navigate}>
+    <MainPageAppshell>
       <Box p="md" w="100%" h="100%">
         <Group className={`${classes.Vertical_align} ${classes.Main1}`} w={'100%'} h={'65vh'}>
           <Stack w={'50%'} h={'100%'}>

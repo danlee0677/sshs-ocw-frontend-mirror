@@ -1,7 +1,7 @@
 import React, { useEffect, type SetStateAction } from "react";
 import { AppShell, Group, Image, Title, Space, Flex, Stack, TextInput, UnstyledButton } from "@mantine/core";
 import { IconSearch } from '@tabler/icons-react';
-import { Link, type NavigateFunction, useFetcher } from "react-router";
+import { Link, type NavigateFunction, useFetcher, useNavigate } from "react-router";
 import { useState } from "react";
 import { linkStyle } from "../../libs/styles";
 import classes from "./Appshell.module.css"
@@ -18,12 +18,13 @@ function handleSearch(value: string, navigate: NavigateFunction, setError: React
   navigate('/search', { state: { keyword: value, tags: [] } });
 }
 
-function MainPageAppshell({ children, navigate }: { children: React.ReactNode, navigate: NavigateFunction }) {
+function MainPageAppshell({ children }: { children: React.ReactNode }) {
   const [value, setValue] = useState("");
   const [error, setError] = useState("");
 
   const { user } = useUserContext();
   const fetcher = useFetcher();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (value.length === 0 || (2 <= value.length && value.length <= 20)) setError("");
@@ -41,7 +42,7 @@ function MainPageAppshell({ children, navigate }: { children: React.ReactNode, n
             <Link to="/" style={linkStyle}>
               <Group gap="md" align="center" h="100%">
                 <Image alt="logo" h="40" w="auto" src={logo} />
-                <Title order={3}>SSHS OCW</Title>
+                <Title order={3}>SSHS TIPS</Title>
               </Group>
             </Link>
           </Flex>

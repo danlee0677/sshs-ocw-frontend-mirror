@@ -1,11 +1,11 @@
 import { Box, Group, Image, Pagination, ScrollArea, Space, Stack, Table, Text, Title } from "@mantine/core";
-import { type RecentView, recentViewSchema, type User } from "../libs/types";
-import MainPageAppshell from "../main/MainPageAppshell";
-import { Link, useNavigate, useParams } from "react-router";
-import { http } from "../libs/http";
+import { recentViewSchema, type User } from "../../libs/types";
+import MainPageAppshell from "../../components/appshell/MainPageAppshell";
+import { Link, useLoaderData, type LoaderFunctionArgs } from "react-router";
+import { http } from "../../libs/http";
 import classes from "./Profile.module.css"
-import { useEffect, useState } from "react";
-import { PLACEHOLDER_USER } from "../libs/utils";
+import { useState } from "react";
+import { PLACEHOLDER_USER } from "../../libs/utils";
 import z from "zod";
 
 const SubjectResponseSchema = z.array(z.object({
@@ -15,58 +15,56 @@ const SubjectResponseSchema = z.array(z.object({
   image_url: z.string(),
 }))
 
-type SubjectResponse = z.infer<typeof SubjectResponseSchema>
+export async function clientLoader({ params }: LoaderFunctionArgs) {
+  try {
+    const pageUserId = params.pageUserId;
+    if (!pageUserId) throw new Response("Cannot find user id to display", { status: 404 });
 
-function Profile({ user, setUser }: { user: User | null, setUser: React.Dispatch<User | null> }) {
-  const { pageUserId } = useParams();
+    const userRes = await http.get(`${import.meta.env.VITE_API_URL}/api/user/${pageUserId}`);
+    const userParsed = z.object({
+      username: z.string(),
+      pfp_url: z.string(),
+    }).safeParse(userRes.data);
 
-  const [PageUser, setPageUser] = useState<User>(PLACEHOLDER_USER)
-  const [likedSubjects, setLikedSubjects] = useState<SubjectResponse>([])
+    if (!userParsed.success) throw new Error("Failed to parse user from server");
+
+    const retUser: User = {
+      ...PLACEHOLDER_USER,
+      _id: pageUserId,
+      pfp_url: userParsed.data.pfp_url,
+      username: userParsed.data.username,
+    }
+
+    const likedRes = await http.get(`${import.meta.env.VITE_API_URL}/api/subjects/liked`)
+    const likedParsed = SubjectResponseSchema.safeParse(likedRes.data);
+    if (!likedParsed.success) throw new Error("Failed to parse liked subjects from server");
+
+    const progressRes = await http.get(`${import.meta.env.VITE_API_URL}/api/progress`)
+    const progressParsed = z.array(recentViewSchema).safeParse(progressRes.data);
+    if (!progressParsed.success) throw new Error("Failed to parse progress from server");
+
+    return { pageUser: retUser, viewed: progressParsed.data, likedSubjects: likedParsed.data };
+  } catch (err) {
+    if (err instanceof Response) throw err;
+    throw err;
+  }
+}
+
+export default function Profile() {
+  const { pageUser, viewed, likedSubjects } = useLoaderData<typeof clientLoader>();
+
   const [likedSubjectPage, setLikedSubjectPage] = useState(1);
-  const [viewed, setViewed] = useState<RecentView[]>([])
   const [viewedPage, setViewedPage] = useState<number>(1);
-
-  const navigate = useNavigate()
 
   const likedSubjectPageCnt = 5; // show this amount of subjects for a page(liked subjects)
   const viewedPageCnt = 5;
 
-  useEffect(() => {
-    if (!pageUserId) {
-      navigate('/notfound')
-    }
-    else if (user?._id && pageUserId === user._id) {
-      setPageUser(user);
-    }
-    else {
-      http.get(`${import.meta.env.VITE_API_URL}/api/user/${pageUserId}`).then((res) => {
-        setPageUser((val) => ({ ...val, _id: pageUserId, username: res.data.username, pfp_url: res.data.pfp_url }))
-      })
-    }
-
-    http.get(`${import.meta.env.VITE_API_URL}/api/subjects/liked`).then((res) => {
-      const parsed = SubjectResponseSchema.safeParse(res.data)
-      if (!parsed.success) throw new Error("Liked Subjects api does not match required type")
-      setLikedSubjects(parsed.data);
-    }).catch((err) => {
-      console.log(err);
-    })
-    http.get(`${import.meta.env.VITE_API_URL}/api/progress`).then((res) => {
-      const parsed = z.array(recentViewSchema).safeParse(res.data);
-      if (!parsed.success) throw new Error("Progress type does not match");
-      setViewed(parsed.data);
-    }).catch((err) => {
-      console.error(err);
-    })
-
-  }, [pageUserId, navigate])
-
   return (
     <Box h="100%" w="100%" px="md">
-      <MainPageAppshell user={user} setUser={setUser} navigate={navigate}>
+      <MainPageAppshell>
         <ScrollArea h="100%" w="100%">
-          {PageUser.pfp_url ? <Image w={'200px'} src={PageUser.pfp_url} /> : <></>}
-          <Title className={classes.JalnanGothic}>{PageUser.username}</Title>
+          {<Image w={'200px'} src={pageUser.pfp_url} />}
+          <Title className={classes.JalnanGothic}>{pageUser.username}</Title>
 
           <Space h="10px" />
 
@@ -87,7 +85,7 @@ function Profile({ user, setUser }: { user: User | null, setUser: React.Dispatch
               })}
             </Table.Tbody>
           </Table>
-          <Pagination total={likedSubjects.length / likedSubjectPageCnt + (likedSubjects.length % likedSubjectPageCnt ? 1 : 0)}
+          <Pagination total={Math.ceil(likedSubjects.length / likedSubjectPageCnt)}
             value={likedSubjectPage} onChange={setLikedSubjectPage} />
 
           <Stack w={'50%'} h={'70%'} className={`${classes.Vertical_align}`} gap={0}>
@@ -117,7 +115,7 @@ function Profile({ user, setUser }: { user: User | null, setUser: React.Dispatch
             )) : <Text>다양한 강좌를 수강해보세요!</Text>}
             <Space h="sm" />
             <Pagination value={viewedPage} onChange={setViewedPage}
-              total={viewed.length / viewedPageCnt + (viewed.length % viewedPageCnt ? 1 : 0)} />
+              total={Math.ceil(viewed.length / viewedPageCnt)} />
             <Space h="md" />
           </Stack>
         </ScrollArea>
@@ -125,5 +123,3 @@ function Profile({ user, setUser }: { user: User | null, setUser: React.Dispatch
     </Box>
   )
 }
-
-export default Profile

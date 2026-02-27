@@ -41,7 +41,7 @@ export default function LessonViewerAppshell({ children, subject, lesson, progre
             <Link to="/" style={linkStyle}>
               <Group gap="md" align="center" h="100%">
                 <Image alt="logo" h="40" w="auto" src={logo} />
-                <Title order={2}>SSHS OCW</Title>
+                <Title order={2}>SSHS TIPS</Title>
               </Group>
             </Link>
           </Flex>

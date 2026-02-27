@@ -18,6 +18,9 @@ export default [
   ]),
   route("/action/lesson/submit", "./routes/lesson/action.lesson.submit.ts"),
 
+  // profile
+  route("/profile/:pageUserId", "./routes/mypage/Profile.tsx"),
+
   // catchall
   route("*", "./routes/catchall/Catchall.tsx"),
 ] satisfies RouteConfig;
