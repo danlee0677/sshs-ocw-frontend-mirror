@@ -35,11 +35,11 @@ export async function clientLoader({ params }: LoaderFunctionArgs) {
       username: userParsed.data.username,
     }
 
-    const likedRes = await http.get(`${import.meta.env.VITE_API_URL}/api/subjects/liked`)
+    const likedRes = await http.get(`${import.meta.env.VITE_API_URL}/api/subjects/liked/${pageUserId}`)
     const likedParsed = SubjectResponseSchema.safeParse(likedRes.data);
     if (!likedParsed.success) throw new Error("Failed to parse liked subjects from server");
 
-    const progressRes = await http.get(`${import.meta.env.VITE_API_URL}/api/progress`)
+    const progressRes = await http.get(`${import.meta.env.VITE_API_URL}/api/progress/${pageUserId}`)
     const progressParsed = z.array(recentViewSchema).safeParse(progressRes.data);
     if (!progressParsed.success) throw new Error("Failed to parse progress from server");
 
@@ -63,7 +63,7 @@ export default function Profile() {
     <Box h="100%" w="100%" px="md">
       <MainPageAppshell>
         <ScrollArea h="100%" w="100%">
-          {<Image w={'200px'} src={pageUser.pfp_url} />}
+          <Image w={'200px'} src={pageUser.pfp_url} />
           <Title className={classes.JalnanGothic}>{pageUser.username}</Title>
 
           <Space h="10px" />
@@ -85,13 +85,13 @@ export default function Profile() {
               })}
             </Table.Tbody>
           </Table>
-          <Pagination total={Math.ceil(likedSubjects.length / likedSubjectPageCnt)}
+          <Pagination total={Math.max(1, Math.ceil(likedSubjects.length / likedSubjectPageCnt))}
             value={likedSubjectPage} onChange={setLikedSubjectPage} />
 
           <Stack w={'50%'} h={'70%'} className={`${classes.Vertical_align}`} gap={0}>
             <Text className={`${classes.JalnanGothic}`}>최근 이용한 강좌</Text>
-            {viewed ? viewed.slice((viewedPage - 1) * viewedPageCnt, viewedPage * viewedPageCnt).map((v) => (
-              <Box className={`${classes.Box2} ${classes.Vertical_align}`} w={'100%'} h={'20%'} miw={0}>
+            {viewed.slice((viewedPage - 1) * viewedPageCnt, viewedPage * viewedPageCnt).map((v) => (
+              <Box key={v.lesson._id} className={`${classes.Box2} ${classes.Vertical_align}`} w={'100%'} h={'20%'} miw={0}>
                 <Group wrap='nowrap' w={'80%'} h={'100%'}>
                   <Link to={`/subject/${v.subject._id}`} className="block"
                     style={{
@@ -106,16 +106,16 @@ export default function Profile() {
                       <Text style={{ color: "black" }} truncate fw={'bold'}>{v.subject.title}</Text>
                       <Text style={{ color: "black" }} truncate>{v.subject.description}</Text>
                     </Link>
-                    <Link to={`/lesson/${v.lesson._id}?subjectId=${v.subject._id}`}>
+                    <Link to={`/lesson/${v.lesson._id}`}>
                       <Text style={{ color: "black" }} truncate>{v.lesson.title}</Text>
                     </Link>
                   </Stack>
                 </Group>
               </Box>
-            )) : <Text>다양한 강좌를 수강해보세요!</Text>}
+            ))}
             <Space h="sm" />
             <Pagination value={viewedPage} onChange={setViewedPage}
-              total={Math.ceil(viewed.length / viewedPageCnt)} />
+              total={Math.max(1, Math.ceil(viewed.length / viewedPageCnt))} />
             <Space h="md" />
           </Stack>
         </ScrollArea>
