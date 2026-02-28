@@ -1,6 +1,7 @@
 import { redirect, type LoaderFunctionArgs } from "react-router";
 import z from "zod";
 import { http } from "../../libs/http";
+import { PLACEHOLDER_SUBJECT } from "../../libs/utils";
 
 const contentSchema = z.object({
   _id: z.string(),
@@ -35,7 +36,7 @@ export async function clientAction({ request }: LoaderFunctionArgs) {
     if (request.method === "POST") {
       const res = await http.post(`${import.meta.env.VITE_API_URL}/api/subjects`, {
         title: parsed.data.title,
-        image_url: parsed.data.image_url,
+        image_url: PLACEHOLDER_SUBJECT.image_url,
         description: parsed.data.description,
         likes: 0,
         tags: parsed.data.tags,

@@ -8,6 +8,8 @@ export const useableTags = ['Math', 'Physics', 'Informatics', 'Chemistry', 'Biol
 export const LESSON_STORAGE_KEY = "LectureEditor_v01"
 export const MARKDOWN_STORAGE_KEY = "Markdown_v01"
 
+export const isStudentRegex: RegExp = /@sshs\.hs\.kr$/;
+
 export function isUser(user: User | null): user is User {
   if (user && user._id.length > 0) {
     return true;
@@ -72,7 +74,7 @@ export const PLACEHOLDER_SUBJECT: Subject = {
   contents: [],
   likes: 0,
   tags: [],
-  image_url: null,
+  image_url: "https://res.cloudinary.com/dpcig7o5t/image/upload/v1767019358/base_study_o0o20v.png",
 }
 
 export const PLACEHOLDER_LESSON: Lesson = {
