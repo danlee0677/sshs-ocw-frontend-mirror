@@ -124,7 +124,7 @@ function SubjectContent({ subject, user }: { subject: Subject; user: User | null
                     color: "inherit"
                   }
                 }}
-                component={Link} to={`/lesson/${lesson._id}?subjectId=${subject._id}`}>
+                component={Link} to={`/lesson/${lesson._id}`}>
                 <Flex className={classes.List} h="100%" w="100%" justify="center" align={'center'}>
                   <Text mt={'lg'} mb={'lg'} className={`${classes.JalnanGothic}`}>{lesson.title}</Text>
                 </Flex>
