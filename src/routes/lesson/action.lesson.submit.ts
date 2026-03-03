@@ -3,6 +3,7 @@ import z from "zod";
 import { http } from "../../libs/http";
 import { LESSON_STORAGE_KEY, MARKDOWN_STORAGE_KEY } from "../../libs/utils";
 import { isAxiosError } from "axios";
+import { notifications } from "@mantine/notifications";
 
 const lessonFormSchema = z.object({
   title: z.string().min(1, "제목을 입력해주세요."),
@@ -48,6 +49,14 @@ export async function clientAction({ request }: ActionFunctionArgs) {
 
     localStorage.removeItem(LESSON_STORAGE_KEY);
     localStorage.removeItem(MARKDOWN_STORAGE_KEY);
+
+    notifications.show({
+      title: `강의 ${request.method === "POST" ? "생성" : "수정"}이 완료되었습니다!`,
+      message: request.method === "POST" ? "강의가 성공적으로 서버에 생성되었습니다." : "성공적으로 강의 수정을 서버에 반영했습니다.",
+      withCloseButton: true,
+      position: "bottom-center",
+      autoClose: 5000
+    })
 
     throw redirect(`/subject/${subjectId}`)
   } catch (err) {
