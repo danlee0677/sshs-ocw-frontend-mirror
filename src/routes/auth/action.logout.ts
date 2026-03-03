@@ -2,7 +2,6 @@ import { redirect } from 'react-router';
 import { http, setAccessToken } from '../../libs/http';
 
 export async function clientAction() {
-  console.log("here1");
   try {
     await http.post(`${import.meta.env.VITE_API_URL}/api/auth/logout`)
   } catch (err) {

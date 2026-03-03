@@ -1,21 +1,3 @@
-# How to upload to server
-
-1vCPU라서 잘 build 안되므로 로컬에서 build하고 scp로 보내기!
-
-서버에서 저장된 디렉토리 지우고 실행(/var/www/ocw.sshs.work)
-
-```shell
-sudo rm -rf /var/www/ocw.sshs.work/* && sudo chown -R $USER:$USER /var/www/ocw.sshs.work
-```
-```shell
-scp -r build/client/* sshs@178.128.48.134:/var/www/ocw.sshs.work/
-```
-```shell
-sudo chown -R www-data:www-data /var/www/ocw.sshs.work && sudo nginx -t && sudo systemctl reload nginx
-```
-
-
-
 # React + TypeScript + Vite
 
 
@@ -95,7 +77,23 @@ export default defineConfig([
 ])
 ```
 
-## Env configuration
+# How to upload to server
+
+1vCPU라서 잘 build 안되므로 로컬에서 build하고 scp로 보내기!
+
+서버에서 저장된 디렉토리 지우고 실행(/var/www/ocw.sshs.work)
+
+```shell
+sudo rm -rf /var/www/ocw.sshs.work/* && sudo chown -R $USER:$USER /var/www/ocw.sshs.work
+```
+```shell
+scp -r build/client/* (username)@(server ip):/var/www/ocw.sshs.work/
+```
+```shell
+sudo chown -R www-data:www-data /var/www/ocw.sshs.work && sudo nginx -t && sudo systemctl reload nginx
+```
+
+# .env configuration
 
 You should create a .env file and have `VITE_API_URL` variable within.
 
