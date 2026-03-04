@@ -2,6 +2,7 @@ import { redirect, type LoaderFunctionArgs } from "react-router";
 import z from "zod";
 import { http } from "../../libs/http";
 import { PLACEHOLDER_SUBJECT } from "../../libs/utils";
+import { notifications } from "@mantine/notifications";
 
 const contentSchema = z.object({
   _id: z.string(),
@@ -43,7 +44,13 @@ export async function clientAction({ request }: LoaderFunctionArgs) {
       })
       const idParsed = z.object({ _id: z.string() }).safeParse(res.data);
       if (!idParsed.success) throw new Error("Failed to fetch new subject _id");
-
+      notifications.show({
+        title: `과목 생성이 완료되었습니다!`,
+        message: "과목이 성공적으로 서버에 생성되었습니다.",
+        withCloseButton: true,
+        position: "bottom-center",
+        autoClose: 5000
+      })
       return redirect(`/subject/${idParsed.data._id}`);
     } else if (request.method === "PATCH") {
       if (!parsed.data.subjectId) return { error: "수정할 과목의 ID를 찾을 수 없습니다: 삭제되었을 가능성이 있나요?" };
@@ -55,7 +62,13 @@ export async function clientAction({ request }: LoaderFunctionArgs) {
         contents: parsed.data.contents,
         tags: parsed.data.tags,
       })
-
+      notifications.show({
+        title: `과목 수정이 완료되었습니다!`,
+        message: "과목 수정사항이 성공적으로 서버에 반영되었습니다.",
+        withCloseButton: true,
+        position: "bottom-center",
+        autoClose: 5000
+      })
       return redirect(`/subject/${parsed.data.subjectId}`);
     }
 

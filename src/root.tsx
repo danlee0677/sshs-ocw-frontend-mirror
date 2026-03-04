@@ -1,10 +1,12 @@
 import '@mantine/core/styles.css';
 import '@mantine/tiptap/styles.css';
 import '@mantine/dropzone/styles.css';
+import '@mantine/notifications/styles.css'
 import { createTheme, MantineProvider } from "@mantine/core";
 import { ModalsProvider } from "@mantine/modals";
 import { Links, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData, useOutletContext } from "react-router";
 import { http } from "./libs/http";
+import { Notifications } from '@mantine/notifications'
 import { userSchema, type User } from "./libs/types";
 import ErrorPage from './error/ErrorPage';
 
@@ -27,6 +29,7 @@ export function Layout({ children }: { children: React.ReactNode; }) {
       </head>
       <body>
         <MantineProvider theme={theme}>
+          <Notifications />
           <ModalsProvider>
             {children}
           </ModalsProvider>
