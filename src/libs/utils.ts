@@ -74,6 +74,7 @@ export const PLACEHOLDER_SUBJECT: Subject = {
   contents: [],
   likes: 0,
   tags: [],
+  teacher_certified: false,
   image_url: "https://res.cloudinary.com/dpcig7o5t/image/upload/v1767019358/base_study_o0o20v.png",
 }
 
