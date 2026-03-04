@@ -2,7 +2,6 @@ import { useEffect, useState, useMemo } from "react";
 import { Form, useLoaderData, useLocation, useNavigate, type LoaderFunctionArgs } from "react-router";
 import { Button, Checkbox, CheckIcon, Combobox, Flex, Group, Pagination, Paper, Pill, PillsInput, ScrollArea, Space, Stack, Table, Tabs, Text, TextInput, useCombobox } from "@mantine/core";
 import { useableTags } from "../../libs/utils";
-import { IconSearch } from "@tabler/icons-react";
 import classes from './search.module.css'
 import SearchAppshell from "../../components/appshell/SearchAppshell";
 import { http } from "../../libs/http";

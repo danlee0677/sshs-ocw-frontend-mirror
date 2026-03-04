@@ -69,6 +69,7 @@ export const subjectSchema = z.object({
   description: z.string(),
   likes: z.number(),
   tags: z.array(z.string()),
+  teacher_certified: z.boolean(),
   contents: z.array(z.object({
     _id: z.string(),
     title: z.string(),

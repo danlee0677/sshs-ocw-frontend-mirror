@@ -29,7 +29,7 @@ const PLACEHOLDER_RECENT_VIEW: RecentView = {
 export async function clientLoader() {
   try {
     const userRes = await http.get(`${import.meta.env.VITE_API_URL}/api/auth/verify`);
-    console.log(`${import.meta.env.VITE_API_URL}/api/auth/verify`)
+
     const userParsed = userSchema.safeParse(userRes.data);
     if (!userParsed.success) throw new Error("Failed to verify user")
 
