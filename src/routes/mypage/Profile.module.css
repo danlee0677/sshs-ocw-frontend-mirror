@@ -12,3 +12,12 @@
 .Box2:hover {
     background-color: rgb(226, 226, 226);
 }
+
+.GroupBox {
+    padding: 20px;
+    min-height: 200px;
+}
+
+.ProfileBox {
+
+}

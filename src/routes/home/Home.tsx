@@ -29,8 +29,8 @@ const PLACEHOLDER_RECENT_VIEW: RecentView = {
 export async function clientLoader() {
   try {
     const userRes = await http.get(`${import.meta.env.VITE_API_URL}/api/auth/verify`);
+    console.log(`${import.meta.env.VITE_API_URL}/api/auth/verify`)
     const userParsed = userSchema.safeParse(userRes.data);
-
     if (!userParsed.success) throw new Error("Failed to verify user")
 
     const res = await http.get(`${import.meta.env.VITE_API_URL}/api/progress/${userParsed.data._id}?count=4`)
@@ -41,6 +41,7 @@ export async function clientLoader() {
     }
     return { recentViewed: parsed.data }
   } catch (err) {
+    console.log(err)
     if (err instanceof Response) throw err;
     
     // if user is not logged in, throw

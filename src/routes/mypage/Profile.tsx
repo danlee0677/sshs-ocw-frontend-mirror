@@ -1,4 +1,4 @@
-import { Box, Group, Image, Pagination, ScrollArea, Space, Stack, Table, Text, Title } from "@mantine/core";
+import { Box, Button, Center, Flex, Group, Image, Pagination, ScrollArea, Space, Stack, Table, Text, Title, Tooltip } from "@mantine/core";
 import { recentViewSchema, type User } from "../../libs/types";
 import MainPageAppshell from "../../components/appshell/MainPageAppshell";
 import { Link, useLoaderData, type LoaderFunctionArgs } from "react-router";
@@ -62,63 +62,84 @@ export default function Profile() {
   return (
     <Box h="100%" w="100%" px="md">
       <MainPageAppshell>
-        <ScrollArea h="100%" w="100%">
-          <Image w={'200px'} src={pageUser.pfp_url} />
-          <Title className={classes.JalnanGothic}>{pageUser.username}</Title>
+        <Flex w={'100%'} align={'center'} justify={'center'}>
+          <ScrollArea h="100%" w="80%">
+            <Stack>
+              <Space h={'10px'}></Space>
+              <Group className={classes.ProfileBox} align={'flex-start'} p={'20px'} w={'40%'}>
+                <Image w={'150px'} src={pageUser.pfp_url} />
+                <Stack h={'100%'} justify={'flex-start'} gap={0} p={'10px'}>
+                  <Title m={0} className={classes.JalnanGothic}>{pageUser.username}</Title>
+                  <Text h={'60px'}>안녕</Text>
+                  <Tooltip label='아직 미완성인 기능입니다.'>
+                    <Button disabled>편집</Button>
+                  </Tooltip>
+                </Stack>
+              </Group>
+              <Space h="10px" />
+              <Stack className={classes.GroupBox}>
+                <Title order={3}>좋아요 한 과목</Title>
+                {likedSubjects.length === 0 ? <>
+                  <Text>마음에 드는 강의에 좋아요를 눌러보세요!</Text>
+                </> : <>
+                  <Table>
+                    <Table.Thead>
+                      <Table.Tr>
+                        <Table.Td>제목</Table.Td>
+                        <Table.Td>설명</Table.Td>
+                      </Table.Tr>
+                    </Table.Thead>
+                    <Table.Tbody>
+                      {likedSubjects.slice((likedSubjectPage - 1) * likedSubjectPageCnt, likedSubjectPage * likedSubjectPageCnt).map((sub) => {
+                        return <Table.Tr key={sub._id}>
+                          <Table.Td><Link to={`/subject/${sub._id}`}>{sub.title}</Link></Table.Td>
+                          <Table.Td>{sub.description}</Table.Td>
+                        </Table.Tr>
+                      })}
+                    </Table.Tbody>
+                  </Table>
+                  <Pagination total={Math.max(1, Math.ceil(likedSubjects.length / likedSubjectPageCnt))}
+                    value={likedSubjectPage} onChange={setLikedSubjectPage} />              </>}
+              </Stack>
 
-          <Space h="10px" />
+              <Stack className={classes.GroupBox}>
+                <Text className={`${classes.JalnanGothic}`}>최근 이용한 강좌</Text>
+                {viewed.length === 0 ? <>
+                  <Text>이용한 강의가 없습니다.</Text></> : <>
+                  <Stack w={'50%'} h={'70%'} className={`${classes.Vertical_align}`} gap={0}>
+                    {viewed.slice((viewedPage - 1) * viewedPageCnt, viewedPage * viewedPageCnt).map((v) => (
+                      <Box key={v.lesson._id} className={`${classes.Box2} ${classes.Vertical_align}`} w={'100%'} h={'20%'} miw={0}>
+                        <Group wrap='nowrap' w={'80%'} h={'100%'}>
+                          <Link to={`/subject/${v.subject._id}`} className="block"
+                            style={{
+                              display: 'flex',       // Makes the <a> tag a flex container
+                              alignItems: 'center',  // Centers the image vertically
+                              height: '100%',        // Forces <a> to fill the Group's height
+                            }}>
+                            <Image fit='contain' w={'auto'} h={'40'} src={v.subject.image_url} className={classes.Image1} />
+                          </Link>
+                          <Stack gap={0} miw={0}>
+                            <Link to={`/subject/${v.subject._id}`}>
+                              <Text style={{ color: "black" }} truncate fw={'bold'}>{v.subject.title}</Text>
+                              <Text style={{ color: "black" }} truncate>{v.subject.description}</Text>
+                            </Link>
+                            <Link to={`/lesson/${v.lesson._id}`}>
+                              <Text style={{ color: "black" }} truncate>{v.lesson.title}</Text>
+                            </Link>
+                          </Stack>
+                        </Group>
+                      </Box>
+                    ))}
+                    <Space h="sm" />
+                    <Pagination value={viewedPage} onChange={setViewedPage}
+                      total={Math.max(1, Math.ceil(viewed.length / viewedPageCnt))} />
+                    <Space h="md" />
+                  </Stack></>}
+              </Stack>
+            </Stack>
 
-          <Title order={3}>좋아요 한 과목</Title>
-          <Table>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Td>제목</Table.Td>
-                <Table.Td>설명</Table.Td>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {likedSubjects.slice((likedSubjectPage - 1) * likedSubjectPageCnt, likedSubjectPage * likedSubjectPageCnt).map((sub) => {
-                return <Table.Tr key={sub._id}>
-                  <Table.Td><Link to={`/subject/${sub._id}`}>{sub.title}</Link></Table.Td>
-                  <Table.Td>{sub.description}</Table.Td>
-                </Table.Tr>
-              })}
-            </Table.Tbody>
-          </Table>
-          <Pagination total={Math.max(1, Math.ceil(likedSubjects.length / likedSubjectPageCnt))}
-            value={likedSubjectPage} onChange={setLikedSubjectPage} />
-
-          <Stack w={'50%'} h={'70%'} className={`${classes.Vertical_align}`} gap={0}>
-            <Text className={`${classes.JalnanGothic}`}>최근 이용한 강좌</Text>
-            {viewed.slice((viewedPage - 1) * viewedPageCnt, viewedPage * viewedPageCnt).map((v) => (
-              <Box key={v.lesson._id} className={`${classes.Box2} ${classes.Vertical_align}`} w={'100%'} h={'20%'} miw={0}>
-                <Group wrap='nowrap' w={'80%'} h={'100%'}>
-                  <Link to={`/subject/${v.subject._id}`} className="block"
-                    style={{
-                      display: 'flex',       // Makes the <a> tag a flex container
-                      alignItems: 'center',  // Centers the image vertically
-                      height: '100%',        // Forces <a> to fill the Group's height
-                    }}>
-                    <Image fit='contain' w={'auto'} h={'40'} src={v.subject.image_url} className={classes.Image1} />
-                  </Link>
-                  <Stack gap={0} miw={0}>
-                    <Link to={`/subject/${v.subject._id}`}>
-                      <Text style={{ color: "black" }} truncate fw={'bold'}>{v.subject.title}</Text>
-                      <Text style={{ color: "black" }} truncate>{v.subject.description}</Text>
-                    </Link>
-                    <Link to={`/lesson/${v.lesson._id}`}>
-                      <Text style={{ color: "black" }} truncate>{v.lesson.title}</Text>
-                    </Link>
-                  </Stack>
-                </Group>
-              </Box>
-            ))}
-            <Space h="sm" />
-            <Pagination value={viewedPage} onChange={setViewedPage}
-              total={Math.max(1, Math.ceil(viewed.length / viewedPageCnt))} />
-            <Space h="md" />
-          </Stack>
-        </ScrollArea>
+          </ScrollArea>
+        </Flex>
       </MainPageAppshell>
     </Box>
   )

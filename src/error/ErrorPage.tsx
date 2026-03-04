@@ -16,6 +16,7 @@ function ErrorPage() {
   const navigate = useNavigate();
 
   const error = useRouteError();
+  console.log(error)
   
   const [visible, setVisible] = useState(false);
   const { colorScheme } = useMantineColorScheme();
