@@ -80,3 +80,23 @@ export type Subject = z.infer<typeof subjectSchema>
 export type OrderData = {title: string, _id: string}[]
 
 export type OrderDataRow = {title: string, _id: string}
+
+
+export const resultSchema = z.object({
+  subjectTitle: z.array(z.object({ _id: z.string(), title: z.string() })),
+  subjectDescription: z.array(z.object({ _id: z.string(), description: z.string() })),
+  lessonTitle: z.array(z.object({ _id: z.string(), title: z.string(), subject: z.string() })),
+})
+
+export const searchParamsSchema = z.object({
+  keyword: z.string().max(20, "검색어 길이는 20자 이하여야 합니다!").default(""),
+  tags: z.array(z.string()).default([]),
+  subjectTitle: z.boolean().default(true),
+  subjectDescription: z.boolean().default(true),
+  or: z.boolean().default(false),
+  lessonTitle: z.boolean().default(false),
+})
+
+export type ResultType = z.infer<typeof resultSchema>
+
+export type SearchParamsType = z.infer<typeof searchParamsSchema>

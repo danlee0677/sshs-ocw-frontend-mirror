@@ -33,7 +33,7 @@ export async function clientLoader() {
     const userParsed = userSchema.safeParse(userRes.data);
     if (!userParsed.success) throw new Error("Failed to verify user")
 
-    const res = await http.get(`${import.meta.env.VITE_API_URL}/api/progress/${userParsed.data._id}?count=4`)
+    const res = await http.get(`${import.meta.env.VITE_API_URL}/api/progress/${userParsed.data._id}/recent-subjects`)
     const parsed = z.array(recentViewSchema).safeParse(res.data);
 
     if (!parsed.success) {

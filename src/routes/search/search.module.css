@@ -38,5 +38,25 @@
 .GroupBox {
     font-family: 'Paperozi_light';
     border: 3px rgb(147, 147, 147) solid;
-    border-radius: 10%;
-}  
+    border-radius: 5%;
+}
+
+.resultTitle {
+    cursor: pointer;
+}
+
+.resultTitle:hover {
+    color: var(--mantine-color-blue-6);
+    text-decoration: underline;
+}
+
+.searchButton {
+    color: var(--mantine-color-gray-6);
+    border-color: var(--mantine-color-default-border);
+}
+
+.searchButton:hover {
+    color: var(--mantine-color-blue-6);
+    border-color: var(--mantine-color-blue-6);
+    background-color: var(--mantine-color-blue-light);
+}
