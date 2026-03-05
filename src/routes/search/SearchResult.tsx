@@ -25,6 +25,7 @@ export async function clientLoader({ request }: LoaderFunctionArgs) {
         subjectDescription: isAdvancedSearch ? url.searchParams.get("subjectDescription") === "on" : undefined,
         lessonTitle: isAdvancedSearch ? url.searchParams.get("lessonTitle") === "on" : undefined,
         or: isAdvancedSearch ? url.searchParams.get("or") === "on" : undefined,
+        teacherCertified: isAdvancedSearch ? url.searchParams.get("teacherCertified") === "on" : undefined,
       }
     }
 
@@ -117,6 +118,13 @@ function SearchContent({ searchResult, searchParams }: { searchResult: ResultTyp
       </Combobox.Option>
     ))
 
+  const filteredSubjectTitle = searchParams.teacherCertified
+    ? searchResult.subjectTitle.filter(v => v.teacher_certified)
+    : searchResult.subjectTitle;
+  const filteredSubjectDescription = searchParams.teacherCertified
+    ? searchResult.subjectDescription.filter(v => v.teacher_certified)
+    : searchResult.subjectDescription;
+
   // make list for avaliable search type
   const availableTabs = useMemo<TabValue[]>(() => {
     const arr: (TabValue | false)[] = [
@@ -182,9 +190,14 @@ function SearchContent({ searchResult, searchParams }: { searchResult: ResultTyp
                           </Table.Tr>
                         </Table.Thead>
                         <Table.Tbody>
-                          {searchResult.subjectTitle.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE).map((val) => {
+                          {filteredSubjectTitle.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE).map((val) => {
                             return <Table.Tr key={val._id}>
-                              <Table.Td className={classes.resultTitle} onClick={() => navigate(`/subject/${val._id}`)}>{texthighlight(val.title, searchParams.keyword)}</Table.Td>
+                              <Table.Td className={classes.resultTitle} onClick={() => navigate(`/subject/${val._id}`)}>
+                                <Group gap="xs" wrap="nowrap">
+                                  {val.teacher_certified && <Pill bg="green" c="white" size="sm">인증</Pill>}
+                                  {texthighlight(val.title, searchParams.keyword)}
+                                </Group>
+                              </Table.Td>
                               <Table.Td>
                                 <Button type="button" variant="subtle" size="sm" onClick={() => navigate(`/subject/${val._id}`)}>바로가기</Button>
                               </Table.Td>
@@ -192,8 +205,8 @@ function SearchContent({ searchResult, searchParams }: { searchResult: ResultTyp
                           })}
                         </Table.Tbody>
                       </Table>
-                      {Math.ceil(searchResult.subjectTitle.length / ITEMS_PER_PAGE) > 1 && (
-                        <Pagination total={Math.ceil(searchResult.subjectTitle.length / ITEMS_PER_PAGE)} value={page} onChange={setPage} />
+                      {Math.ceil(filteredSubjectTitle.length / ITEMS_PER_PAGE) > 1 && (
+                        <Pagination total={Math.ceil(filteredSubjectTitle.length / ITEMS_PER_PAGE)} value={page} onChange={setPage} />
                       )}
                     </Stack>
                   </Tabs.Panel>
@@ -210,9 +223,14 @@ function SearchContent({ searchResult, searchParams }: { searchResult: ResultTyp
                           </Table.Tr>
                         </Table.Thead>
                         <Table.Tbody>
-                          {searchResult.subjectDescription.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE).map((val) => {
+                          {filteredSubjectDescription.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE).map((val) => {
                             return <Table.Tr key={val._id}>
-                              <Table.Td className={classes.resultTitle} onClick={() => navigate(`/subject/${val._id}`)}>{texthighlight(val.description, searchParams.keyword)}</Table.Td>
+                              <Table.Td className={classes.resultTitle} onClick={() => navigate(`/subject/${val._id}`)}>
+                                <Group gap="xs" wrap="nowrap">
+                                  {val.teacher_certified && <Pill bg="green" c="white" size="sm">인증</Pill>}
+                                  {texthighlight(val.description, searchParams.keyword)}
+                                </Group>
+                              </Table.Td>
                               <Table.Td>
                                 <Button type="button" variant="subtle" size="sm" onClick={() => navigate(`/subject/${val._id}`)}>바로가기</Button>
                               </Table.Td>
@@ -220,8 +238,8 @@ function SearchContent({ searchResult, searchParams }: { searchResult: ResultTyp
                           })}
                         </Table.Tbody>
                       </Table>
-                      {Math.ceil(searchResult.subjectDescription.length / ITEMS_PER_PAGE) > 1 && (
-                        <Pagination total={Math.ceil(searchResult.subjectDescription.length / ITEMS_PER_PAGE)} value={page} onChange={setPage} />
+                      {Math.ceil(filteredSubjectDescription.length / ITEMS_PER_PAGE) > 1 && (
+                        <Pagination total={Math.ceil(filteredSubjectDescription.length / ITEMS_PER_PAGE)} value={page} onChange={setPage} />
                       )}
                     </Stack>
                   </Tabs.Panel>
@@ -273,6 +291,8 @@ function SearchContent({ searchResult, searchParams }: { searchResult: ResultTyp
                   label="강의 제목" defaultChecked={searchParams.lessonTitle} color="white" iconColor="black" />
                 <Checkbox name="or" classNames={{ label: classes.CheckBoxLabel, body: classes.CheckBox }}
                   label="태그 or로 검색" defaultChecked={searchParams.or} color="white" iconColor="black" />
+                <Checkbox name="teacherCertified" classNames={{ label: classes.CheckBoxLabel, body: classes.CheckBox }}
+                  label="교사 인증 과목만" defaultChecked={searchParams.teacherCertified} color="white" iconColor="black" />
               </Paper>
 
               <Flex w="100%" justify="center">

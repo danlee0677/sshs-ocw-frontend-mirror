@@ -8,6 +8,8 @@ import { useState } from "react";
 import { PLACEHOLDER_USER } from "../../libs/utils";
 import z from "zod";
 import { linkStyle } from "../../libs/styles";
+import { notifications } from "@mantine/notifications";
+import { IconCopy, IconCopyCheck } from "@tabler/icons-react";
 
 const SubjectResponseSchema = z.array(z.object({
   title: z.string(),
@@ -36,11 +38,14 @@ export async function clientLoader({ params }: LoaderFunctionArgs) {
       username: userParsed.data.username,
     }
 
-    const likedRes = await http.get(`${import.meta.env.VITE_API_URL}/api/subjects/liked/${pageUserId}`)
+    const [likedRes, progressRes] = await Promise.all([
+      http.get(`${import.meta.env.VITE_API_URL}/api/subjects/liked/${pageUserId}`),
+      http.get(`${import.meta.env.VITE_API_URL}/api/progress/${pageUserId}`),
+    ])
+    
     const likedParsed = SubjectResponseSchema.safeParse(likedRes.data);
     if (!likedParsed.success) throw new Error("Failed to parse liked subjects from server");
-
-    const progressRes = await http.get(`${import.meta.env.VITE_API_URL}/api/progress/${pageUserId}`)
+    
     const progressParsed = z.array(recentViewSchema).safeParse(progressRes.data);
     if (!progressParsed.success) throw new Error("Failed to parse progress from server");
 
@@ -50,6 +55,48 @@ export async function clientLoader({ params }: LoaderFunctionArgs) {
     throw err;
   }
 }
+
+function CopyButton({ text }: { text: string }) {
+  const [isCopied, setIsCopied] = useState(false);
+
+  const handleCopy = async () => {
+    if ('clipboard' in navigator) {
+      try {
+        await navigator.clipboard.writeText(text);
+        setIsCopied(true);
+        notifications.show({
+          title: "복사되었습니다!",
+          message: "사용자 식별자를 복사했습니다!",
+          autoClose: 3000,
+          position: "bottom-center",
+        })
+        setTimeout(() => {
+          setIsCopied(false);
+        }, 2000);
+      } catch (error) {
+        notifications.show({
+          title: "복사 실패!",
+          message: "사용자 식별자 복사를 실패하였습니다.",
+          autoClose: 5000,
+          position: "bottom-center"
+        })
+      }
+    } else {
+      notifications.show({
+        title: "클립보드 미지원",
+        message: "클립보드를 지원하지 않는 브라우저입니다.",
+        autoClose: 5000,
+        position: "bottom-center",
+      })
+    }
+  };
+
+  return (
+    <Button onClick={handleCopy} style={{ backgroundColor: 'transparent', border: 'none', padding: 0, boxShadow: 'none', color: 'inherit', outline: 'none' }}>
+      {isCopied ? <IconCopyCheck size={20} /> : <IconCopy size={20} />}
+    </Button>
+  );
+};
 
 export default function Profile() {
   const { pageUser, viewed, likedSubjects } = useLoaderData<typeof clientLoader>();
@@ -70,11 +117,16 @@ export default function Profile() {
 
             <Stack w="80%">
               <Space h={'10px'}></Space>
-              <Group className={classes.ProfileBox} align={'flex-start'} p={'20px'} w={'40%'}>
+              <Group className={classes.ProfileBox} align={'flex-start'} p={'20px'} w={'100%'}>
                 <Image w={'150px'} src={pageUser.pfp_url} />
                 <Stack h={'100%'} justify={'flex-start'} gap={0} p={'10px'}>
                   <Title m={0} className={classes.JalnanGothic}>{pageUser.username}</Title>
-                  <Text h={'60px'}>안녕</Text>
+                  <Text fw={600}>안녕</Text>
+                  <Group gap={2}>
+                    <Text>사용자 식별자: {pageUser._id}</Text>
+                    <CopyButton text={pageUser._id} />
+                  </Group>
+                  <Space h="md" />
                   <Tooltip label='아직 미완성인 기능입니다.'>
                     <Button disabled>편집</Button>
                   </Tooltip>

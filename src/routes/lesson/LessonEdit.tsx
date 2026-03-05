@@ -1,17 +1,15 @@
 import { useLoaderData, type LoaderFunctionArgs } from "react-router";
 import LessonEditor from "../../components/lesson/LessonEditor"
 import { http } from "../../libs/http";
-import { lessonSchema, userSchema } from "../../libs/types";
+import { lessonSchema, permissionCheckSchema, userSchema } from "../../libs/types";
 import { LESSON_STORAGE_KEY, MARKDOWN_STORAGE_KEY, PLACEHOLDER_LESSON, PLACEHOLDER_MARKDOWN } from "../../libs/utils";
 // import your Zod schemas here!
 
-export async function clientLoader({ request, params }: LoaderFunctionArgs) {
+export async function clientLoader({ params }: LoaderFunctionArgs) {
   try {
     const res = await http.get(`${import.meta.env.VITE_API_URL}/api/auth/verify`);
     const userParse = userSchema.safeParse(res.data);
     if (!userParse.success) throw new Error("Failed to parse user from server");
-
-    if (!userParse.data.roles.includes('admin')) throw new Response(null, { status: 403, statusText: "No permission to edit this lesson." });
 
     const lessonId = params.lessonId
     if (!lessonId) throw new Response("No lessonId in url.", { status: 400 });
@@ -20,6 +18,13 @@ export async function clientLoader({ request, params }: LoaderFunctionArgs) {
 
     const parsed = lessonSchema.safeParse(lessonRes.data);
     if (!parsed.success) throw new Error("Failed to parse lesson from server");
+
+    if (!userParse.data.roles.includes('admin')) {
+      const permRes = await http.get(`${import.meta.env.VITE_API_URL}/api/permission/check/${parsed.data.subject}`);
+      const permParsed = permissionCheckSchema.safeParse(permRes.data);
+      if (!permParsed.success || !permParsed.data.canEdit)
+        throw new Response("No permission to edit this lesson.", { status: 403 });
+    }
 
     let tiptapCached: object = {};
     let markdownCached: string = "";
@@ -36,11 +41,6 @@ export async function clientLoader({ request, params }: LoaderFunctionArgs) {
       markdownCached = PLACEHOLDER_MARKDOWN
     }
 
-    const url = new URL(request.url);
-    const subjectId = url.searchParams.get('subjectId');
-
-    if (!subjectId) throw new Error("Failed to identify subjectId")
-
     return {
       initialContent: {
         title: parsed.data.title,
@@ -49,7 +49,7 @@ export async function clientLoader({ request, params }: LoaderFunctionArgs) {
         content: JSON.parse(parsed.data.content),
         student_only: parsed.data.student_only,
         createdBy: parsed.data.createdBy.username,
-      }, tiptapCached, markdownCached, subjectId
+      }, tiptapCached, markdownCached, subjectId: parsed.data.subject
     };
   } catch (err) {
     if (err instanceof Response) throw err;

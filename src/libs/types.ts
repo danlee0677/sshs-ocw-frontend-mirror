@@ -84,8 +84,8 @@ export type OrderDataRow = {title: string, _id: string}
 
 
 export const resultSchema = z.object({
-  subjectTitle: z.array(z.object({ _id: z.string(), title: z.string() })),
-  subjectDescription: z.array(z.object({ _id: z.string(), description: z.string() })),
+  subjectTitle: z.array(z.object({ _id: z.string(), title: z.string(), teacher_certified: z.boolean() })),
+  subjectDescription: z.array(z.object({ _id: z.string(), description: z.string(), teacher_certified: z.boolean() })),
   lessonTitle: z.array(z.object({ _id: z.string(), title: z.string(), subject: z.string() })),
 })
 
@@ -96,8 +96,25 @@ export const searchParamsSchema = z.object({
   subjectDescription: z.boolean().default(true),
   or: z.boolean().default(false),
   lessonTitle: z.boolean().default(false),
+  teacherCertified: z.boolean().default(false),
 })
 
 export type ResultType = z.infer<typeof resultSchema>
 
 export type SearchParamsType = z.infer<typeof searchParamsSchema>
+
+export const permissionCheckSchema = z.object({
+  canEdit: z.boolean(),
+  role: z.enum(['admin', 'owner', 'editor']).nullable(),
+})
+
+export const permissionRecordSchema = z.object({
+  _id: z.string(),
+  pfp_url: z.string(),
+  userId: z.string(),
+  subjectId: z.string(),
+  role: z.enum(['owner', 'editor']),
+  username: z.string(),
+})
+
+export type PermissionRecord = z.infer<typeof permissionRecordSchema>
