@@ -3,10 +3,17 @@ import { http } from './http';
 import type { User, Lesson, Subject } from './types'
 import axios from 'axios';
 
+export function tryParseJSON<T = unknown>(raw: string | null): T | null {
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch { return null; }
+}
+
 export const useableTags = ['Math', 'Physics', 'Informatics', 'Chemistry', 'Biology', 'Earth Science']
 
-export const LESSON_STORAGE_KEY = "LectureEditor_v01"
-export const MARKDOWN_STORAGE_KEY = "Markdown_v01"
+export const LESSON_CREATE_STORAGE_KEY = "LectureEditor_Create_v01"
+export const MARKDOWN_CREATE_STORAGE_KEY = "Markdown_Create_v01"
+export const lessonEditStorageKey = (id: string) => `LectureEditor_Edit_${id}_v01`
+export const markdownEditStorageKey = (id: string) => `Markdown_Edit_${id}_v01`
 
 export const isStudentRegex: RegExp = /@sshs\.hs\.kr$/;
 

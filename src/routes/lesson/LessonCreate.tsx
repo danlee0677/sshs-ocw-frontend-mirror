@@ -2,7 +2,7 @@ import { redirect, useLoaderData, type LoaderFunctionArgs } from "react-router";
 import { http } from "../../libs/http";
 import { permissionCheckSchema, userSchema } from "../../libs/types";
 import LessonEditor from "../../components/lesson/LessonEditor";
-import { LESSON_STORAGE_KEY, MARKDOWN_STORAGE_KEY, PLACEHOLDER_LESSON, PLACEHOLDER_MARKDOWN } from "../../libs/utils";
+import { LESSON_CREATE_STORAGE_KEY, MARKDOWN_CREATE_STORAGE_KEY, PLACEHOLDER_LESSON, PLACEHOLDER_MARKDOWN, tryParseJSON } from "../../libs/utils";
 
 export async function clientLoader({ request }: LoaderFunctionArgs) {
   try {
@@ -23,22 +23,14 @@ export async function clientLoader({ request }: LoaderFunctionArgs) {
         throw new Response("No permission to create lesson", { status: 403 });
     }
 
-    let tiptapCached: object = {};
-    let markdownCached: string = "";
-    try {
-      const raw = localStorage.getItem(LESSON_STORAGE_KEY)
-      tiptapCached = raw ? JSON.parse(raw) : PLACEHOLDER_LESSON.content
-    } catch {
-      tiptapCached = PLACEHOLDER_LESSON.content
-    }
-    try {
-      const raw = localStorage.getItem(MARKDOWN_STORAGE_KEY)
-      markdownCached = raw ? JSON.parse(raw) : PLACEHOLDER_MARKDOWN
-    } catch {
-      markdownCached = PLACEHOLDER_MARKDOWN
-    }
+    const parsedTiptap = tryParseJSON(localStorage.getItem(LESSON_CREATE_STORAGE_KEY));
+    const rawMarkdown = localStorage.getItem(MARKDOWN_CREATE_STORAGE_KEY);
 
-    return { tiptapCached, markdownCached, subjectId }
+    const tiptapCached = parsedTiptap ?? PLACEHOLDER_LESSON.content;
+    const markdownCached = rawMarkdown ?? PLACEHOLDER_MARKDOWN;
+    const hasCached = parsedTiptap !== null || rawMarkdown !== null;
+
+    return { tiptapCached, markdownCached, subjectId, hasCached }
   } catch (err) {
     if (err instanceof Response) throw err;
 
@@ -47,7 +39,8 @@ export async function clientLoader({ request }: LoaderFunctionArgs) {
 }
 
 export default function LessonCreate() {
-  const { tiptapCached, markdownCached, subjectId } = useLoaderData<typeof clientLoader>();
-  return <LessonEditor mode="create" initialContent={null} 
-  tiptapCached={tiptapCached} markdownCached={markdownCached} subjectId={subjectId} />
+  const { tiptapCached, markdownCached, subjectId, hasCached } = useLoaderData<typeof clientLoader>();
+  return <LessonEditor mode="create" initialContent={null}
+  tiptapCached={tiptapCached} markdownCached={markdownCached} subjectId={subjectId}
+  storageKey={LESSON_CREATE_STORAGE_KEY} markdownStorageKey={MARKDOWN_CREATE_STORAGE_KEY} hasCached={hasCached} />
 }

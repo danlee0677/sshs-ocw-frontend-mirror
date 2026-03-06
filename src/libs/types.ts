@@ -53,6 +53,11 @@ export const lessonSchema = z.object({
 
 export type LessonResponse = z.infer<typeof lessonSchema>
 
+export const tiptapDocSchema = z.looseObject({
+  type: z.literal("doc"),
+  content: z.array(z.record(z.string(), z.unknown())).optional(),
+})
+
 export interface Lesson {
   title: string,
   content: object,

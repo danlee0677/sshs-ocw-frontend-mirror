@@ -27,7 +27,7 @@ import { createLowlight, all } from 'lowlight'
 import 'highlight.js/styles/github-dark.css' // todo: change when dark mode
 import { type Lesson } from "../../libs/types";
 
-import { LESSON_STORAGE_KEY, MARKDOWN_STORAGE_KEY, uploadImage } from "../../libs/utils";
+import { uploadImage, PLACEHOLDER_MARKDOWN, PLACEHOLDER_LESSON } from "../../libs/utils";
 import { useDisclosure } from "@mantine/hooks";
 import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone';
 import { IconCheck, IconPhoto, IconUpload, IconX } from "@tabler/icons-react";
@@ -109,9 +109,12 @@ interface LessonEditorProps {
   tiptapCached: object;
   markdownCached: string;
   subjectId: string;
+  storageKey: string;
+  markdownStorageKey: string;
+  hasCached: boolean;
 }
 
-export default function LessonEditor({ mode, initialContent, tiptapCached, markdownCached, subjectId }: LessonEditorProps) {
+export default function LessonEditor({ mode, initialContent, tiptapCached, markdownCached, subjectId, storageKey, markdownStorageKey, hasCached }: LessonEditorProps) {
   const { user } = useUserContext();
 
   // modal for image upload
@@ -128,8 +131,9 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
   const [lastActive, setLastActive] = useState<'tiptap' | 'markdown'>('tiptap');
   const markdownRef = useRef<HTMLTextAreaElement>(null);
 
-  const [markdown, setMarkdown] = useState<string>(markdownCached);
+  const [markdown, setMarkdown] = useState<string>(PLACEHOLDER_MARKDOWN);
   const [isMarkdown, setIsMarkdown] = useState<boolean>(true);
+  const [cacheDecision, setCacheDecision] = useState<'pending' | 'done'>(hasCached ? 'pending' : 'done');
 
   const actionData = useActionData<{ error?: string }>();
   const navigation = useNavigation();
@@ -138,7 +142,7 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
   // persist through refresh: save 
   const debounceSave = useDebounce((json: any) => {
     try {
-      localStorage.setItem(LESSON_STORAGE_KEY, JSON.stringify(json));
+      localStorage.setItem(storageKey, JSON.stringify(json));
     } catch (err) {
       console.log('Failed to save document', err);
     }
@@ -146,7 +150,7 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
 
   const debounceMarkdownSave = useDebounce((markdown: string) => {
     try {
-      localStorage.setItem(MARKDOWN_STORAGE_KEY, markdown)
+      localStorage.setItem(markdownStorageKey, markdown)
     } catch (err) {
       console.log('Failed to save markdown', err);
     }
@@ -205,8 +209,7 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
         tabSize: 4,
       }),
     ],
-    // try to fetch from localStorage
-    content: (initialContent ? initialContent.content : tiptapCached),
+    content: (initialContent ? initialContent.content : PLACEHOLDER_LESSON.content),
     onUpdate: ({ editor, transaction }) => {
       if (transaction.docChanged) debounceSave(editor.getJSON());
     },
@@ -439,6 +442,28 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
 
   return (
     <MainPageAppshell>
+      <Modal
+        opened={cacheDecision === 'pending'}
+        onClose={() => setCacheDecision('done')}
+        title="저장된 초안이 있습니다"
+        withCloseButton={false}
+        closeOnClickOutside={false}
+        centered
+      >
+        <Text>이전에 작성하던 초안을 불러오시겠습니까?</Text>
+        <Group mt="md" justify="flex-end">
+          <Button variant="default" onClick={() => {
+            localStorage.removeItem(storageKey);
+            localStorage.removeItem(markdownStorageKey);
+            setCacheDecision('done');
+          }}>새로 시작</Button>
+          <Button disabled={!editor} onClick={() => {
+            editor?.commands.setContent(tiptapCached as any, { emitUpdate: false });
+            setMarkdown(markdownCached);
+            setCacheDecision('done');
+          }}>불러오기</Button>
+        </Group>
+      </Modal>
       <Form method={mode === "create" ? "post" : "patch"} style={{ width: '100%', height: '100%' }}
         action="/action/lesson/submit">
         <Stack w="100%" h="100%" gap="sm" p="md">

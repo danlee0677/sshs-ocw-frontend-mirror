@@ -42,7 +42,7 @@ export async function clientLoader({ params }: LoaderFunctionArgs) {
       http.get(`${import.meta.env.VITE_API_URL}/api/subjects/liked/${pageUserId}`),
       http.get(`${import.meta.env.VITE_API_URL}/api/progress/${pageUserId}`),
     ])
-    
+
     const likedParsed = SubjectResponseSchema.safeParse(likedRes.data);
     if (!likedParsed.success) throw new Error("Failed to parse liked subjects from server");
     
@@ -170,14 +170,14 @@ export default function Profile() {
                     <Stack w={'100%'} h={'70%'} className={`${classes.Vertical_align}`} gap={0}>
                       {viewed.slice((viewedPage - 1) * viewedPageCnt, viewedPage * viewedPageCnt).map((v) => (
                         <Box key={v.lesson._id} className={`${classes.Box2} ${classes.Vertical_align}`} w={'100%'} h={'20%'} miw={0}>
-                          <Group wrap='nowrap' w={'80%'} h={'100%'}>
+                          <Group wrap='nowrap' w={'80%'} h={'100%'} p="md">
                             <Link to={`/subject/${v.subject._id}`} className="block"
                               style={{
                                 display: 'flex',       // Makes the <a> tag a flex container
                                 alignItems: 'center',  // Centers the image vertically
                                 height: '100%',        // Forces <a> to fill the Group's height
                               }}>
-                              <Image fit='contain' w={'auto'} h={"80%"} src={v.subject.image_url} className={classes.Image1} />
+                              <Image fit='contain' w={'auto'} h={"100%"} src={v.subject.image_url} className={classes.Image1} />
                             </Link>
                             <Stack gap={0} miw={0}>
                               <Link to={`/subject/${v.subject._id}`}>
