@@ -280,7 +280,10 @@ function SubjectEditor({ mode, initialContent }: SubjectEditorProps) {
                     <Title order={3}>과목 이름 입력</Title>
                     <TextInput placeholder="과목 이름을 입력하세요(예: 일반물리학)"
                       defaultValue="" name="title" required />
-                    <TextInput placeholder="간단한 과목 설명을 입력하세요"
+                    <Title order={3}>과목 설명 입력</Title>
+                    <TextInput
+                      classNames={{ input: classes.DescriptionInput }}
+                      placeholder="간단한 과목 설명을 입력하세요"
                       defaultValue="" name="description" required />
 
                     <Combobox store={combobox} onOptionSubmit={handleValueSelect}>

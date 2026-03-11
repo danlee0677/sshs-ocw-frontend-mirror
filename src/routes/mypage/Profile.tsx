@@ -127,7 +127,7 @@ export default function Profile() {
                               <Text style={{ color: "black" }} truncate>{v.lesson.title}</Text>
                             </Link>
                           </Stack>
-                        </Group>
+                        </Group>  
                       </Box>
                     ))}
                     <Space h="sm" />

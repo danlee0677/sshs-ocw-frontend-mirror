@@ -51,6 +51,11 @@
     background-color: rgb(226, 226, 226);
 }
 
+.DescriptionInput {
+    height: 200px;
+    padding-bottom: 160px;
+
+}
 
 .flex1 {
     display: flex;

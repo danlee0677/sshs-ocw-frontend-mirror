@@ -1,12 +1,15 @@
 .LogOutButton {
-    transition: all 0.4s ease-in-out;
+    transition: all 0.4s ease;
     width: 100px;
     height: 35px;
     border: 2px solid gray;
     text-align: center;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .LogOutButton:hover {
+    border: 2px solid gray;
     transform: translateY(-5px);
     box-shadow: 0px 2px 2px 1px rgba(0, 0, 0, 0.262);
 }
@@ -17,7 +20,7 @@
 
 
 .dynamicSearchBar {
-    transition: all 0.4s ease-out;
+    transition: all 0.4s ease;
     width: 0px;
     overflow: hidden;
 }
