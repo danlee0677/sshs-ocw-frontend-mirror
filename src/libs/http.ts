@@ -38,9 +38,6 @@ function refreshAccessToken(): Promise<string | null> {
     return newToken
   }).catch((err) => {
     setAccessToken(null)
-    if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
-      window.location.replace('/login');
-    }
     return Promise.reject(err);
   }).finally(() => {
     isRefreshing = false;
@@ -55,8 +52,6 @@ function refreshAccessToken(): Promise<string | null> {
 http.interceptors.response.use((res) => res, async (err: AxiosError) => {
   const status = err.response?.status;
   const config: RetriableConfig = err.config || {} as RetriableConfig;
-
-  //const original_req = config.
   
   const url = config.url || "";
   const isRefresh = /\/api\/auth\/refresh$/.test(url); // check if this is refresh

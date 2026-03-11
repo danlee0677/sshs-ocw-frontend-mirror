@@ -9,6 +9,7 @@ import { http } from "./libs/http";
 import { Notifications } from '@mantine/notifications'
 import { userSchema, type User } from "./libs/types";
 import ErrorPage from './error/ErrorPage';
+import LoadingPage from './loading/LoadingPage';
 
 const theme = createTheme({
   fontFamily: 'Pretendard, Inter, system-ui, Avenir, Helvetica, Arial, sans-serif',
@@ -53,6 +54,10 @@ export async function clientLoader() {
   } catch (err) {
     return { user: null }
   }
+}
+
+export function HydrateFallback() {
+  return <LoadingPage />;
 }
 
 export default function Root() {

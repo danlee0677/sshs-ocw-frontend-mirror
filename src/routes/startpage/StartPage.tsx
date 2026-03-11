@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useMediaQuery } from '@mantine/hooks'
 import NewUser from "./NewUser";
 import Join from "./Join"
-import { redirect, useLoaderData, useNavigate, type LoaderFunctionArgs } from 'react-router';
+import { redirect, useLoaderData, type LoaderFunctionArgs } from 'react-router';
 import { http } from '../../libs/http';
 import z from 'zod';
 
@@ -28,14 +28,13 @@ export default function StartPage() {
   const { errorMessage, initialStep } = useLoaderData<typeof clientLoader>();
   const [step, setStep] = useState(initialStep);
 
-  const navigate = useNavigate()
   const isMobile = useMediaQuery('(max-width: 60em)')  
 
   return (
     <>
       {
         step === 0 ? (
-          <NewUser setStep={setStep} isMobile={isMobile} navigate={navigate} />
+          <NewUser setStep={setStep} isMobile={isMobile} />
         ) : step === 1 ? (
           <Join setStep={setStep} errorMessage={errorMessage}/>
         ) : (
