@@ -4,7 +4,7 @@ let accessToken: string | null = null;
 let isRefreshing: boolean = false;
 let refreshPromise: Promise<string | null> | null = null;
 
-type RetriableConfig = AxiosRequestConfig & { _retried?: boolean }
+type RetriableConfig = AxiosRequestConfig & { _retried?: boolean; _tokenAtRequest?: string | null }
 
 export const http = axios.create({
   withCredentials: true,
@@ -12,20 +12,17 @@ export const http = axios.create({
 
 export function setAccessToken(token: string | null) {
   accessToken = token;
-  if (token) http.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-  else delete http.defaults.headers.common["Authorization"];
 }
 
-// attach auth token on every request
+// attach auth token on every request and stamp it for stale-401 detection
 http.interceptors.request.use((config) => {
+  const c = config as RetriableConfig;
+  c._tokenAtRequest = accessToken;
   if (accessToken) {
     config.headers = config.headers ?? {};
-
-    if (!("Authorization" in config.headers)) {
-      config.headers["Authorization"] = `Bearer ${accessToken}`
-    }
+    config.headers["Authorization"] = `Bearer ${accessToken}`;
   }
-  return config
+  return config;
 })
 
 function refreshAccessToken(): Promise<string | null> {
@@ -55,8 +52,6 @@ function refreshAccessToken(): Promise<string | null> {
 http.interceptors.response.use((res) => res, async (err: AxiosError) => {
   const status = err.response?.status;
   const config: RetriableConfig = err.config || {} as RetriableConfig;
-
-  //const original_req = config.
   
   const url = config.url || "";
   const isRefresh = /\/api\/auth\/refresh$/.test(url); // check if this is refresh
@@ -65,6 +60,13 @@ http.interceptors.response.use((res) => res, async (err: AxiosError) => {
   if (status === 401 && !config._retried && !isRefresh && !isLogout) {
 
     config._retried = true;
+
+    // If the token has already been refreshed since this request was sent, retry immediately
+    if (config._tokenAtRequest !== accessToken && accessToken) {
+      config.headers = config.headers ?? {};
+      config.headers.Authorization = `Bearer ${accessToken}`;
+      return http.request(config);
+    }
 
     try {
       const newToken = await refreshAccessToken()

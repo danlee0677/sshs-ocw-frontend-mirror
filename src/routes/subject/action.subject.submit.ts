@@ -16,6 +16,7 @@ const formSchema = z.object({
   image_url: z.string(),
   tags: z.array(z.string()),
   contents: z.array(contentSchema).optional(),
+  teacher_certified: z.boolean(),
 });
 
 export async function clientAction({ request }: LoaderFunctionArgs) {
@@ -29,6 +30,7 @@ export async function clientAction({ request }: LoaderFunctionArgs) {
       image_url: formData.get("imageUrl")?.toString() || "", // match hidden input "imageUrl"
       tags: formData.getAll("tags").map((t) => t.toString()),
       contents: formData.getAll("contents").map((c) => JSON.parse(c.toString())), // Parse the JSON strings back into objects!
+      teacher_certified: formData.get("teacher_certified") === "on",
     };
 
     const parsed = formSchema.safeParse(rawData);
@@ -42,6 +44,7 @@ export async function clientAction({ request }: LoaderFunctionArgs) {
         likes: 0,
         tags: parsed.data.tags,
       })
+      console.log(res)
       const idParsed = z.object({ _id: z.string() }).safeParse(res.data);
       if (!idParsed.success) throw new Error("Failed to fetch new subject _id");
       notifications.show({
@@ -61,6 +64,7 @@ export async function clientAction({ request }: LoaderFunctionArgs) {
         description: parsed.data.description,
         contents: parsed.data.contents,
         tags: parsed.data.tags,
+        teacher_certified: parsed.data.teacher_certified,
       })
       notifications.show({
         title: `과목 수정이 완료되었습니다!`,
@@ -74,6 +78,7 @@ export async function clientAction({ request }: LoaderFunctionArgs) {
 
     return {error: "잘못된 요청입니다."}
   } catch (err) {
+    console.log(err);
     if (err instanceof Response) throw err;
 
     throw err;

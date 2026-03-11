@@ -23,8 +23,10 @@ export default [
     route("/create", "./routes/subject/SubjectCreate.tsx"),
     route("/:subjectId", "./routes/subject/SubjectViewer.tsx"),
     route("/:subjectId/edit", "./routes/subject/SubjectEdit.tsx"),
+    route("/:subjectId/access", "./routes/subject/SubjectAccess.tsx"),
   ]),
   route("/action/subject/submit", "./routes/subject/action.subject.submit.ts"),
+  route("/action/subject/access", "./routes/subject/action.subject.access.ts"),
 
   // profile
   route("/profile/:pageUserId", "./routes/mypage/Profile.tsx"),
@@ -34,6 +36,10 @@ export default [
 
   // setting
   route("/settings", "./routes/settings/Settings.tsx"),
+
+  // admin page
+  route("/admin", "./routes/admin/AdminPage.tsx"),
+  route("/action/admin/roles", "./routes/admin/action.admin.roles.ts"),
 
   // catchall
   route("*", "./routes/catchall/Catchall.tsx"),

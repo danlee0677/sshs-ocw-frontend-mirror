@@ -3,8 +3,7 @@ import { Link, useFetcher, useLoaderData, useNavigate, type ActionFunctionArgs, 
 import { Stack, Title, UnstyledButton, Flex, Text, Image, Pagination, Space, Pill, Group } from "@mantine/core";
 import { IconHeart, IconPencilPlus } from "@tabler/icons-react";
 import { http } from "../../libs/http";
-import { subjectSchema, type Subject, type User } from "../../libs/types";
-import './subjectViewer.module.css'
+import { permissionCheckSchema, subjectSchema, type Subject, type User } from "../../libs/types";
 import MainPageAppshell from "../../components/appshell/MainPageAppshell";
 import classes from "./subjectViewer.module.css"
 import { useUserContext } from "../../root";
@@ -12,12 +11,18 @@ import { isUser } from "../../libs/utils";
 
 export async function clientLoader({ params }: LoaderFunctionArgs) {
   try {
-    const res = await http.get(`${import.meta.env.VITE_API_URL}/api/subjects/${params.subjectId}`)
-    const parsed = subjectSchema.safeParse(res.data)
+    const [subjectRes, permissionRes] = await Promise.all([
+      http.get(`${import.meta.env.VITE_API_URL}/api/subjects/${params.subjectId}`),
+      http.get(`${import.meta.env.VITE_API_URL}/api/permission/check/${params.subjectId}`).catch(() => null),
+    ]);
 
+    const parsed = subjectSchema.safeParse(subjectRes.data);
     if (!parsed.success) throw new Error("Failed to parse subject from server");
 
-    return { subject: parsed.data };
+    const permissionParsed = permissionRes ? permissionCheckSchema.safeParse(permissionRes.data) : null;
+    const canEdit = permissionParsed?.success ? permissionParsed.data.canEdit : false;
+
+    return { subject: parsed.data, canEdit };
   } catch (err) {
     if (err instanceof Response) throw err;
     throw err;
@@ -45,17 +50,17 @@ interface LessonInSubject {
 }
 
 export default function SubjectViewer() {
-  const { subject } = useLoaderData<typeof clientLoader>();
+  const { subject, canEdit } = useLoaderData<typeof clientLoader>();
   const { user } = useUserContext();
 
   return (
     <MainPageAppshell>
-      <SubjectContent subject={subject} user={user} key={subject._id} />
+      <SubjectContent subject={subject} user={user} canEdit={canEdit} key={subject._id} />
     </MainPageAppshell>
   )
 }
 
-function SubjectContent({ subject, user }: { subject: Subject; user: User | null }) {
+function SubjectContent({ subject, user, canEdit }: { subject: Subject; user: User | null; canEdit: boolean }) {
   const navigate = useNavigate();
 
   const fetcher = useFetcher();
@@ -81,7 +86,7 @@ function SubjectContent({ subject, user }: { subject: Subject; user: User | null
     const copy = [...array]
     if (copy.length % pageNum !== 0) {
       const originalLength = copy.length
-      copy.length = copy.length + (pageNum - copy.length % 5);
+      copy.length = copy.length + (pageNum - copy.length % pageNum);
       copy.fill(PLACEHOLDER_LESSON_IN_SUBJECT, originalLength);
     }
     return copy;
@@ -95,11 +100,14 @@ function SubjectContent({ subject, user }: { subject: Subject; user: User | null
         <Image mt={'lg'} w={'160px'} src={subject.image_url}></Image>
         <Title order={1} className={classes.JalnanGothic}>{subject.title}</Title>
         <Text className={classes.Paperozi}>{subject.description}</Text>
+        {subject.teacher_certified && (
+          <Pill bg="green" c="white" size="md">Teacher-certified</Pill>
+        )}
         <Group gap={1}>
           {subject.tags.map((tag) => (<Pill key={tag}>{tag}</Pill>))}
         </Group>
-        {user && user.roles.includes('admin') &&
-          <UnstyledButton component={Link} to={`/subject/${subject._id}/edit`}  >
+        {canEdit &&
+          <UnstyledButton component={Link} to={`/subject/${subject._id}/edit`}>
             <IconPencilPlus></IconPencilPlus>
           </UnstyledButton>}
 
@@ -120,9 +128,6 @@ function SubjectContent({ subject, user }: { subject: Subject; user: User | null
                 style={{
                   backgroundColor: i % 2 === 0 ? "#f1f3f5" : "#ffffffff",
                   color: "inherit",
-                  "&:hover": {
-                    color: "inherit"
-                  }
                 }}
                 component={Link} to={`/lesson/${lesson._id}`}>
                 <Flex className={classes.List} h="100%" w="100%" justify="center" align={'center'}>
@@ -145,7 +150,7 @@ function SubjectContent({ subject, user }: { subject: Subject; user: User | null
           )
         })}
         <Space h="sm" />
-        <Pagination value={page} onChange={setPage} total={Math.max(1, Math.ceil(paddedLessons.length / 5))} />
+        <Pagination value={page} onChange={setPage} total={Math.max(1, Math.ceil(paddedLessons.length / pageNum))} />
       </Stack>
     </Flex>
   )

@@ -1,21 +1,24 @@
 import { useEffect, useState } from "react";
-import { Button, Stack, TextInput, Flex, Title, Image, Group, Text, Loader, ThemeIcon, Modal, ScrollArea, Space, Box, PillsInput, Pill, Combobox, useCombobox, CheckIcon } from "@mantine/core";
+import { Button, Stack, TextInput, Flex, Title, Image, Group, Text, Loader, ThemeIcon, Modal, ScrollArea, Space, Box, PillsInput, Pill, Combobox, useCombobox, CheckIcon, Switch } from "@mantine/core";
 import { useDisclosure, useListState } from "@mantine/hooks";
 import { type Subject } from "../../libs/types";
-import { PLACEHOLDER_SUBJECT, uploadImage, useableTags } from "../../libs/utils";
+import { isUser, PLACEHOLDER_SUBJECT, uploadImage, useableTags } from "../../libs/utils";
 import OrderTable from "./OrderTable";
 import classes from "./subject.module.css"
 import MainPageAppshell from "../appshell/MainPageAppshell";
 import { Dropzone, IMAGE_MIME_TYPE } from "@mantine/dropzone";
 import { IconCheck, IconPhoto, IconUpload, IconX } from "@tabler/icons-react";
 import { Form, Link, useActionData, useNavigate, useNavigation } from "react-router";
+import { useUserContext } from "../../root";
 
 interface SubjectEditorProps {
   mode: "edit" | "create";
   initialContent: Subject | null;
+  userRole?: 'admin' | 'owner' | 'editor' | null;
 }
 
-function SubjectEditor({ mode, initialContent }: SubjectEditorProps) {
+function SubjectEditor({ mode, initialContent, userRole }: SubjectEditorProps) {
+  const { user } = useUserContext();
   const navigate = useNavigate();
   const actionData = useActionData<{ error?: string }>();
   const navigation = useNavigation();
@@ -28,7 +31,7 @@ function SubjectEditor({ mode, initialContent }: SubjectEditorProps) {
   const [file, setFile] = useState<File | null>(null);
 
   // for complex states
-  const [tags, setTags] = useState<string[]>([]);
+  const [tags, setTags] = useState<string[]>(initialContent?.tags || []);
   const [imageUrl, setImageUrl] = useState<string>(initialContent?.image_url || "");
 
   // for modal for uploading files
@@ -190,6 +193,8 @@ function SubjectEditor({ mode, initialContent }: SubjectEditorProps) {
 
   if (mode === "edit" && !initialContent) throw new Error("Failed to fetch subject");
 
+  if (!isUser(user)) return null;
+
   return (
     <ScrollArea h="100%" w="100%">
       <MainPageAppshell>
@@ -209,7 +214,15 @@ function SubjectEditor({ mode, initialContent }: SubjectEditorProps) {
                   )}
                   <Stack w="30%" gap="xs" align="center">
                     <Image w={'160px'} src={imageUrl || PLACEHOLDER_SUBJECT.image_url}></Image>
-
+                    { user.roles.includes('admin') && <Group>
+                        <Switch defaultChecked={initialContent?.teacher_certified || false} name="teacher_certified" />
+                        <Text>Teacher Certified</Text>
+                      </Group>}
+                    {(userRole === 'admin' || userRole === 'owner') && (
+                      <Button type="button" component={Link} variant="outline" to={`/subject/${initialContent._id}/access`}>
+                        권한 관리
+                      </Button>
+                    )}
                     <Button type="button" variant="outline" onClick={handleOpenModal}>대표 이미지 변경</Button>
 
                     <Modal
@@ -277,6 +290,7 @@ function SubjectEditor({ mode, initialContent }: SubjectEditorProps) {
                     <Text c="red" ta="center" fw="bold" mb="sm">{actionData.error}</Text>
                   )}
                   <Stack gap="md" w="50%">
+                    <input type="hidden" value="false" name="teacher_certified" readOnly/>
                     <Title order={3}>과목 이름 입력</Title>
                     <TextInput placeholder="과목 이름을 입력하세요(예: 일반물리학)"
                       defaultValue="" name="title" required />

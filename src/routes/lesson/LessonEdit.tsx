@@ -1,17 +1,15 @@
 import { useLoaderData, type LoaderFunctionArgs } from "react-router";
 import LessonEditor from "../../components/lesson/LessonEditor"
 import { http } from "../../libs/http";
-import { lessonSchema, userSchema } from "../../libs/types";
-import { LESSON_STORAGE_KEY, MARKDOWN_STORAGE_KEY, PLACEHOLDER_LESSON, PLACEHOLDER_MARKDOWN } from "../../libs/utils";
+import { lessonSchema, permissionCheckSchema, tiptapDocSchema, userSchema } from "../../libs/types";
+import { lessonEditStorageKey, markdownEditStorageKey, PLACEHOLDER_LESSON, PLACEHOLDER_MARKDOWN, tryParseJSON } from "../../libs/utils";
 // import your Zod schemas here!
 
-export async function clientLoader({ request, params }: LoaderFunctionArgs) {
+export async function clientLoader({ params }: LoaderFunctionArgs) {
   try {
     const res = await http.get(`${import.meta.env.VITE_API_URL}/api/auth/verify`);
     const userParse = userSchema.safeParse(res.data);
     if (!userParse.success) throw new Error("Failed to parse user from server");
-
-    if (!userParse.data.roles.includes('admin')) throw new Response(null, { status: 403, statusText: "No permission to edit this lesson." });
 
     const lessonId = params.lessonId
     if (!lessonId) throw new Response("No lessonId in url.", { status: 400 });
@@ -21,35 +19,35 @@ export async function clientLoader({ request, params }: LoaderFunctionArgs) {
     const parsed = lessonSchema.safeParse(lessonRes.data);
     if (!parsed.success) throw new Error("Failed to parse lesson from server");
 
-    let tiptapCached: object = {};
-    let markdownCached: string = "";
-    try {
-      const raw = localStorage.getItem(LESSON_STORAGE_KEY)
-      tiptapCached = raw ? JSON.parse(raw) : PLACEHOLDER_LESSON.content
-    } catch {
-      tiptapCached = PLACEHOLDER_LESSON.content
-    }
-    try {
-      const raw = localStorage.getItem(MARKDOWN_STORAGE_KEY)
-      markdownCached = raw ? JSON.parse(raw) : PLACEHOLDER_MARKDOWN
-    } catch {
-      markdownCached = PLACEHOLDER_MARKDOWN
+    if (!userParse.data.roles.includes('admin')) {
+      const permRes = await http.get(`${import.meta.env.VITE_API_URL}/api/permission/check/${parsed.data.subject}`);
+      const permParsed = permissionCheckSchema.safeParse(permRes.data);
+      if (!permParsed.success || !permParsed.data.canEdit)
+        throw new Response("No permission to edit this lesson.", { status: 403 });
     }
 
-    const url = new URL(request.url);
-    const subjectId = url.searchParams.get('subjectId');
+    const storageKey = lessonEditStorageKey(parsed.data._id);
+    const markdownStorageKey = markdownEditStorageKey(parsed.data._id);
 
-    if (!subjectId) throw new Error("Failed to identify subjectId")
+    const parsedTiptap = tryParseJSON(localStorage.getItem(storageKey));
+    const rawMarkdown = localStorage.getItem(markdownStorageKey);
+
+    const tiptapCached = parsedTiptap ?? PLACEHOLDER_LESSON.content;
+    const markdownCached = rawMarkdown ?? PLACEHOLDER_MARKDOWN;
+    const hasCached = parsedTiptap !== null || rawMarkdown !== null;
+
+    const content = tiptapDocSchema.safeParse(tryParseJSON(parsed.data.content))?.data
+                 ?? PLACEHOLDER_LESSON.content;
 
     return {
       initialContent: {
         title: parsed.data.title,
         subject: parsed.data.subject,
         _id: parsed.data._id,
-        content: JSON.parse(parsed.data.content),
+        content,
         student_only: parsed.data.student_only,
         createdBy: parsed.data.createdBy.username,
-      }, tiptapCached, markdownCached, subjectId
+      }, tiptapCached, markdownCached, subjectId: parsed.data.subject, storageKey, markdownStorageKey, hasCached
     };
   } catch (err) {
     if (err instanceof Response) throw err;
@@ -59,9 +57,10 @@ export async function clientLoader({ request, params }: LoaderFunctionArgs) {
 }
 
 export default function EditLessonRoute() {
-  const { initialContent, markdownCached, tiptapCached, subjectId } = useLoaderData<typeof clientLoader>();
+  const { initialContent, markdownCached, tiptapCached, subjectId, storageKey, markdownStorageKey, hasCached } = useLoaderData<typeof clientLoader>();
 
   // Render the shared component in "edit" mode, passing the fetched data
-  return <LessonEditor mode="edit" initialContent={initialContent} 
-  markdownCached={markdownCached} tiptapCached={tiptapCached} subjectId={subjectId} />
+  return <LessonEditor mode="edit" initialContent={initialContent}
+  markdownCached={markdownCached} tiptapCached={tiptapCached} subjectId={subjectId}
+  storageKey={storageKey} markdownStorageKey={markdownStorageKey} hasCached={hasCached} />
 }

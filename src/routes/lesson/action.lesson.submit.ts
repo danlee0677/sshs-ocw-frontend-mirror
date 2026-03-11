@@ -1,7 +1,7 @@
 import { redirect, type ActionFunctionArgs } from "react-router";
 import z from "zod";
 import { http } from "../../libs/http";
-import { LESSON_STORAGE_KEY, MARKDOWN_STORAGE_KEY } from "../../libs/utils";
+import { LESSON_CREATE_STORAGE_KEY, MARKDOWN_CREATE_STORAGE_KEY, lessonEditStorageKey, markdownEditStorageKey } from "../../libs/utils";
 import { isAxiosError } from "axios";
 import { notifications } from "@mantine/notifications";
 
@@ -47,8 +47,13 @@ export async function clientAction({ request }: ActionFunctionArgs) {
       })
     }
 
-    localStorage.removeItem(LESSON_STORAGE_KEY);
-    localStorage.removeItem(MARKDOWN_STORAGE_KEY);
+    if (request.method === "POST") {
+      localStorage.removeItem(LESSON_CREATE_STORAGE_KEY);
+      localStorage.removeItem(MARKDOWN_CREATE_STORAGE_KEY);
+    } else if (request.method === "PATCH" && lessonId) {
+      localStorage.removeItem(lessonEditStorageKey(lessonId));
+      localStorage.removeItem(markdownEditStorageKey(lessonId));
+    }
 
     notifications.show({
       title: `강의 ${request.method === "POST" ? "생성" : "수정"}이 완료되었습니다!`,
