@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useFetcher, useLoaderData, useNavigate, type ActionFunctionArgs, type LoaderFunctionArgs } from "react-router";
-import { Box, Stack, Title, UnstyledButton, Flex, Text, Image, Pagination, Space, Pill, Group } from "@mantine/core";
+import { Stack, Title, UnstyledButton, Flex, Text, Image, Pagination, Space, Pill, Group } from "@mantine/core";
 import { IconHeart, IconPencilPlus } from "@tabler/icons-react";
 import { http } from "../../libs/http";
 import { permissionCheckSchema, subjectSchema, type Subject, type User } from "../../libs/types";
@@ -8,6 +8,7 @@ import MainPageAppshell from "../../components/appshell/MainPageAppshell";
 import classes from "./subjectViewer.module.css"
 import { useUserContext } from "../../root";
 import { isUser } from "../../libs/utils";
+import { notifications } from "@mantine/notifications";
 
 export async function clientLoader({ params }: LoaderFunctionArgs) {
   try {
@@ -35,6 +36,11 @@ export async function clientAction({ params }: ActionFunctionArgs) {
     return res.data;
   } catch (err) {
     console.error(err);
+    notifications.show({
+      title: "과목 즐겨찾기 실패",
+      position: "bottom-center",
+      message: "예상치 못한 오류가 발생했습니다. 다시 시도해주세요."
+    })
     return { error: "Failed to like subject" };
   }
 }
@@ -63,20 +69,24 @@ export default function SubjectViewer() {
 function SubjectContent({ subject, user, canEdit }: { subject: Subject; user: User | null; canEdit: boolean }) {
   const navigate = useNavigate();
 
-  const fetcher = useFetcher();
-  const isLiking = fetcher.state !== "idle";
+  const fetcher = useFetcher<typeof clientAction>();
+  const isOptimistic = fetcher.state === "submitting";
 
   const [page, setPage] = useState<number>(1);
 
-  const serverLiked = (isUser(user) && user.liked_subject.includes(subject._id));
+  const hasActionData = fetcher.data && !('error' in fetcher.data);
+  const serverLiked = hasActionData
+    ? fetcher.data.liked
+    : (isUser(user) && user.liked_subject.includes(subject._id));
+  const serverCount = hasActionData ? fetcher.data.likes : subject.likes;
 
-  const [localLiked, setLocalLiked] = useState(serverLiked);
+  const displayedLiked = isOptimistic ? !serverLiked : serverLiked;
+  const displayedCount = isOptimistic
+    ? serverCount + (serverLiked ? -1 : 1)
+    : serverCount;
 
-  const onClickLike = async () => {
+  const onClickLike = () => {
     if (!user) return navigate("/login");
-
-    setLocalLiked(!localLiked);
-
     fetcher.submit({}, { method: "post" });
   };
 
@@ -113,13 +123,21 @@ function SubjectContent({ subject, user, canEdit }: { subject: Subject; user: Us
           <Group gap={1} w={'80%'} align={'center'} justify={'center'}>
             {subject.tags.map((tag) => (<Pill mb={'2px'} renderRoot={(props) => <Link to={`/search?tags=${tag}`} {...props}></Link>} key={tag}>{tag}</Pill>))}
           </Group>
-          <Group>
-            <UnstyledButton onClick={onClickLike} disabled={isLiking}>
+          <Group align="center">
+            <UnstyledButton style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 0,
+              margin: 0,
+              lineHeight: 0,
+              outline: "none",
+            }} onClick={onClickLike} disabled={isOptimistic}>
               <IconHeart
                 color="red"
-                fill={localLiked ? "red" : "none"}></IconHeart>
+                fill={displayedLiked ? "red" : "none"}></IconHeart>
             </UnstyledButton>
-            <Text>{subject.likes}</Text>
+            <Text>{displayedCount}</Text>
           </Group>
         </Stack>
       </Flex>
