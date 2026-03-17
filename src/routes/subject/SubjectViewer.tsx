@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useFetcher, useLoaderData, useNavigate, type ActionFunctionArgs, type LoaderFunctionArgs } from "react-router";
-import { Stack, Title, UnstyledButton, Flex, Text, Image, Pagination, Space, Pill, Group } from "@mantine/core";
+import { Box, Stack, Title, UnstyledButton, Flex, Text, Image, Pagination, Space, Pill, Group } from "@mantine/core";
 import { IconHeart, IconPencilPlus } from "@tabler/icons-react";
 import { http } from "../../libs/http";
 import { permissionCheckSchema, subjectSchema, type Subject, type User } from "../../libs/types";
@@ -96,30 +96,35 @@ function SubjectContent({ subject, user, canEdit }: { subject: Subject; user: Us
 
   return (
     <Flex w={'100%'} justify={'center'} gap={'md'}>
-      <Stack w={'30%'} align={'center'} gap={'xs'}>
-        <Image mt={'lg'} w={'160px'} src={subject.image_url}></Image>
-        <Title order={1} className={classes.JalnanGothic}>{subject.title}</Title>
-        <Text className={classes.Paperozi}>{subject.description}</Text>
-        {subject.teacher_certified && (
-          <Pill bg="green" c="white" size="md">Teacher-certified</Pill>
-        )}
-        <Group gap={1}>
-          {subject.tags.map((tag) => (<Pill key={tag}>{tag}</Pill>))}
-        </Group>
-        {canEdit &&
-          <UnstyledButton component={Link} to={`/subject/${subject._id}/edit`}>
-            <IconPencilPlus></IconPencilPlus>
-          </UnstyledButton>}
+      <Flex w={'30%'} align={'center'}> {/* Subject Details */}
+        <Stack w={'80%'} align="center" gap={'xs'} className={classes.Border} mt={'30px'}>
+          <Image mt={'lg'} w={'160px'} src={subject.image_url} className={classes.SubjectImage}></Image>
+          <Group gap={'xs'}>
+            <Title order={1} className={classes.JalnanGothic}>{subject.title}</Title>
+            {canEdit &&
+              <UnstyledButton component={Link} to={`/subject/${subject._id}/edit`}>
+                <IconPencilPlus></IconPencilPlus>
+              </UnstyledButton>}
+          </Group>
+          <Text w={'80%'} mih={'100px'} className={classes.Paperozi}>{subject.description}</Text>
+          {subject.teacher_certified && (
+            <Pill bg="green" c="white" size="md">Teacher-certified</Pill>
+          )}
+          <Group gap={1} w={'80%'} align={'center'} justify={'center'}>
+            {subject.tags.map((tag) => (<Pill mb={'2px'} renderRoot={(props) => <Link to={`/search?tags=${tag}`} {...props}></Link>} key={tag}>{tag}</Pill>))}
+          </Group>
+          <Group>
+            <UnstyledButton onClick={onClickLike} disabled={isLiking}>
+              <IconHeart
+                color="red"
+                fill={localLiked ? "red" : "none"}></IconHeart>
+            </UnstyledButton>
+            <Text>{subject.likes}</Text>
+          </Group>
+        </Stack>
+      </Flex>
 
-        <UnstyledButton onClick={onClickLike} disabled={isLiking}>
-          <IconHeart
-            color="red"
-            fill={localLiked ? "red" : "none"}></IconHeart>
-        </UnstyledButton>
-        <Text>{subject.likes}</Text>
-      </Stack>
-
-      <Stack w={'50%'} h={'100%'} gap={0} align={'center'}>
+      <Stack w={'50%'} h={'100%'} gap={0} align={'center'}> {/* Lectures */}
         <Title order={2} className={classes.JalnanGothic} m={"xl"}>목록</Title>
         {paddedLessons.slice((page - 1) * pageNum, page * pageNum).map((lesson, i) => {
           return (

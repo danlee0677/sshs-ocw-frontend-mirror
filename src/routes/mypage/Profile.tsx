@@ -179,21 +179,6 @@ export default function Profile() {
                               }}>
                               <Image fit='contain' w={'auto'} h={"100%"} src={v.subject.image_url} className={classes.Image1} />
                             </Link>
-<<<<<<< HEAD
-                            <Link to={`/lesson/${v.lesson._id}`}>
-                              <Text style={{ color: "black" }} truncate>{v.lesson.title}</Text>
-                            </Link>
-                          </Stack>
-                        </Group>  
-                      </Box>
-                    ))}
-                    <Space h="sm" />
-                    <Pagination value={viewedPage} onChange={setViewedPage}
-                      total={Math.max(1, Math.ceil(viewed.length / viewedPageCnt))} />
-                    <Space h="md" />
-                  </Stack></>}
-              </Stack>
-=======
                             <Stack gap={0} miw={0}>
                               <Link to={`/subject/${v.subject._id}`}>
                                 <Text style={{ color: "black" }} truncate fw={'bold'}>{v.subject.title}</Text>
@@ -214,7 +199,6 @@ export default function Profile() {
                     </Stack></>}
                 </Stack>
               </Group>
->>>>>>> 9765f2039cb658e1ac623cb02d9e606837020189
             </Stack>
 
           </Flex>

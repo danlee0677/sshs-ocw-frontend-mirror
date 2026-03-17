@@ -13,6 +13,13 @@
     font-display: swap;
 }
 
+.Border {
+    padding-top: 20px;
+    padding-bottom: 20px;
+    border-radius: 20px;
+    border: #888 2px solid;
+}
+
 .ButtonText {
     color: black;
     position: absolute;
@@ -139,6 +146,10 @@
     line-height: 15px;
     white-space: normal;
     word-break: break-all;
+}
+
+.SubjectImage {
+    border-radius: 10px;
 }
 
 .Text1 {
