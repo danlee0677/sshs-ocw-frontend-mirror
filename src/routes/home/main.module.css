@@ -124,23 +124,6 @@
     border-bottom: 6px rgb(40, 40, 105) solid;
 }
 
-.SpeechBubble {
-    position: relative;
-    background-color: rgb(62, 62, 62);
-    font-family: 'Paperozi';
-    font-size: 13px;
-    color: white;
-    width: 120px;
-    height: 60px;
-    top: -20px;
-    left: 200px;
-    opacity: 90%;
-    padding: 20px;
-    line-height: 15px;
-    white-space: normal;
-    word-break: break-all;
-}
-
 .Text1 {
     width: 70%;
 }

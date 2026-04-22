@@ -121,7 +121,7 @@ export default function Profile() {
                 <Image w={'150px'} src={pageUser.pfp_url} />
                 <Stack h={'100%'} justify={'flex-start'} gap={0} p={'10px'}>
                   <Title m={0} className={classes.JalnanGothic}>{pageUser.username}</Title>
-                  <Text fw={600}>안녕</Text>
+                  <Text fw={600}>{pageUser.description ?? "프로필 소개를 작성해보세요!"}</Text>
                   <Group gap={2}>
                     <Text>사용자 식별자: {pageUser._id}</Text>
                     <CopyButton text={pageUser._id} />
