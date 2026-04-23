@@ -1,4 +1,4 @@
-import { ActionIcon, Box, Button, Menu, Text } from '@mantine/core';
+import { ActionIcon, Box, Menu } from '@mantine/core';
 import { useViewportSize } from '@mantine/hooks';
 import { IconMenu2, IconPencil, IconSettings } from '@tabler/icons-react'; // 원하는 아이콘으로 변경 가능
 import { Link } from 'react-router';
