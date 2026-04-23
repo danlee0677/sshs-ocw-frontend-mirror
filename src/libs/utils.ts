@@ -8,7 +8,7 @@ export function tryParseJSON<T = unknown>(raw: string | null): T | null {
   try { return JSON.parse(raw); } catch { return null; }
 }
 
-export const useableTags = ['Math', 'Physics', 'Informatics', 'Chemistry', 'Biology', 'Earth Science']
+export const useableTags = ['Math', 'Physics', 'Informatics', 'Chemistry', 'Biology', 'Earth Science', 'Eccentra']
 
 export const LESSON_CREATE_STORAGE_KEY = "LectureEditor_Create_v01"
 export const MARKDOWN_CREATE_STORAGE_KEY = "Markdown_Create_v01"

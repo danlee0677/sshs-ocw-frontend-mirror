@@ -47,6 +47,7 @@ function MainPageAppshell({ children }: { children: ReactNode }) {
                 <UnstyledButton component={Link} to="/search?tags=Chemistry" style={linkStyle}>화학</UnstyledButton>
                 <UnstyledButton component={Link} to="/search?tags=Biology" style={linkStyle}>생명과학</UnstyledButton>
                 <UnstyledButton component={Link} to="/search?tags=Earth+Science" style={linkStyle}>지구과학</UnstyledButton>
+                <UnstyledButton component={Link} to="/search?tags=Informatics" style={linkStyle}>정보</UnstyledButton>
               </Group>
             </Stack>
           </Flex>
