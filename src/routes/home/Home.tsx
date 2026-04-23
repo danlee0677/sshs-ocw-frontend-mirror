@@ -10,6 +10,7 @@ import { http } from "../../libs/http";
 import z from "zod";
 import { useUserContext } from "../../root";
 import { isAxiosError } from "axios";
+import { FloatingActionButton } from "../../components/element/FloatingActionButton";
 
 const PLACEHOLDER_RECENT_VIEW: RecentView = {
   subject: {
@@ -92,17 +93,7 @@ function Home() {
           <Stack gap="md" w="100%">
             {(user.roles.includes('admin') || user.roles.includes('creator')) &&
               <Stack align="center" w="100%">
-                {user.roles.includes("admin") &&
-                  <Paper w="76.15%" withBorder shadow="0" h="60px" p="sm" bg="#99c2ff">
-                    <Flex justify="center" align="center" w="100%" h="100%" component={Link} to="/admin">
-                      <Text size="lg" c="white" fw={700}>관리자 페이지로</Text>
-                    </Flex>
-                  </Paper>}
-                <Paper w="76.15%" withBorder shadow="0" h="60px" p="sm" bg="#99c2ff">
-                  <Flex justify="center" align="center" w="100%" h="100%" component={Link} to="/subject/create">
-                    <Text c="white" size="lg" fw={700}>새로운 과목을 만들어 보세요!</Text>
-                  </Flex>
-                </Paper>
+                <FloatingActionButton roles={user.roles}></FloatingActionButton>
               </Stack>}
             <Group className={`${classes.Vertical_align} ${classes.Main1}`} w={'100%'} h={'65vh'}>
               <Stack w={'50%'} h={'100%'}>
