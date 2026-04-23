@@ -98,25 +98,19 @@ function Home() {
             <Group className={`${classes.Vertical_align} ${classes.Main1}`} w={'100%'} h={'65vh'}>
               <Stack w={'50%'} h={'100%'}>
                 <Paper w={'100%'} h={'50%'} className={`${classes.Box1}`} bg={'#cbd6eaff'} component={Link} to={`/profile/${user._id}`} c={'black'}>
-                  <Flex w={'100%'} h={'100%'}
-                    justify={"flex-start"}
-                    align={'center'}>
-                    <Flex>
-                      <Box className={classes.SpeechBubble} ta={'center'} bdrs={'50px'}>
-                        <Flex w={'100%'} h={'100%'} align={'center'} justify={'center'}>
-                          나의 생각
-                        </Flex>
-                      </Box>
-                      <Image w="150px" h="150px" fit="cover" src={user.pfp_url} className={`${classes.Main_pfp_image}`} radius="80px" mr={'60px'}></Image>
-                      <Flex direction="column" justify={'center'}>
-                        <Title className={`${classes.Inline} ${classes.JalnanGothic}`} mb={'lg'}>{user?.username}님</Title>
-                        <Flex className={classes.Inline}>
-                          <CustomBadge type={1}></CustomBadge>
-                          <CustomBadge type={2}></CustomBadge>
-                          <CustomBadge type={3}></CustomBadge>
-                        </Flex>
-                      </Flex>
-                    </Flex>
+                  <Flex w={'100%'} h={'100%'} justify={"flex-start"} align={'center'} px="xl" gap="xl">
+                    <Image w="150px" h="150px" fit="cover" src={user.pfp_url} className={classes.Main_pfp_image} radius="80px" />
+                    <Stack gap="xs" justify="center">
+                      <Title className={classes.JalnanGothic}>{user?.username}님</Title>
+                      {user.description && (
+                        <Text size="sm" c="dimmed">{user.description}</Text>
+                      )}
+                      <Group gap="xs">
+                        <CustomBadge type={1} />
+                        <CustomBadge type={2} />
+                        <CustomBadge type={3} />
+                      </Group>
+                    </Stack>
                   </Flex>
                 </Paper>
                 <Group w={'100%'} h={'50%'} className={`${classes.Box1}`}>

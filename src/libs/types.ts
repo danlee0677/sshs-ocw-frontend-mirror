@@ -33,6 +33,7 @@ export const userSchema = z.object({
   roles: z.array(z.string()),
   liked_subject: z.array(z.string()),
   email: z.string(),
+  description: z.string(),
 })
 
 export type User = z.infer<typeof userSchema>
