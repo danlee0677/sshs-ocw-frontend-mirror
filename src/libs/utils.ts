@@ -72,6 +72,7 @@ export const PLACEHOLDER_USER: User = {
   pfp_url: "",
   roles: [],
   email: "",
+  description: "",
 }
 
 export const PLACEHOLDER_SUBJECT: Subject = {

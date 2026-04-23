@@ -1,7 +1,8 @@
-import { Box, Button, Flex, Group, Image, Pagination, ScrollArea, Space, Stack, Table, Text, Title, Tooltip } from "@mantine/core";
+import { Box, Button, Flex, Group, Image, Pagination, ScrollArea, Space, Stack, Table, Text, Title } from "@mantine/core";
 import { recentViewSchema, type User } from "../../libs/types";
 import MainPageAppshell from "../../components/appshell/MainPageAppshell";
 import { Link, useLoaderData, type LoaderFunctionArgs } from "react-router";
+import { useUserContext } from "../../root";
 import { http } from "../../libs/http";
 import classes from "./Profile.module.css"
 import { useState } from "react";
@@ -27,6 +28,7 @@ export async function clientLoader({ params }: LoaderFunctionArgs) {
     const userParsed = z.object({
       username: z.string(),
       pfp_url: z.string(),
+      description: z.string(),
     }).safeParse(userRes.data);
 
     if (!userParsed.success) throw new Error("Failed to parse user from server");
@@ -36,6 +38,7 @@ export async function clientLoader({ params }: LoaderFunctionArgs) {
       _id: pageUserId,
       pfp_url: userParsed.data.pfp_url,
       username: userParsed.data.username,
+      description: userParsed.data.description,
     }
 
     const [likedRes, progressRes] = await Promise.all([
@@ -100,6 +103,7 @@ function CopyButton({ text }: { text: string }) {
 
 export default function Profile() {
   const { pageUser, viewed, likedSubjects } = useLoaderData<typeof clientLoader>();
+  const { user } = useUserContext();
 
   const [likedSubjectPage, setLikedSubjectPage] = useState(1);
   const [viewedPage, setViewedPage] = useState<number>(1);
@@ -127,9 +131,9 @@ export default function Profile() {
                     <CopyButton text={pageUser._id} />
                   </Group>
                   <Space h="md" />
-                  <Tooltip label='아직 미완성인 기능입니다.'>
-                    <Button disabled>편집</Button>
-                  </Tooltip>
+                  {user?._id === pageUser._id && (
+                    <Button component={Link} to={`/profile/${pageUser._id}/edit`}>편집</Button>
+                  )}
                 </Stack>
               </Group>
               <Space h="10px" />

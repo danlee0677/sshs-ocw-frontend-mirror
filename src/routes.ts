@@ -29,7 +29,10 @@ export default [
   route("/action/subject/access", "./routes/subject/action.subject.access.ts"),
 
   // profile
-  route("/profile/:pageUserId", "./routes/mypage/Profile.tsx"),
+  ...prefix("profile", [
+    route("/:pageUserId", "./routes/mypage/Profile.tsx"),
+    route("/:pageUserId/edit", "./routes/mypage/ProfileEdit.tsx"),
+  ]),
 
   // search
   route("/search", "./routes/search/SearchResult.tsx"),

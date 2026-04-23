@@ -110,9 +110,9 @@ function Home() {
                   <Flex w={'100%'} h={'100%'} justify={"flex-start"} align={'center'} px="xl" gap="xl">
                     <Image w="150px" h="150px" fit="cover" src={user.pfp_url} className={classes.Main_pfp_image} radius="80px" />
                     <Stack gap="xs" justify="center">
-                      <Title className={classes.JalnanGothic}>{user?.username}님</Title>
+                      <Title className={classes.JalnanGothic} mb={0}>{user?.username}님</Title>
                       {user.description && (
-                        <Text size="sm" c="dimmed">{user.description}</Text>
+                        <Text size="sm" fw={550} c="#5d5d5d">{user.description}</Text>
                       )}
                       <Group gap="xs">
                         <CustomBadge type={1} />
