@@ -5,7 +5,6 @@ import { useDisclosure } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { Dropzone, IMAGE_MIME_TYPE } from "@mantine/dropzone";
 import { IconCheck, IconPhoto, IconUpload, IconX } from "@tabler/icons-react";
-import { AxiosError } from "axios";
 import { http } from "../../libs/http";
 import { userSchema } from "../../libs/types";
 import { uploadImage } from "../../libs/utils";
@@ -84,11 +83,10 @@ export default function ProfileEdit() {
 
   const handleSubmit = async () => {
     setSubmitting(true);
-    try {
-      await http.patch(`${import.meta.env.VITE_API_URL}/api/user`, {
-        description,
-        pfp_url: pfpUrl,
-      });
+    await http.patch(`${import.meta.env.VITE_API_URL}/api/user`, {
+      description,
+      pfp_url: pfpUrl,
+    }).then(() => {
       notifications.show({
         title: "프로필 저장 완료",
         message: "프로필이 업데이트되었습니다.",
@@ -96,8 +94,9 @@ export default function ProfileEdit() {
         color: "green",
       });
       navigate(`/profile/${pageUserId}`);
-    } catch (err) {
-      const msg = (err as AxiosError<{ message?: string }>).response?.data?.message;
+    }).catch((err) => {
+      const msg = err.response?.data?.errors[0]
+      console.log(err, err.status, err.config, err.message)
       const errorMap: Record<string, string> = {
         DescriptionLengthLimit: "소개글이 너무 깁니다. 100자 이하로 작성해주세요.",
         DescriptionContainsUrl: "소개글에 URL을 포함할 수 없습니다.",
@@ -109,9 +108,9 @@ export default function ProfileEdit() {
         position: "bottom-center",
         color: "red",
       });
-    } finally {
+    }).finally(() => {
       setSubmitting(false);
-    }
+    })
   };
 
   const renderSelectStep = () => (
