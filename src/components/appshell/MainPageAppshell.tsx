@@ -32,14 +32,14 @@ function MainPageAppshell({ children }: { children: ReactNode }) {
           <Flex w="60%" h="100%" align={"center"} justify="center">
             <Stack w='100%' justify="center">
               <Form action="/search" method="get" style={{ width: '100%' }}>
-                <Group w='100%' justify="center" className={`${classes.searchArea}`}>
+                <Group w='100%' justify="center" className={classes.searchArea}>
                   <Button type="submit" style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0 }}>
-                    <IconSearch className={`${classes.searchIcon}`} color="black" />
+                    <IconSearch className={classes.searchIcon} color="black" />
                   </Button>
                   <TextInput placeholder="검색어를 입력해 주세요."
                     name="keyword"
                     maxLength={20}
-                    className={`${classes.dynamicSearchBar}`} />
+                    className={classes.dynamicSearchBar} />
                 </Group>
               </Form>
               <Group w={'100%'} justify="center" gap={'xl'}>
@@ -69,13 +69,12 @@ function MainPageAppshell({ children }: { children: ReactNode }) {
 
               </>
               }
-              <Space w={0} />
             </Group>
           </Flex>
         </Group>
       </AppShell.Header>
 
-      <AppShell.Main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <AppShell.Main>
         {children}
       </AppShell.Main>
     </AppShell>)

@@ -124,3 +124,55 @@ export const permissionRecordSchema = z.object({
 })
 
 export type PermissionRecord = z.infer<typeof permissionRecordSchema>
+
+export const mentoringBoardSchema = z.object({
+  _id: z.string(),
+  title: z.string(),
+  image_url: z.string(),
+  description: z.string(),
+  tags: z.array(z.string()),
+  createdBy: z.array(z.string()),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+})
+
+export type MentoringBoard = z.infer<typeof mentoringBoardSchema>
+
+
+export const mentoringResponseSchema = z.object({
+  _id: z.string(),
+  title: z.string(),
+  image_url: z.string(),
+  description: z.string(),
+  tags: z.array(z.string()),
+  content: z.string(),
+  files: z.array(z.object({
+    name: z.string(),
+    url: z.string(),
+  })),
+  createdBy: z.array(z.string()),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+  registration: z.string(),
+})
+
+export type MentoringResponse = z.infer<typeof mentoringBoardSchema>
+
+export interface MentoringFile {
+  name: string,
+  url: string,
+}
+
+export interface Mentoring {
+  _id: string,
+  title: string,
+  image_url: string,
+  description: string,
+  tags: Array<string>,
+  content: object,
+  files: Array<MentoringFile>,
+  createdBy: Array<string>,
+  createdAt: Date,
+  updatedAt: Date,
+  registration: string,
+}

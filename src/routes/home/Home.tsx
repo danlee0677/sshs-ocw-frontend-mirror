@@ -10,7 +10,7 @@ import { http } from "../../libs/http";
 import z from "zod";
 import { useUserContext } from "../../root";
 import { isAxiosError } from "axios";
-import { FloatingActionButton } from "../../components/element/FloatingActionButton";
+import { FloatingActionButton } from "../../components/home/FloatingActionButton";
 
 const PLACEHOLDER_RECENT_VIEW: RecentView = {
   subject: {

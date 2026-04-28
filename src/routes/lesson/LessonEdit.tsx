@@ -2,7 +2,7 @@ import { useLoaderData, type LoaderFunctionArgs } from "react-router";
 import LessonEditor from "../../components/lesson/LessonEditor"
 import { http } from "../../libs/http";
 import { lessonSchema, permissionCheckSchema, tiptapDocSchema, userSchema } from "../../libs/types";
-import { lessonEditStorageKey, markdownEditStorageKey, PLACEHOLDER_LESSON, PLACEHOLDER_MARKDOWN, tryParseJSON } from "../../libs/utils";
+import { lessonTiptapEditStorageKey, lessonMarkdownEditStorageKey, PLACEHOLDER_LESSON, PLACEHOLDER_MARKDOWN, tryParseJSON } from "../../libs/utils";
 // import your Zod schemas here!
 
 export async function clientLoader({ params }: LoaderFunctionArgs) {
@@ -26,8 +26,8 @@ export async function clientLoader({ params }: LoaderFunctionArgs) {
         throw new Response("No permission to edit this lesson.", { status: 403 });
     }
 
-    const storageKey = lessonEditStorageKey(parsed.data._id);
-    const markdownStorageKey = markdownEditStorageKey(parsed.data._id);
+    const storageKey = lessonTiptapEditStorageKey(parsed.data._id);
+    const markdownStorageKey = lessonMarkdownEditStorageKey(parsed.data._id);
 
     const parsedTiptap = tryParseJSON(localStorage.getItem(storageKey));
     const rawMarkdown = localStorage.getItem(markdownStorageKey);

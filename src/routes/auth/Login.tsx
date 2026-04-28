@@ -28,7 +28,7 @@ function Login() {
     <>
       <Flex h='100vh' w='100vw' justify={"center"} align={"center"}>
         <Stack w='30vw' justify={"center"} align={"center"}>
-          <Title className={classes.Title}>SSHS OCW</Title>
+          <Title className={classes.Title}>SSHS TIPS</Title>
           {isNew ?
             <Title order={4} className={classes.Title}>{username} 님, 연동하여 사용할 계정을 선택해 주세요</Title>
             :
