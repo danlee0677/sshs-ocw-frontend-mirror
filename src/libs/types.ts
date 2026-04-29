@@ -34,6 +34,7 @@ export const userSchema = z.object({
   liked_subject: z.array(z.string()),
   email: z.string(),
   description: z.string(),
+  achievement: z.array(z.number()),
 })
 
 export type User = z.infer<typeof userSchema>
@@ -176,3 +177,12 @@ export interface Mentoring {
   updatedAt: Date,
   registration: string,
 }
+
+export const streakSchema = z.object({
+  _id: z.string(),
+  year: z.number(),
+  userId: z.string(),
+  days: z.record(z.string(), z.coerce.number()),
+})
+
+export type Streak = z.infer<typeof streakSchema>

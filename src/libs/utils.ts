@@ -1,6 +1,6 @@
 import z from 'zod';
 import { http } from './http';
-import type { User, Lesson, Subject, Mentoring } from './types'
+import type { User, Lesson, Subject, Mentoring, Streak } from './types'
 import axios from 'axios';
 
 export function tryParseJSON<T = unknown>(raw: string | null): T | null {
@@ -79,6 +79,7 @@ export const PLACEHOLDER_USER: User = {
   roles: [],
   email: "",
   description: "",
+  achievement: []
 }
 
 export const PLACEHOLDER_SUBJECT: Subject = {
@@ -123,6 +124,52 @@ export const PLACEHOLDER_MENTORING: Mentoring = {
   createdAt: new Date('3000-01-01'),
   updatedAt: new Date('3000-04-01'),
   registration: "",
+}
+
+
+function daysInYear(year: number): number {
+  return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0 ? 366 : 365;
+}
+
+export function calculateMaxStreak(streaks: Streak[]): number {
+  const sorted = [...streaks].sort((a, b) => a.year - b.year);
+  let max = 0, current = 0;
+  for (const streak of sorted) {
+    for (let i = 0; i < daysInYear(streak.year); i++) {
+      if ((streak.days[String(i)] ?? 0) > 0) {
+        current++;
+        if (current > max) max = current;
+      } else {
+        current = 0;
+      }
+    }
+  }
+  return max;
+}
+
+export function calculateCurrentStreak(streaks: Streak[]): number {
+  const map = new Map(streaks.map(s => [s.year, s]));
+  const today = new Date();
+  let year = today.getFullYear();
+  let day = Math.floor(
+    (today.getTime() - new Date(year, 0, 0).getTime()) / 86_400_000
+  ) - 1;
+
+  const todayActive = (map.get(year)?.days[String(day)] ?? 0) > 0;
+  if (!todayActive) {
+    if (day === 0) { year--; day = daysInYear(year) - 1; }
+    else { day--; }
+  }
+
+  let count = 0;
+  while (true) {
+    const active = (map.get(year)?.days[String(day)] ?? 0) > 0;
+    if (!active) break;
+    count++;
+    if (day === 0) { year--; day = daysInYear(year) - 1; }
+    else { day--; }
+  }
+  return count;
 }
 
 export const PLACEHOLDER_MENTORING_MARKDOWN: string = `

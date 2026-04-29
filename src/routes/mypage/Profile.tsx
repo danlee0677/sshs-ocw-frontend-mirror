@@ -1,16 +1,17 @@
-import { Box, Button, Flex, Group, Image, Pagination, ScrollArea, Space, Stack, Table, Text, Title } from "@mantine/core";
-import { recentViewSchema, type User } from "../../libs/types";
+import { Box, Button, Flex, Group, Image, Pagination, ScrollArea, Select, Space, Stack, Table, Text, Title } from "@mantine/core";
+import { recentViewSchema, streakSchema, type Streak, type User } from "../../libs/types";
 import MainPageAppshell from "../../components/appshell/MainPageAppshell";
 import { Link, useLoaderData, type LoaderFunctionArgs } from "react-router";
 import { useUserContext } from "../../root";
 import { http } from "../../libs/http";
 import classes from "./Profile.module.css"
 import { useState } from "react";
-import { PLACEHOLDER_USER } from "../../libs/utils";
+import { calculateCurrentStreak, calculateMaxStreak, PLACEHOLDER_USER } from "../../libs/utils";
 import z from "zod";
 import { linkStyle } from "../../libs/styles";
 import { notifications } from "@mantine/notifications";
 import { IconCopy, IconCopyCheck } from "@tabler/icons-react";
+import { StreakBody } from "../../components/streak/StreakBody";
 
 const SubjectResponseSchema = z.array(z.object({
   title: z.string(),
@@ -41,18 +42,23 @@ export async function clientLoader({ params }: LoaderFunctionArgs) {
       description: userParsed.data.description,
     }
 
-    const [likedRes, progressRes] = await Promise.all([
+    const [likedRes, progressRes, streakRes] = await Promise.all([
       http.get(`${import.meta.env.VITE_API_URL}/api/subjects/liked/${pageUserId}`),
       http.get(`${import.meta.env.VITE_API_URL}/api/progress/${pageUserId}`),
+      http.get(`${import.meta.env.VITE_API_URL}/api/streak/${pageUserId}`)
     ])
 
     const likedParsed = SubjectResponseSchema.safeParse(likedRes.data);
-    if (!likedParsed.success) throw new Error("Failed to parse liked subjects from server");
-    
-    const progressParsed = z.array(recentViewSchema).safeParse(progressRes.data);
-    if (!progressParsed.success) throw new Error("Failed to parse progress from server");
+    if (!likedParsed.success) throw new Response("Failed to parse liked subjects from server", { status: 400 });
 
-    return { pageUser: retUser, viewed: progressParsed.data, likedSubjects: likedParsed.data };
+    const progressParsed = z.array(recentViewSchema).safeParse(progressRes.data);
+    if (!progressParsed.success) throw new Response("Failed to parse progress from server", { status: 400 });
+
+    const streakParsed = z.array(streakSchema).safeParse(streakRes.data);
+    if (!streakParsed.success)
+      throw new Response("Failed to get streak from server", { status: 400 });
+
+    return { pageUser: retUser, viewed: progressParsed.data, likedSubjects: likedParsed.data, streak: streakParsed.data };
   } catch (err) {
     if (err instanceof Response) throw err;
     throw err;
@@ -102,7 +108,7 @@ function CopyButton({ text }: { text: string }) {
 };
 
 export default function Profile() {
-  const { pageUser, viewed, likedSubjects } = useLoaderData<typeof clientLoader>();
+  const { pageUser, viewed, likedSubjects, streak } = useLoaderData<typeof clientLoader>();
   const { user } = useUserContext();
 
   const [likedSubjectPage, setLikedSubjectPage] = useState(1);
@@ -111,8 +117,34 @@ export default function Profile() {
   const likedSubjectPageCnt = 5; // show this amount of subjects for a page(liked subjects)
   const viewedPageCnt = 5;
 
-  return (
+  const currentYear = new Date().getFullYear();
+  const earliestYear = streak.length > 0 ? Math.min(...streak.map(s => s.year)) : currentYear;
+  const yearOptions = Array.from({ length: currentYear - earliestYear + 1 }, (_, i) => String(earliestYear + i));
 
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+
+  const displayStreak: Streak = streak.find(s => s.year === selectedYear) ?? {
+    userId: pageUser._id,
+    days: {},
+    year: selectedYear,
+    _id: "",
+  };
+
+  const currentStreak = calculateCurrentStreak(streak);
+  const maxStreak = calculateMaxStreak(streak);
+
+  const allCounts = Object.values(displayStreak.days)
+  const maxActivity = allCounts.length > 0 ? Math.max(...allCounts) : 0
+  const t1 = maxActivity > 0 ? Math.ceil(maxActivity / 4) : 0
+  const t2 = maxActivity > 0 ? Math.ceil((2 * maxActivity) / 4) : 0
+  const t3 = maxActivity > 0 ? Math.ceil((3 * maxActivity) / 4) : 0
+  
+  const threshold = [0, t1, t2, t3, maxActivity];
+  const colors = ['var(--mantine-color-gray-3)','#FFD459', '#FFAA69', '#FF7C79', '#FF5F84']
+
+  const displayThreshold = [1].concat(threshold.slice(1));
+
+  return (
     <MainPageAppshell>
       <ScrollArea h="100%" w="100%">
         <Box h="100%" w="100%" px="md">
@@ -137,6 +169,41 @@ export default function Profile() {
                 </Stack>
               </Group>
               <Space h="10px" />
+              <Stack className={classes.GroupBox} w="100%">
+                <Group justify="space-between" align="center">
+                  <Group align="baseline" gap="sm">
+                    <Title order={3}>학습 스트릭</Title>
+                  </Group>
+                  <Select
+                    value={String(selectedYear)}
+                    onChange={(v) => v && setSelectedYear(Number(v))}
+                    data={yearOptions}
+                    w={100}
+                    allowDeselect={false}
+                  />
+                </Group>
+                <Group gap="xl">
+                  <Text fw={600}>현재 스트릭: <Text span fw={700} c="orange">{currentStreak}일</Text></Text>
+                </Group>
+                <StreakBody streak={displayStreak} threshold={threshold} colors={colors} />
+                <Group justify="space-between">
+                  <Group>
+                    <Text fw={600}>최장 스트릭: <Text span fw={700} c="red">{maxStreak}일</Text></Text>
+                  </Group>
+                  <Group gap="xl" justify="flex-end" align="center">
+                    {(colors.slice(1)).map((color, i) => (
+                      <Group gap="6">
+                        <Text size="sm" c="gray" fw={500}>{displayThreshold[i] === displayThreshold[i+1] ? displayThreshold[i] : `${displayThreshold[i]}-${displayThreshold[i+1]}`}</Text>
+                        <div
+                          className={classes.cell}
+                          style={{ width: 20, height: 20, background: color }}
+                        />
+                      </Group>
+                    ))}
+                  </Group>
+                </Group>
+                <Text size="xs" c="dimmed">날짜는 KST 오전 06:00 기준으로 변경됩니다.</Text>
+              </Stack>
 
               <Group w="100%" gap="md" justify="center" align="align-left">
                 <Stack className={classes.GroupBox} w="45%">

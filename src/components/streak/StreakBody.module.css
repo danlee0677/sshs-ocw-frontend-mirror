@@ -1,0 +1,55 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.monthRow {
+  display: flex;
+  align-items: center;
+}
+
+.dayLabelSpacer {
+  width: 28px;
+  flex-shrink: 0;
+}
+
+.monthLabels {
+  position: relative;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.monthLabel {
+  position: absolute;
+  font-size: 10px;
+  color: var(--mantine-color-gray-6);
+  white-space: nowrap;
+}
+
+.gridRow {
+  display: flex;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.dayLabels {
+  display: grid;
+  font-size: 9px;
+  color: var(--mantine-color-gray-6);
+  width: 24px;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+.grid {
+  display: grid;
+  grid-auto-flow: column;
+}
+
+.cell {
+  border-radius: 5px;
+  cursor: default;
+}

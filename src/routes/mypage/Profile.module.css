@@ -18,6 +18,7 @@
     min-height: 200px;
 }
 
-.ProfileBox {
-
+.cell {
+    border-radius: 5px;
+    cursor: default;
 }
