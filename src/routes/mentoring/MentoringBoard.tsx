@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLoaderData } from "react-router";
-import { Card, Group, Image, Pagination, Pill, SimpleGrid, Stack, Text, Title } from "@mantine/core";
+import { Card, Group, Image, Pagination, Pill, ScrollArea, SimpleGrid, Stack, Text, Title } from "@mantine/core";
 import z from "zod";
 import { http } from "../../libs/http";
 import { mentoringBoardSchema, type MentoringBoard } from "../../libs/types";
@@ -20,7 +20,9 @@ export default function MentoringBoardPage() {
   const { mentorings } = useLoaderData<typeof clientLoader>();
   return (
     <MainPageAppshell>
-      <MentoringBoardContent mentorings={mentorings} />
+      <ScrollArea w="100%" h="100%">
+        <MentoringBoardContent mentorings={mentorings} />
+      </ScrollArea>
     </MainPageAppshell>
   );
 }
