@@ -1,7 +1,7 @@
 import classes from './newuser.module.css'
 import { Button, Flex, Group, Image, Stack, Space, Text, Title } from "@mantine/core";
 import { Link } from 'react-router';
-import logo from "@/assets/app-logo.png"
+import logo from "@/assets/sshs.png"
 
 export default function NewUser({ setStep, isMobile }: { setStep: Function, isMobile: boolean }) {
   const Container = isMobile ? Stack : Group;
