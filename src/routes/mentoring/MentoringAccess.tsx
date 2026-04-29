@@ -22,13 +22,8 @@ export async function clientLoader({ params }: LoaderFunctionArgs) {
       `${import.meta.env.VITE_API_URL}/api/permission/check/${mentoringId}`
     );
     const permCheckParsed = permissionCheckSchema.safeParse(permCheckRes.data);
-    if (!permCheckParsed.success)
-      throw new Response("Cannot find permission")
-    
-    const isAdmin = userParsed.data.roles.includes('admin');
-    const isOwner = permCheckParsed.data.role === "owner";
-    if (!isAdmin && !isOwner)
-      throw new Response("No permission to manage this subject", { status: 403 });
+    if (!permCheckParsed.success || !permCheckParsed.data.canEdit)
+      throw new Response("No permission to manage this subject", { status: 403 })
 
     const permListRes = await http.get(
       `${import.meta.env.VITE_API_URL}/api/permission/subject/${mentoringId}`
@@ -203,7 +198,7 @@ export default function MentoringAccess() {
                 ))}
                 {permissions.length === 0 && (
                   <Table.Tr>
-                    <Table.Td colSpan={canManage ? 3 : 2}>
+                    <Table.Td colSpan={canManage ? 4 : 3}>
                       <Text c="dimmed" fz="sm" ta="center">
                         권한 정보가 없습니다.
                       </Text>

@@ -1,4 +1,4 @@
-import { Text, FileButton, Group, TextInput, Stack, UnstyledButton } from "@mantine/core";
+import { Text, Group, TextInput, Stack, Button } from "@mantine/core";
 import classes from './setting.module.css'
 import MainPageAppshell from "../../components/appshell/MainPageAppshell";
 
@@ -9,19 +9,7 @@ function Setting() {
         <Group className={`${classes.Vertical_align}`} w={'80%'} h={'10vh'}>
           <Text>아이디 변경</Text>
           <TextInput></TextInput>
-          <UnstyledButton>적용</UnstyledButton>
-        </Group>
-        <Group className={`${classes.Vertical_align}`} w={'80%'} h={'10vh'}>프로필 변경
-          <FileButton
-            accept="image/apng,image/gif,image/jpeg,image/jpg,image/png"
-            onChange={() => {
-
-            }}
-          >
-            {(props) => (
-              <UnstyledButton {...props} className={`${classes.Button1}`}>업로드</UnstyledButton>
-            )}
-          </FileButton>
+          <Button disabled={true}>적용</Button>
         </Group>
       </Stack>
     </MainPageAppshell>

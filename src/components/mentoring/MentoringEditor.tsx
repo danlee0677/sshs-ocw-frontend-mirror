@@ -211,6 +211,7 @@ export default function MentoringEditor({
   };
 
   const getEditorAsMarkdown = () => {
+    if (!editor) return "";
     try {
       return editor.getMarkdown();
     } catch {

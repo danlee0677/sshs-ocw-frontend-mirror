@@ -18,15 +18,55 @@
     cursor: pointer;
 }
 
-
-.dynamicSearchBar {
-    transition: all 0.4s ease;
-    width: 0px;
-    overflow: hidden;
+.header {
+  height: 56px;
+  margin-bottom: 120px;
+  background-color: var(--mantine-color-body);
+  padding-left: var(--mantine-spacing-md);
+  padding-right: var(--mantine-spacing-md);
 }
 
-.searchArea:hover .dynamicSearchBar,
-.dynamicSearchBar:focus-within,
-.dynamicSearchBar:has(input:not(:placeholder-shown)) {
-    width: 50%;
+.inner {
+  height: 56px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.link {
+  display: block;
+  line-height: 1;
+  padding: 8px 12px;
+  border-radius: var(--mantine-radius-sm);
+  text-decoration: none;
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 500;
+  color: black;
+
+  @media (max-width: $mantine-breakpoint-sm) {
+    border-radius: 0;
+    padding: var(--mantine-spacing-md);
+  }
+}
+
+.link:hover {
+  color: black;
+  background-color: var(--mantine-color-gray-0);
+}
+
+.menuProfileHeader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+}
+
+.menuActions {
+  display: flex;
+}
+
+.menuActionItem {
+  text-align: center;
+  justify-content: center;
+  height: 44px;
 }

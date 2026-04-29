@@ -1,18 +1,27 @@
 import { Flex, Stack, Title, UnstyledButton } from '@mantine/core'
-import { useLoaderData, type LoaderFunctionArgs } from 'react-router';
+import { redirect, useLoaderData, type LoaderFunctionArgs } from 'react-router';
 import classes from './login.module.css'
 import { z } from 'zod'
+import { http } from '../../libs/http';
 
 export async function clientLoader({ request }: LoaderFunctionArgs) {
-  const url = new URL(request.url);
+  try {
+    await http.get(`${import.meta.env.VITE_API_URL}/api/auth/verify`);
 
-  const parsed = z.object({ new: z.string().optional(), username: z.string().optional() })
-    .safeParse(Object.fromEntries(url.searchParams));
-  
-  const isNew = parsed.success && parsed.data.new === "1";
-  const username = parsed.success && parsed.data.username ? 
-                    decodeURIComponent(parsed.data.username) : ""
-  return { isNew, username };
+    // if succeed in fetching user, go to home!
+    throw redirect("/home")
+  } catch (err) {
+    if (err instanceof Response) throw err;
+    const url = new URL(request.url);
+
+    const parsed = z.object({ new: z.string().optional(), username: z.string().optional() })
+      .safeParse(Object.fromEntries(url.searchParams));
+
+    const isNew = parsed.success && parsed.data.new === "1";
+    const username = parsed.success && parsed.data.username ?
+      decodeURIComponent(parsed.data.username) : ""
+    return { isNew, username };
+  }
 }
 
 type Method = "google" | "kakao" | "naver"
