@@ -20,7 +20,7 @@ function MainPageAppshell({ children }: { children: ReactNode }) {
       <AppShell.Header h="18dvh">
         <Group h="100%" w="100%" gap={0}>
           <Flex w="20%">
-            <Space w="sm" />
+            <Space w="xl" />
             <Link to="/" style={linkStyle}>
               <Group gap="md" align="center" h="100%">
                 <Image alt="logo" h="40" w="auto" src={logo} />
@@ -51,8 +51,8 @@ function MainPageAppshell({ children }: { children: ReactNode }) {
             </Stack>
           </Flex>
 
-          <Flex w="20%" h="100%" justify="flex-end">
-            <Group gap="md" align="center" w="100%" h="100%">
+          <Flex w="20%" h="100%" justify={'center'} align={'center'}>
+            <Group gap="md" align="center" w={'100%'} h="100%" justify="center">
               {!isUser(user) ? <>
                 <UnstyledButton component={Link} className={classes.LogOutButton} to="/login" style={linkStyle}>
                   로그인

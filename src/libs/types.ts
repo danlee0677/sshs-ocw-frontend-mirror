@@ -32,6 +32,7 @@ export const userSchema = z.object({
   pfp_url: z.string(),
   roles: z.array(z.string()),
   liked_subject: z.array(z.string()),
+  achievement: z.array(z.number()),
   email: z.string(),
   description: z.string(),
 })

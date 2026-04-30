@@ -48,7 +48,7 @@ export async function clientLoader({ params }: LoaderFunctionArgs) {
 
     const likedParsed = SubjectResponseSchema.safeParse(likedRes.data);
     if (!likedParsed.success) throw new Error("Failed to parse liked subjects from server");
-    
+
     const progressParsed = z.array(recentViewSchema).safeParse(progressRes.data);
     if (!progressParsed.success) throw new Error("Failed to parse progress from server");
 
@@ -121,9 +121,9 @@ export default function Profile() {
 
             <Stack w="80%">
               <Space h={'10px'}></Space>
-              <Group className={classes.ProfileBox} align={'flex-start'} p={'20px'} w={'100%'}>
-                <Image w={'150px'} src={pageUser.pfp_url} />
-                <Stack h={'100%'} justify={'flex-start'} gap={0} p={'10px'}>
+              <Group className={classes.ProfileBox} gap={0} align={'flex-start'} p={'xl'} w={'100%'} justify={'center'}>
+                <Image w={'12%'} src={pageUser.pfp_url} />
+                <Stack w={'33%'} h={'100%'} justify={'flex-start'} gap={0} p={'10px'}>
                   <Title m={0} className={classes.JalnanGothic}>{pageUser.username}</Title>
                   <Text fw={600}>{pageUser.description ?? "프로필 소개를 작성해보세요!"}</Text>
                   <Group gap={2}>
@@ -135,12 +135,16 @@ export default function Profile() {
                     <Button component={Link} to={`/profile/${pageUser._id}/edit`}>편집</Button>
                   )}
                 </Stack>
+
+                <Stack w={'55%'} p={'lg'}>
+                  <Title order={3} className={classes.JalnanGothic}>보유 배지</Title>
+                </Stack>
               </Group>
               <Space h="10px" />
 
-              <Group w="100%" gap="md" justify="center" align="align-left">
-                <Stack className={classes.GroupBox} w="45%">
-                  <Title order={3}>좋아요 한 과목</Title>
+              <Group w="100%" gap={0} justify="center" align="align-left" className={classes.BigGroupBox}>
+                <Stack className={classes.GroupBox} w="50%" p={'xl'}>
+                  <Title className={classes.JalnanGothic} order={3}>좋아요 한 과목</Title>
                   {likedSubjects.length === 0 ? <>
                     <Text>마음에 드는 강의에 좋아요를 눌러보세요!</Text>
                   </> : <>
@@ -167,13 +171,13 @@ export default function Profile() {
                   </>}
                 </Stack>
 
-                <Stack className={classes.GroupBox} w="45%" h="90dvh">
-                  <Text className={`${classes.JalnanGothic}`}>최근 이용한 강좌</Text>
+                <Stack className={classes.GroupBox} w="50%" p={'xl'}>
+                  <Title order={3} className={`${classes.JalnanGothic}`}>최근 이용한 강좌</Title>
                   {viewed.length === 0 ? <>
                     <Text>이용한 강의가 없습니다.</Text></> : <>
                     <Stack w={'100%'} h={'70%'} className={`${classes.Vertical_align}`} gap={0}>
                       {viewed.slice((viewedPage - 1) * viewedPageCnt, viewedPage * viewedPageCnt).map((v) => (
-                        <Box key={v.lesson._id} className={`${classes.Box2} ${classes.Vertical_align}`} w={'100%'} h={'20%'} miw={0}>
+                        <Box key={v.lesson._id} className={`${classes.Box2} ${classes.Vertical_align}`} w={'100%'} h={'20%'} mih={'80px'} miw={0}>
                           <Group wrap='nowrap' w={'80%'} h={'100%'} p="md">
                             <Link to={`/subject/${v.subject._id}`} className="block"
                               style={{
