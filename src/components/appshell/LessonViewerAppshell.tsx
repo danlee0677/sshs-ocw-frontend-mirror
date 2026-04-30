@@ -1,4 +1,4 @@
-import { AppShell, Box, Divider, Group, Flex, Image, Stack, ScrollArea, Space, Text, Title } from "@mantine/core";
+import { AppShell, Box, Divider, Group, Flex, Image, Stack, ScrollArea, Space, Text } from "@mantine/core";
 import { Link } from "react-router";
 import { linkStyle } from "../../libs/styles";
 import classes from "./lessonViewer.module.css"
@@ -43,7 +43,6 @@ export default function LessonViewerAppshell({ children, subject, lesson, progre
             <Link to="/" style={linkStyle}>
               <Group gap="md" align="center" h="100%">
                 <Image alt="logo" h="40" w="auto" src={logo} />
-                <Title order={2}>SSHS TIPS</Title>
               </Group>
             </Link>
           </Flex>

@@ -1,5 +1,5 @@
 import { Box, Image, Loader, Stack, Text } from "@mantine/core";
-import appLogo from "@/assets/app-logo.png";
+import appLogo from "@/assets/sshs.png";
 import classes from "./Loading.module.css";
 
 export default function LoadingPage() {

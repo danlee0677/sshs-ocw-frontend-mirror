@@ -2,7 +2,7 @@ import { redirect, useLoaderData, type LoaderFunctionArgs } from "react-router";
 import { http } from "../../libs/http";
 import { permissionCheckSchema, userSchema } from "../../libs/types";
 import LessonEditor from "../../components/lesson/LessonEditor";
-import { LESSON_CREATE_STORAGE_KEY, MARKDOWN_CREATE_STORAGE_KEY, PLACEHOLDER_LESSON, PLACEHOLDER_MARKDOWN, tryParseJSON } from "../../libs/utils";
+import { LESSON_TIPTAP_CREATE_STORAGE_KEY, LESSON_MARKDOWN_CREATE_STORAGE_KEY, PLACEHOLDER_LESSON, PLACEHOLDER_MARKDOWN, tryParseJSON } from "../../libs/utils";
 
 export async function clientLoader({ request }: LoaderFunctionArgs) {
   try {
@@ -23,8 +23,8 @@ export async function clientLoader({ request }: LoaderFunctionArgs) {
         throw new Response("No permission to create lesson", { status: 403 });
     }
 
-    const parsedTiptap = tryParseJSON(localStorage.getItem(LESSON_CREATE_STORAGE_KEY));
-    const rawMarkdown = localStorage.getItem(MARKDOWN_CREATE_STORAGE_KEY);
+    const parsedTiptap = tryParseJSON(localStorage.getItem(LESSON_TIPTAP_CREATE_STORAGE_KEY));
+    const rawMarkdown = localStorage.getItem(LESSON_MARKDOWN_CREATE_STORAGE_KEY);
 
     const tiptapCached = parsedTiptap ?? PLACEHOLDER_LESSON.content;
     const markdownCached = rawMarkdown ?? PLACEHOLDER_MARKDOWN;
@@ -42,5 +42,5 @@ export default function LessonCreate() {
   const { tiptapCached, markdownCached, subjectId, hasCached } = useLoaderData<typeof clientLoader>();
   return <LessonEditor mode="create" initialContent={null}
   tiptapCached={tiptapCached} markdownCached={markdownCached} subjectId={subjectId}
-  storageKey={LESSON_CREATE_STORAGE_KEY} markdownStorageKey={MARKDOWN_CREATE_STORAGE_KEY} hasCached={hasCached} />
+  storageKey={LESSON_TIPTAP_CREATE_STORAGE_KEY} markdownStorageKey={LESSON_MARKDOWN_CREATE_STORAGE_KEY} hasCached={hasCached} />
 }

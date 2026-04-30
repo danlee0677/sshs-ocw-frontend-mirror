@@ -3,9 +3,9 @@ import MainPageAppshell from "../appshell/MainPageAppshell";
 import { useUserContext } from "../../root";
 
 import React, { useMemo, useCallback, type SetStateAction, useEffect, useState, useRef } from "react";
-import { Button, Group, ScrollArea, Stack, Textarea, Text, Flex, Divider, Paper, Modal, Image as ImageComponent, Loader, ThemeIcon, TextInput, Switch } from "@mantine/core";
+import { Button, Group, ScrollArea, Stack, Textarea, Text, Divider, Paper, Modal, Image as ImageComponent, Loader, ThemeIcon, TextInput, Switch, Box } from "@mantine/core";
 import { modals } from "@mantine/modals";
-import { Editor, useEditor } from '@tiptap/react'
+import { useEditor } from '@tiptap/react'
 import { RichTextEditor, Link } from '@mantine/tiptap'
 import StarterKit from "@tiptap/starter-kit";
 import { Mathematics } from '@tiptap/extension-mathematics'
@@ -65,41 +65,32 @@ function handleMarkdownChange(isMarkdown: boolean, setIsMarkdown: React.Dispatch
   })
 }
 
-function getEditor(editor: Editor) {
+function EditorToolbar() {
   return (
-    <RichTextEditor editor={editor} h="100%" w="100%"
-      style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <RichTextEditor.Toolbar sticky stickyOffset="var(--docs-header-height)">
-        <RichTextEditor.ControlsGroup>
-          <RichTextEditor.Bold />
-          <RichTextEditor.Italic />
-          <RichTextEditor.Underline />
-        </RichTextEditor.ControlsGroup>
+    <RichTextEditor.Toolbar sticky stickyOffset="var(--docs-header-height)">
+      <RichTextEditor.ControlsGroup>
+        <RichTextEditor.Bold />
+        <RichTextEditor.Italic />
+        <RichTextEditor.Underline />
+      </RichTextEditor.ControlsGroup>
 
-        <RichTextEditor.ControlsGroup>
-          <RichTextEditor.Undo />
-          <RichTextEditor.Redo />
-        </RichTextEditor.ControlsGroup>
+      <RichTextEditor.ControlsGroup>
+        <RichTextEditor.Undo />
+        <RichTextEditor.Redo />
+      </RichTextEditor.ControlsGroup>
 
-        <RichTextEditor.ControlsGroup>
-          <RichTextEditor.Link />
-          <RichTextEditor.Unlink />
-        </RichTextEditor.ControlsGroup>
+      <RichTextEditor.ControlsGroup>
+        <RichTextEditor.Link />
+        <RichTextEditor.Unlink />
+      </RichTextEditor.ControlsGroup>
 
-        <RichTextEditor.ControlsGroup>
-          <RichTextEditor.AlignLeft />
-          <RichTextEditor.AlignCenter />
-          <RichTextEditor.AlignRight />
-          <RichTextEditor.AlignJustify />
-        </RichTextEditor.ControlsGroup>
-      </RichTextEditor.Toolbar>
-
-      <ScrollArea w="100%" scrollbarSize={5}
-        flex={1} style={{ minHeight: 0 }}>
-        <RichTextEditor.Content />
-      </ScrollArea>
-
-    </RichTextEditor>
+      <RichTextEditor.ControlsGroup>
+        <RichTextEditor.AlignLeft />
+        <RichTextEditor.AlignCenter />
+        <RichTextEditor.AlignRight />
+        <RichTextEditor.AlignJustify />
+      </RichTextEditor.ControlsGroup>
+    </RichTextEditor.Toolbar>
   )
 }
 
@@ -230,6 +221,7 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
   }
 
   const getEditorAsMarkdown = () => {
+    if (!editor) return "";
     try {
       return editor.getMarkdown();
     } catch {
@@ -442,122 +434,138 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
 
   return (
     <MainPageAppshell>
-      <Modal
-        opened={cacheDecision === 'pending'}
-        onClose={() => setCacheDecision('done')}
-        title="저장된 초안이 있습니다"
-        withCloseButton={false}
-        closeOnClickOutside={false}
-        centered
-      >
-        <Text>이전에 작성하던 초안을 불러오시겠습니까?</Text>
-        <Group mt="md" justify="flex-end">
-          <Button variant="default" onClick={() => {
-            localStorage.removeItem(storageKey);
-            localStorage.removeItem(markdownStorageKey);
-            setCacheDecision('done');
-          }}>새로 시작</Button>
-          <Button disabled={!editor} onClick={() => {
-            editor?.commands.setContent(tiptapCached as any, { emitUpdate: false });
-            setMarkdown(markdownCached);
-            setCacheDecision('done');
-          }}>불러오기</Button>
-        </Group>
-      </Modal>
-      <Form method={mode === "create" ? "post" : "patch"} style={{ width: '100%', height: '100%' }}
-        action="/action/lesson/submit">
-        <Stack w="100%" h="100%" gap="sm" p="md">
-          { /* hidden inputs for form submission */}
-          <input type="hidden" name="tiptapContent" value={editor ? JSON.stringify(editor.getJSON()) : ""} />
-          <input type="hidden" name="subjectId" value={subjectId} />
-          <input type="hidden" name="userId" value={user._id} />
-          <input type="hidden" name="lessonId" value={initialContent?._id || ""} />
-
-          {actionData?.error && (<Text c="red" ta="center">{actionData.error}</Text>)}
-
-          <TextInput name="title" defaultValue={initialContent?.title || ""}
-            placeholder="강좌 제목을 입력하세요" required />
-
-          <Group justify="space-between" w="100%">
-            <Group gap="md">
-              <Button type="button" onClick={() => handleMarkdownChange(isMarkdown, setIsMarkdown, setMarkdown, getEditorAsMarkdown)}>
-                {isMarkdown ? "에디터 모드로" : "마크다운 모드로"}
-              </Button>
-
-              {isMarkdown ? <Button type="button" onClick={parseMarkdown}>마크다운 컴파일</Button> : <></>}
-              {isMarkdown ?
-                <Button type="button" onClick={() => {
-                  setMarkdown(getEditorAsMarkdown());
-                }}>에디터를 마크다운으로</Button> : <></>}
-
-              <Button type="button" onClick={handleYoutubeOpen} >유튜브 영상 추가</Button>
-              <Button type="button" onClick={handleOpenModal}>이미지 추가</Button>
-              <Group>
-                <Switch name="studentOnly" defaultChecked={initialContent?.student_only || false} />
-                <Text>설곽 학생만 열람 제한</Text>
-              </Group>
-            </Group>
-
-            <Modal
-              opened={opened}
-              onClose={handleClose}
-              title="Upload Image"
-              centered
-              size="lg"
-              closeOnClickOutside={activeStep !== 'uploading'}
-              withCloseButton={activeStep !== 'uploading'}
-            >
-              {activeStep === 'select' && renderSelectStep()}
-              {activeStep === 'verify' && renderVerifyStep()}
-              {activeStep === 'uploading' && renderUploadStep()}
-              {activeStep === 'success' && renderSuccessStep()}
-            </Modal>
-
-            <Modal
-              opened={youtubeOpened}
-              onClose={handleYoutubeClose}
-              title="Upload Youtube"
-              centered
-              size="lg"
-            >
-              {renderYoutubeInsertion()}
-            </Modal>
-
-            <Button type="submit" loading={isSubmitting}>
-              {mode === "create" ? "강의 생성" : "강의 수정"}
-            </Button>
+      <ScrollArea w="100%" h="100%">
+        <Modal
+          opened={cacheDecision === 'pending'}
+          onClose={() => setCacheDecision('done')}
+          title="저장된 초안이 있습니다"
+          withCloseButton={false}
+          closeOnClickOutside={false}
+          centered
+        >
+          <Text>이전에 작성하던 초안을 불러오시겠습니까?</Text>
+          <Group mt="md" justify="flex-end">
+            <Button variant="default" onClick={() => {
+              localStorage.removeItem(storageKey);
+              localStorage.removeItem(markdownStorageKey);
+              setCacheDecision('done');
+            }}>새로 시작</Button>
+            <Button disabled={!editor} onClick={() => {
+              editor?.commands.setContent(tiptapCached as any, { emitUpdate: false });
+              setMarkdown(markdownCached);
+              setCacheDecision('done');
+            }}>불러오기</Button>
           </Group>
+        </Modal>
 
+        <Modal
+          opened={opened}
+          onClose={handleClose}
+          title="Upload Image"
+          centered
+          size="lg"
+          closeOnClickOutside={activeStep !== 'uploading'}
+          withCloseButton={activeStep !== 'uploading'}
+        >
+          {activeStep === 'select' && renderSelectStep()}
+          {activeStep === 'verify' && renderVerifyStep()}
+          {activeStep === 'uploading' && renderUploadStep()}
+          {activeStep === 'success' && renderSuccessStep()}
+        </Modal>
 
-          {isMarkdown ?
-            <Flex w="100%" gap="md" align="center" justify="center"
-              flex={1} direction='row' style={{ minHeight: 0 }}>
-              <Paper h="100%" w="50%" withBorder>
-                <ScrollArea w="100%" h="100%" scrollbarSize={5} >
-                  <Textarea ref={markdownRef} value={markdown} onChange={(event) => {
-                    setMarkdown(event.currentTarget.value)
-                    debounceMarkdownSave(event.currentTarget.value)
-                  }}
+        <Modal
+          opened={youtubeOpened}
+          onClose={handleYoutubeClose}
+          title="Upload Youtube"
+          centered
+          size="lg"
+        >
+          {renderYoutubeInsertion()}
+        </Modal>
+
+        <Form method={mode === "create" ? "post" : "patch"} style={{ width: '100%', height: '100%' }}
+          action="/action/lesson/submit">
+          <Box
+            style={{
+              position: 'sticky',
+              top: 0,
+              zIndex: 100,
+              background: 'var(--mantine-color-body)',
+              borderBottom: '1px solid var(--mantine-color-default-border)',
+            }}
+            p="sm"
+          >
+            <Group justify="space-between" w="100%">
+              <Group gap="md">
+                <Button type="button" onClick={() => handleMarkdownChange(isMarkdown, setIsMarkdown, setMarkdown, getEditorAsMarkdown)}>
+                  {isMarkdown ? "에디터 모드로" : "마크다운 모드로"}
+                </Button>
+
+                {isMarkdown ? <Button type="button" onClick={parseMarkdown}>마크다운 컴파일</Button> : <></>}
+                {isMarkdown ?
+                  <Button type="button" onClick={() => {
+                    setMarkdown(getEditorAsMarkdown());
+                  }}>에디터를 마크다운으로</Button> : <></>}
+
+                <Button type="button" onClick={handleYoutubeOpen} >유튜브 영상 추가</Button>
+                <Button type="button" onClick={handleOpenModal}>이미지 추가</Button>
+                <Group>
+                  <Switch name="studentOnly" defaultChecked={initialContent?.student_only || false} />
+                  <Text>설곽 학생만 열람 제한</Text>
+                </Group>
+              </Group>
+              <Button type="submit" loading={isSubmitting}>
+                {mode === "create" ? "강의 생성" : "강의 수정"}
+              </Button>
+            </Group>
+          </Box>
+          <Stack gap="md" p="md">
+            { /* hidden inputs for form submission */}
+            <input type="hidden" name="tiptapContent" value={editor ? JSON.stringify(editor.getJSON()) : ""} />
+            <input type="hidden" name="subjectId" value={subjectId} />
+            <input type="hidden" name="userId" value={user._id} />
+            <input type="hidden" name="lessonId" value={initialContent?._id || ""} />
+
+            {actionData?.error && (<Text c="red" ta="center">{actionData.error}</Text>)}
+
+            <TextInput name="title" defaultValue={initialContent?.title || ""}
+              placeholder="강좌 제목을 입력하세요" required />
+
+            {isMarkdown ? (
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                <Paper withBorder style={{ flex: 1 }}>
+                  <Textarea
+                    ref={markdownRef}
+                    value={markdown}
+                    onChange={(e) => {
+                      setMarkdown(e.currentTarget.value);
+                      debounceMarkdownSave(e.currentTarget.value);
+                    }}
                     onFocus={() => setLastActive('markdown')}
-                    autosize minRows={20} variant="unstyled" />
-                </ScrollArea>
-              </Paper>
-              <Divider orientation="vertical" />
-              <Paper h="100%" w="50%">
-                {getEditor(editor)}
-              </Paper>
-            </Flex>
-            :
-            <Flex w="100%" gap="md" align="center" justify="center"
-              flex={1} direction='row' style={{ minHeight: 0 }}>
-              <Paper h="100%" w="70%">
-                {getEditor(editor)}
-              </Paper>
-            </Flex>
-
-          }
-        </Stack>
-      </Form>
+                    autosize
+                    minRows={20}
+                    variant="unstyled"
+                  />
+                </Paper>
+                <Divider orientation="vertical" style={{ alignSelf: 'stretch' }} />
+                <Paper withBorder style={{ flex: 1 }}>
+                  <RichTextEditor editor={editor} style={{ minHeight: 400 }}>
+                    <EditorToolbar />
+                    <RichTextEditor.Content />
+                  </RichTextEditor>
+                </Paper>
+              </div>
+            ) : (
+              <Paper withBorder>
+                <RichTextEditor editor={editor} style={{ minHeight: 400 }}>
+                  <EditorToolbar />
+                  <RichTextEditor.Content />
+                </RichTextEditor>
+              </Paper>)
+            }
+          </Stack>
+        </Form>
+      </ScrollArea>
     </MainPageAppshell>
 
   )

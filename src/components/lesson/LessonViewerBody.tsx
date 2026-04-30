@@ -9,6 +9,7 @@ import { TableKit } from '@tiptap/extension-table';
 import { Highlight } from '@tiptap/extension-highlight';
 import { Image } from '@tiptap/extension-image'
 import { Details, DetailsContent, DetailsSummary } from '@tiptap/extension-details';
+import TextAlign from '@tiptap/extension-text-align';
 // todo: subscript/superscript
 // todo: useMemo for optimizing editor?
 
@@ -74,6 +75,9 @@ function LessonViewerBody({ lesson, subject, progress }: LessonViewerProps) {
         enableTabIndentation: true,
         tabSize: 4,
       }),
+      TextAlign.configure({
+        types: ['heading', 'paragraph']
+      })
     ],
     content: lesson.content,
     editable: false,

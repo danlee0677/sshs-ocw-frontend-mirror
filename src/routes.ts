@@ -34,6 +34,17 @@ export default [
     route("/:pageUserId/edit", "./routes/mypage/ProfileEdit.tsx"),
   ]),
 
+  // mentoring
+  ...prefix("mentoring", [
+    route("/create", "./routes/mentoring/MentoringCreate.tsx"),
+    route("/board", "./routes/mentoring/MentoringBoard.tsx"),
+    route("/:mentoringId", "./routes/mentoring/MentoringViewer.tsx"),
+    route("/:mentoringId/edit", "./routes/mentoring/MentoringEdit.tsx"),
+    route("/:mentoringId/access", "./routes/mentoring/MentoringAccess.tsx"),
+  ]),
+  route("/action/mentoring/submit", "./routes/mentoring/action.mentoring.submit.ts"),
+  route("/action/mentoring/access", "./routes/mentoring/action.mentoring.access.ts"),
+
   // search
   route("/search", "./routes/search/SearchResult.tsx"),
 

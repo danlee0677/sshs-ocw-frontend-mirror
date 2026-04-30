@@ -1,7 +1,7 @@
 import { redirect, type ActionFunctionArgs } from "react-router";
 import z from "zod";
 import { http } from "../../libs/http";
-import { LESSON_CREATE_STORAGE_KEY, MARKDOWN_CREATE_STORAGE_KEY, lessonEditStorageKey, markdownEditStorageKey } from "../../libs/utils";
+import { LESSON_TIPTAP_CREATE_STORAGE_KEY, LESSON_MARKDOWN_CREATE_STORAGE_KEY, lessonTiptapEditStorageKey, lessonMarkdownEditStorageKey } from "../../libs/utils";
 import { isAxiosError } from "axios";
 import { notifications } from "@mantine/notifications";
 
@@ -48,11 +48,11 @@ export async function clientAction({ request }: ActionFunctionArgs) {
     }
 
     if (request.method === "POST") {
-      localStorage.removeItem(LESSON_CREATE_STORAGE_KEY);
-      localStorage.removeItem(MARKDOWN_CREATE_STORAGE_KEY);
+      localStorage.removeItem(LESSON_TIPTAP_CREATE_STORAGE_KEY);
+      localStorage.removeItem(LESSON_MARKDOWN_CREATE_STORAGE_KEY);
     } else if (request.method === "PATCH" && lessonId) {
-      localStorage.removeItem(lessonEditStorageKey(lessonId));
-      localStorage.removeItem(markdownEditStorageKey(lessonId));
+      localStorage.removeItem(lessonTiptapEditStorageKey(lessonId));
+      localStorage.removeItem(lessonMarkdownEditStorageKey(lessonId));
     }
 
     notifications.show({

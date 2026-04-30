@@ -2,15 +2,16 @@ import MainPageAppshell from "../../components/appshell/MainPageAppshell";
 import { Box, Flex, Image, Group, Paper, Stack, Text, Title, ScrollArea } from '@mantine/core';
 import { useElementSize } from '@mantine/hooks';
 import classes from './main.module.css'
-import { ProgressCard } from './Progress'
+// import { ProgressCard } from './Progress'
 import { CustomBadge } from "./CustomBadge";
-import { recentViewSchema, userSchema, type RecentView } from "../../libs/types";
+import { recentViewSchema, streakSchema, userSchema, type RecentView } from "../../libs/types";
 import { Link, redirect, useLoaderData } from "react-router";
 import { http } from "../../libs/http";
 import z from "zod";
 import { useUserContext } from "../../root";
 import { isAxiosError } from "axios";
-import { FloatingActionButton } from "../../components/element/FloatingActionButton";
+import { FloatingActionButton } from "../../components/home/FloatingActionButton";
+import { calculateCurrentStreak, calculateMaxStreak } from "../../libs/utils";
 
 const PLACEHOLDER_RECENT_VIEW: RecentView = {
   subject: {
@@ -34,13 +35,20 @@ export async function clientLoader() {
     const userParsed = userSchema.safeParse(userRes.data);
     if (!userParsed.success) throw new Error("Failed to verify user")
 
-    const res = await http.get(`${import.meta.env.VITE_API_URL}/api/progress/${userParsed.data._id}/recent-subjects`)
-    const parsed = z.array(recentViewSchema).safeParse(res.data);
+    const [progressRes, streakRes] = await Promise.all([
+      http.get(`${import.meta.env.VITE_API_URL}/api/progress/${userParsed.data._id}/recent-subjects`),
+      http.get(`${import.meta.env.VITE_API_URL}/api/streak/${userParsed.data._id}`)
+    ])
+    const progressParsed = z.array(recentViewSchema).safeParse(progressRes.data);
+    const streakParsed = z.array(streakSchema).safeParse(streakRes.data);
 
-    if (!parsed.success) {
-      throw new Error("failed to get intact progress from server")
-    }
-    return { recentViewed: parsed.data }
+    if (!progressParsed.success)
+      throw new Response("failed to get intact progress from server", { status: 400 });
+
+    if (!streakParsed.success)
+      throw new Response("Failed to get streak from server", { status: 400 });
+
+    return { recentViewed: progressParsed.data, streak: streakParsed.data }
   } catch (err) {
     console.log(err)
     if (err instanceof Response) throw err;
@@ -58,7 +66,7 @@ function Home() {
   const { ref, width } = useElementSize()
   const isNarrow = width < 150;
 
-  const { recentViewed } = useLoaderData<typeof clientLoader>();
+  const { recentViewed, streak } = useLoaderData<typeof clientLoader>();
 
   const { user } = useUserContext();
 
@@ -113,11 +121,23 @@ function Home() {
                     </Stack>
                   </Flex>
                 </Paper>
-                <Group w={'100%'} h={'50%'} className={`${classes.Box1}`}>
-                  <>
-                    <ProgressCard type={1}></ProgressCard>
-                    <ProgressCard type={2}></ProgressCard>
-                  </>
+                <Group w={'100%'} h={'50%'} gap="2%">
+                  <Paper w="49%" h="100%" className={classes.Box1} bg="#e8f0fa" p="md">
+                    <Stack h="100%">
+                      <Title order={3}>최장 스트릭</Title>
+                      <Title order={2} ta="center">
+                        {calculateMaxStreak(streak)}일
+                      </Title>
+                    </Stack>
+                  </Paper>
+                  <Paper w="49%" h="100%" className={classes.Box1} bg="#e8f0fa" p="md">
+                    <Stack h="100%">
+                      <Title order={3}>현재 스트릭</Title>
+                      <Title order={2} ta="center">
+                        {calculateCurrentStreak(streak)}일
+                      </Title>
+                    </Stack>
+                  </Paper>
                 </Group>
               </Stack>
               <Group className={`${classes.Box1}`} w={'25%'} h={'100%'}>
