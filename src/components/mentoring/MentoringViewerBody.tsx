@@ -75,7 +75,7 @@ function MentoringViewerBody({ mentoring }: LessonViewerProps) {
     ],
     content: mentoring.content,
     editable: false,
-  })
+  }, [mentoring._id])
 
   return (
     <RichTextEditor editor={editor} >

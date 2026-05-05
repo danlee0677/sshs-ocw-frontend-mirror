@@ -81,7 +81,7 @@ function LessonViewerBody({ lesson, subject, progress }: LessonViewerProps) {
     ],
     content: lesson.content,
     editable: false,
-  })
+  }, [lesson._id])
 
   return (
     <LessonViewerAppshell subject={subject} lesson={lesson} progress={progress}>
