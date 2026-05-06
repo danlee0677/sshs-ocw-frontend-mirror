@@ -105,7 +105,7 @@ function Home() {
               </Stack>}
             <Group className={`${classes.Vertical_align} ${classes.Main1}`} w={'100%'} h={'65vh'}>
               <Stack w={'50%'} h={'100%'}>
-                <Paper w={'100%'} h={'50%'} className={`${classes.Box1}`} bg={'#cbd6eaff'} component={Link} to={`/profile/${user._id}`} c={'black'}>
+                <Paper w={'100%'} h={'50%'} className={`${classes.Box1}`} bg={'rgb(232, 240, 255)'} component={Link} to={`/profile/${user._id}`} c={'black'}>
                   <Flex w={'100%'} h={'100%'} justify={"flex-start"} align={'center'} px="xl" gap="xl">
                     <Image w="150px" h="150px" fit="cover" src={user.pfp_url} className={classes.Main_pfp_image} radius="80px" />
                     <Stack gap="xs" justify="center">
@@ -122,7 +122,7 @@ function Home() {
                   </Flex>
                 </Paper>
                 <Group w={'100%'} h={'50%'} gap="2%">
-                  <Paper w="49%" h="100%" className={classes.Box1} bg="#e8f0fa" p="md">
+                  <Paper w="49%" h="100%" className={classes.Box1} bg="#ffffff" p="md">
                     <Stack h="100%">
                       <Title order={3}>최장 스트릭</Title>
                       <Title order={2} ta="center">
@@ -130,7 +130,7 @@ function Home() {
                       </Title>
                     </Stack>
                   </Paper>
-                  <Paper w="49%" h="100%" className={classes.Box1} bg="#e8f0fa" p="md">
+                  <Paper w="49%" h="100%" className={classes.Box1} bg="#ffffff" p="md">
                     <Stack h="100%">
                       <Title order={3}>현재 스트릭</Title>
                       <Title order={2} ta="center">

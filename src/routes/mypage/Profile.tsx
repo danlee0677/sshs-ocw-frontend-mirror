@@ -12,6 +12,7 @@ import { linkStyle } from "../../libs/styles";
 import { notifications } from "@mantine/notifications";
 import { IconCopy, IconCopyCheck } from "@tabler/icons-react";
 import { StreakBody } from "../../components/streak/StreakBody";
+import { CustomBadge } from "../../components/badge/custombadge";
 
 const SubjectResponseSchema = z.array(z.object({
   title: z.string(),
@@ -153,9 +154,9 @@ export default function Profile() {
 
             <Stack w="80%">
               <Space h={'10px'}></Space>
-              <Group className={classes.ProfileBox} gap={0} align={'flex-start'} p={'xl'} w={'100%'} justify={'center'}>
-                <Image w={'12%'} src={pageUser.pfp_url} />
-                <Stack w={'33%'} h={'100%'} justify={'flex-start'} gap={0} p={'10px'}>
+              <Group className={classes.ProfileBox} gap={'lg'} align={'flex-start'} p={'xl'} w={'100%'} h={'400px'} justify={'center'}>
+                <Image w={'15%'} src={pageUser.pfp_url} />
+                <Stack w={'35%'} h={'100%'} justify={'flex-start'} gap={0} p={'10px'}>
                   <Title m={0} className={classes.JalnanGothic}>{pageUser.username}</Title>
                   <Text fw={600}>{pageUser.description ?? "프로필 소개를 작성해보세요!"}</Text>
                   <Group gap={2}>
@@ -168,10 +169,18 @@ export default function Profile() {
                   )}
                 </Stack>
 
-                <Stack w={'55%'} p={'lg'}>
-                  <Title order={3} className={classes.JalnanGothic}>보유 배지</Title>
+                <Stack w={'40%'} h={'100%'} p={'lg'} align={'center'} gap={0} className={classes.BadgeArea}>
+                    <Title order={3} className={classes.JalnanGothic}>보유 배지</Title> 
+                    <ScrollArea w={'100%'} h={'100%'} className={classes.BadgeList}>
+                    <Stack p={'xs'} gap={0}>
+                      {user?.achievement.map((badgeId) => (
+                      <CustomBadge id={badgeId}></CustomBadge>
+                      ))}
+                    </Stack>
+                  </ScrollArea>
+                  <Text c={'gray'}>모두 보기</Text>
                 </Stack>
-              </Group>
+              </Group> 
               <Space h="10px" />
               <Stack className={classes.GroupBox} w="100%">
                 <Group justify="space-between" align="center">
@@ -211,7 +220,7 @@ export default function Profile() {
 
               <Group w="100%" gap="md" justify="center" align="align-left">
                 <Stack className={classes.GroupBox} w="45%">
-                  <Title order={3}>좋아요 한 과목</Title>
+                  <Title order={3} className={classes.JalnanGothic}>좋아요 한 과목</Title>
                   {likedSubjects.length === 0 ? <>
                     <Text>마음에 드는 강의에 좋아요를 눌러보세요!</Text>
                   </> : <>

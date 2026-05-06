@@ -23,6 +23,12 @@
     border-radius: 20px;
 }
 
+.BadgeArea {
+    border: 2px slategray solid;
+    border-radius: 10px;
+}
+
+
 .cell {
     border-radius: 5px;
     cursor: default;

@@ -30,7 +30,7 @@ export function Layout({ children }: { children: React.ReactNode; }) {
       </head>
       <body>
         <MantineProvider theme={theme}>
-          <Notifications />
+          <Notifications position='bottom-right' />
           <ModalsProvider>
             {children}
           </ModalsProvider>
