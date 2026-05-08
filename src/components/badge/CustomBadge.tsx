@@ -1,5 +1,5 @@
-import { Box, Group, Image, Space, Stack, Text } from "@mantine/core"
-import { BadgeList } from "./badgeData"
+import { Group, Image, Space, Stack, Text } from "@mantine/core"
+import { BadgeList } from "./BadgeData"
 import classes from "./CustomBadge.module.css"
 
 export function CustomBadge({id}: {id: number}) {

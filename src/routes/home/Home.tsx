@@ -3,7 +3,7 @@ import { Box, Flex, Image, Group, Paper, Stack, Text, Title, ScrollArea } from '
 import { useElementSize } from '@mantine/hooks';
 import classes from './main.module.css'
 // import { ProgressCard } from './Progress'
-import { CustomBadge } from "./CustomBadge";
+import { HomeBadge } from "./HomeBadge";
 import { recentViewSchema, streakSchema, userSchema, type RecentView } from "../../libs/types";
 import { Link, redirect, useLoaderData } from "react-router";
 import { http } from "../../libs/http";
@@ -114,9 +114,9 @@ function Home() {
                         <Text size="sm" fw={550} c="#5d5d5d">{user.description}</Text>
                       )}
                       <Group gap="xs">
-                        <CustomBadge type={1} />
-                        <CustomBadge type={2} />
-                        <CustomBadge type={3} />
+                        <HomeBadge type={1} />
+                        <HomeBadge type={2} />
+                        <HomeBadge type={3} />
                       </Group>
                     </Stack>
                   </Flex>

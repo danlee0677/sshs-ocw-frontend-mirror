@@ -12,7 +12,7 @@ import { linkStyle } from "../../libs/styles";
 import { notifications } from "@mantine/notifications";
 import { IconCopy, IconCopyCheck } from "@tabler/icons-react";
 import { StreakBody } from "../../components/streak/StreakBody";
-import { CustomBadge } from "../../components/badge/custombadge";
+import { CustomBadge } from "../../components/badge/CustomBadge";
 
 const SubjectResponseSchema = z.array(z.object({
   title: z.string(),
