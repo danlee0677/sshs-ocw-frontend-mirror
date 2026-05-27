@@ -2,7 +2,7 @@ import { useLoaderData, type LoaderFunctionArgs } from "react-router";
 import LessonEditor from "../../components/lesson/LessonEditor"
 import { http } from "../../libs/http";
 import { lessonSchema, permissionCheckSchema, tiptapDocSchema, userSchema } from "../../libs/types";
-import { lessonTiptapEditStorageKey, lessonMarkdownEditStorageKey, PLACEHOLDER_LESSON, PLACEHOLDER_MARKDOWN, tryParseJSON } from "../../libs/utils";
+import { lessonTiptapEditStorageKey, lessonMarkdownEditStorageKey, lessonMetaEditStorageKey, PLACEHOLDER_LESSON, PLACEHOLDER_MARKDOWN, tryParseJSON } from "../../libs/utils";
 // import your Zod schemas here!
 
 export async function clientLoader({ params }: LoaderFunctionArgs) {
@@ -28,13 +28,16 @@ export async function clientLoader({ params }: LoaderFunctionArgs) {
 
     const storageKey = lessonTiptapEditStorageKey(parsed.data._id);
     const markdownStorageKey = lessonMarkdownEditStorageKey(parsed.data._id);
+    const metaStorageKey = lessonMetaEditStorageKey(parsed.data._id);
 
     const parsedTiptap = tryParseJSON(localStorage.getItem(storageKey));
     const rawMarkdown = localStorage.getItem(markdownStorageKey);
+    const parsedMeta = tryParseJSON<{ title?: string; studentOnly?: boolean }>(localStorage.getItem(metaStorageKey));
 
     const tiptapCached = parsedTiptap ?? PLACEHOLDER_LESSON.content;
     const markdownCached = rawMarkdown ?? PLACEHOLDER_MARKDOWN;
-    const hasCached = parsedTiptap !== null || rawMarkdown !== null;
+    const metaCached = parsedMeta;
+    const hasCached = parsedTiptap !== null || rawMarkdown !== null || parsedMeta !== null;
 
     const content = tiptapDocSchema.safeParse(tryParseJSON(parsed.data.content))?.data
                  ?? PLACEHOLDER_LESSON.content;
@@ -47,7 +50,7 @@ export async function clientLoader({ params }: LoaderFunctionArgs) {
         content,
         student_only: parsed.data.student_only,
         createdBy: parsed.data.createdBy.username,
-      }, tiptapCached, markdownCached, subjectId: parsed.data.subject, storageKey, markdownStorageKey, hasCached
+      }, tiptapCached, markdownCached, metaCached, subjectId: parsed.data.subject, storageKey, markdownStorageKey, metaStorageKey, hasCached
     };
   } catch (err) {
     if (err instanceof Response) throw err;
@@ -57,10 +60,10 @@ export async function clientLoader({ params }: LoaderFunctionArgs) {
 }
 
 export default function EditLessonRoute() {
-  const { initialContent, markdownCached, tiptapCached, subjectId, storageKey, markdownStorageKey, hasCached } = useLoaderData<typeof clientLoader>();
+  const { initialContent, markdownCached, tiptapCached, metaCached, subjectId, storageKey, markdownStorageKey, metaStorageKey, hasCached } = useLoaderData<typeof clientLoader>();
 
   // Render the shared component in "edit" mode, passing the fetched data
   return <LessonEditor mode="edit" initialContent={initialContent}
-  markdownCached={markdownCached} tiptapCached={tiptapCached} subjectId={subjectId}
-  storageKey={storageKey} markdownStorageKey={markdownStorageKey} hasCached={hasCached} />
+  markdownCached={markdownCached} tiptapCached={tiptapCached} metaCached={metaCached} subjectId={subjectId}
+  storageKey={storageKey} markdownStorageKey={markdownStorageKey} metaStorageKey={metaStorageKey} hasCached={hasCached} />
 }

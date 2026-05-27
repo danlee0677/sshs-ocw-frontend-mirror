@@ -95,18 +95,30 @@ function EditorToolbar() {
   );
 }
 
+type MentoringMetaCache = {
+  title?: string;
+  description?: string;
+  image_url?: string;
+  registration?: string;
+  tags?: string[];
+  createdBy?: string[];
+  files?: MentoringFile[];
+};
+
 interface MentoringEditorProps {
   mode: "edit" | "create";
   initialContent: Mentoring | null;
   tiptapCached: object;
   markdownCached: string;
+  metaCached: MentoringMetaCache | null;
   storageKey: string;
   markdownStorageKey: string;
+  metaStorageKey: string;
   hasCached: boolean;
 }
 
 export default function MentoringEditor({
-  mode, initialContent, tiptapCached, markdownCached, storageKey, markdownStorageKey, hasCached,
+  mode, initialContent, tiptapCached, markdownCached, metaCached, storageKey, markdownStorageKey, metaStorageKey, hasCached,
 }: MentoringEditorProps) {
   const { user } = useUserContext();
 
@@ -129,6 +141,9 @@ export default function MentoringEditor({
   const [isMarkdown, setIsMarkdown] = useState<boolean>(true);
   const [cacheDecision, setCacheDecision] = useState<'pending' | 'done'>(hasCached ? 'pending' : 'done');
 
+  const [title, setTitle] = useState<string>(initialContent?.title ?? "");
+  const [description, setDescription] = useState<string>(initialContent?.description ?? "");
+  const [registration, setRegistration] = useState<string>(initialContent?.registration ?? "");
   const [imageUrl, setImageUrl] = useState<string>(initialContent?.image_url ?? "");
   const [imageUploading, setImageUploading] = useState(false);
   const imageFileInputRef = useRef<HTMLInputElement>(null);
@@ -158,6 +173,21 @@ export default function MentoringEditor({
       console.log('Failed to save markdown', err);
     }
   }, 800);
+
+  const debounceMetaSave = useDebounce((meta: MentoringMetaCache) => {
+    try {
+      localStorage.setItem(metaStorageKey, JSON.stringify(meta));
+    } catch (err) {
+      console.log('Failed to save meta', err);
+    }
+  }, 800);
+
+  useEffect(() => {
+    if (cacheDecision === 'pending') return;
+    debounceMetaSave({
+      title, description, image_url: imageUrl, registration, tags, createdBy, files,
+    });
+  }, [title, description, imageUrl, registration, tags, createdBy, files, cacheDecision, debounceMetaSave]);
 
   useEffect(() => {
     return () => {
@@ -428,11 +458,28 @@ export default function MentoringEditor({
             <Button variant="default" onClick={() => {
               localStorage.removeItem(storageKey);
               localStorage.removeItem(markdownStorageKey);
+              localStorage.removeItem(metaStorageKey);
+              setTitle(initialContent?.title ?? "");
+              setDescription(initialContent?.description ?? "");
+              setRegistration(initialContent?.registration ?? "");
+              setImageUrl(initialContent?.image_url ?? "");
+              setTags(initialContent?.tags ?? []);
+              setCreatedBy(initialContent?.createdBy ?? []);
+              setFiles(initialContent?.files ?? []);
               setCacheDecision('done');
             }}>새로 시작</Button>
             <Button disabled={!editor} onClick={() => {
               editor?.commands.setContent(tiptapCached as any, { emitUpdate: false });
               setMarkdown(markdownCached);
+              if (metaCached) {
+                if (metaCached.title !== undefined) setTitle(metaCached.title);
+                if (metaCached.description !== undefined) setDescription(metaCached.description);
+                if (metaCached.registration !== undefined) setRegistration(metaCached.registration);
+                if (metaCached.image_url !== undefined) setImageUrl(metaCached.image_url);
+                if (metaCached.tags !== undefined) setTags(metaCached.tags);
+                if (metaCached.createdBy !== undefined) setCreatedBy(metaCached.createdBy);
+                if (metaCached.files !== undefined) setFiles(metaCached.files);
+              }
               setCacheDecision('done');
             }}>불러오기</Button>
           </Group>
@@ -540,7 +587,8 @@ export default function MentoringEditor({
               name="title"
               placeholder="멘토링 제목"
               required
-              defaultValue={initialContent?.title ?? ""}
+              value={title}
+              onChange={(e) => setTitle(e.currentTarget.value)}
             />
             <TextInput
               name="image_url"
@@ -559,18 +607,20 @@ export default function MentoringEditor({
                 </ActionIcon>
               }
             />
-            <TextInput 
+            <TextInput
               name="registration"
               placeholder="신청 링크"
               required
-              defaultValue={initialContent?.registration ?? ""}
+              value={registration}
+              onChange={(e) => setRegistration(e.currentTarget.value)}
             />
             <Textarea
               name="description"
               placeholder="멘토링 설명"
               autosize
               minRows={3}
-              defaultValue={initialContent?.description ?? ""}
+              value={description}
+              onChange={(e) => setDescription(e.currentTarget.value)}
             />
 
             <Combobox store={combobox} onOptionSubmit={handleTagSelect}>

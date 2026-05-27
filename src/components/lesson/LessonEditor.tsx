@@ -94,18 +94,22 @@ function EditorToolbar() {
   )
 }
 
+type LessonMetaCache = { title?: string; studentOnly?: boolean };
+
 interface LessonEditorProps {
   mode: "edit" | "create";
   initialContent: Lesson | null;
   tiptapCached: object;
   markdownCached: string;
+  metaCached: LessonMetaCache | null;
   subjectId: string;
   storageKey: string;
   markdownStorageKey: string;
+  metaStorageKey: string;
   hasCached: boolean;
 }
 
-export default function LessonEditor({ mode, initialContent, tiptapCached, markdownCached, subjectId, storageKey, markdownStorageKey, hasCached }: LessonEditorProps) {
+export default function LessonEditor({ mode, initialContent, tiptapCached, markdownCached, metaCached, subjectId, storageKey, markdownStorageKey, metaStorageKey, hasCached }: LessonEditorProps) {
   const { user } = useUserContext();
 
   // modal for image upload
@@ -125,6 +129,9 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
   const [markdown, setMarkdown] = useState<string>(PLACEHOLDER_MARKDOWN);
   const [isMarkdown, setIsMarkdown] = useState<boolean>(true);
   const [cacheDecision, setCacheDecision] = useState<'pending' | 'done'>(hasCached ? 'pending' : 'done');
+
+  const [title, setTitle] = useState<string>(initialContent?.title ?? "");
+  const [studentOnly, setStudentOnly] = useState<boolean>(initialContent?.student_only ?? false);
 
   const actionData = useActionData<{ error?: string }>();
   const navigation = useNavigation();
@@ -146,6 +153,19 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
       console.log('Failed to save markdown', err);
     }
   }, 800)
+
+  const debounceMetaSave = useDebounce((meta: LessonMetaCache) => {
+    try {
+      localStorage.setItem(metaStorageKey, JSON.stringify(meta));
+    } catch (err) {
+      console.log('Failed to save meta', err);
+    }
+  }, 800);
+
+  useEffect(() => {
+    if (cacheDecision === 'pending') return;
+    debounceMetaSave({ title, studentOnly });
+  }, [title, studentOnly, cacheDecision, debounceMetaSave]);
 
   // garbage collector
   useEffect(() => {
@@ -448,11 +468,18 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
             <Button variant="default" onClick={() => {
               localStorage.removeItem(storageKey);
               localStorage.removeItem(markdownStorageKey);
+              localStorage.removeItem(metaStorageKey);
+              setTitle(initialContent?.title ?? "");
+              setStudentOnly(initialContent?.student_only ?? false);
               setCacheDecision('done');
             }}>새로 시작</Button>
             <Button disabled={!editor} onClick={() => {
               editor?.commands.setContent(tiptapCached as any, { emitUpdate: false });
               setMarkdown(markdownCached);
+              if (metaCached) {
+                if (metaCached.title !== undefined) setTitle(metaCached.title);
+                if (metaCached.studentOnly !== undefined) setStudentOnly(metaCached.studentOnly);
+              }
               setCacheDecision('done');
             }}>불러오기</Button>
           </Group>
@@ -510,7 +537,7 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
                 <Button type="button" onClick={handleYoutubeOpen} >유튜브 영상 추가</Button>
                 <Button type="button" onClick={handleOpenModal}>이미지 추가</Button>
                 <Group>
-                  <Switch name="studentOnly" defaultChecked={initialContent?.student_only || false} />
+                  <Switch name="studentOnly" checked={studentOnly} onChange={(e) => setStudentOnly(e.currentTarget.checked)} />
                   <Text>설곽 학생만 열람 제한</Text>
                 </Group>
               </Group>
@@ -528,7 +555,7 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
 
             {actionData?.error && (<Text c="red" ta="center">{actionData.error}</Text>)}
 
-            <TextInput name="title" defaultValue={initialContent?.title || ""}
+            <TextInput name="title" value={title} onChange={(e) => setTitle(e.currentTarget.value)}
               placeholder="강좌 제목을 입력하세요" required />
 
             {isMarkdown ? (

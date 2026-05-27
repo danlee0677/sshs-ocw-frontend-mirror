@@ -1,13 +1,24 @@
 import { redirect, useLoaderData, type LoaderFunctionArgs } from "react-router";
 import { http } from "../../libs/http";
-import { mentoringResponseSchema, permissionCheckSchema, tiptapDocSchema, userSchema, type Mentoring } from "../../libs/types";
+import { mentoringResponseSchema, permissionCheckSchema, tiptapDocSchema, userSchema, type Mentoring, type MentoringFile } from "../../libs/types";
 import {
   mentoringTiptapEditStorageKey,
   mentoringMarkdownEditStorageKey,
+  mentoringMetaEditStorageKey,
   PLACEHOLDER_LESSON,
   PLACEHOLDER_MARKDOWN,
   tryParseJSON,
 } from "../../libs/utils";
+
+type MentoringMetaCache = {
+  title?: string;
+  description?: string;
+  image_url?: string;
+  registration?: string;
+  tags?: string[];
+  createdBy?: string[];
+  files?: MentoringFile[];
+};
 import MentoringEditor from "../../components/mentoring/MentoringEditor";
 
 export async function clientLoader({ params }: LoaderFunctionArgs) {
@@ -39,16 +50,20 @@ export async function clientLoader({ params }: LoaderFunctionArgs) {
 
     const storageKey = mentoringTiptapEditStorageKey(mentoringId);
     const markdownStorageKey = mentoringMarkdownEditStorageKey(mentoringId);
+    const metaStorageKey = mentoringMetaEditStorageKey(mentoringId);
     const parsedTiptap = tryParseJSON(localStorage.getItem(storageKey));
     const rawMarkdown = localStorage.getItem(markdownStorageKey);
+    const parsedMeta = tryParseJSON<MentoringMetaCache>(localStorage.getItem(metaStorageKey));
 
     return {
       initialContent,
       tiptapCached: parsedTiptap ?? PLACEHOLDER_LESSON.content,
       markdownCached: rawMarkdown ?? PLACEHOLDER_MARKDOWN,
-      hasCached: parsedTiptap !== null || rawMarkdown !== null,
+      metaCached: parsedMeta,
+      hasCached: parsedTiptap !== null || rawMarkdown !== null || parsedMeta !== null,
       storageKey,
       markdownStorageKey,
+      metaStorageKey,
     };
   } catch (err) {
     if (err instanceof Response) throw err;
@@ -57,7 +72,7 @@ export async function clientLoader({ params }: LoaderFunctionArgs) {
 }
 
 export default function MentoringEdit() {
-  const { initialContent, tiptapCached, markdownCached, storageKey, markdownStorageKey, hasCached } =
+  const { initialContent, tiptapCached, markdownCached, metaCached, storageKey, markdownStorageKey, metaStorageKey, hasCached } =
     useLoaderData<typeof clientLoader>();
   return (
     <MentoringEditor
@@ -65,8 +80,10 @@ export default function MentoringEdit() {
       initialContent={initialContent}
       tiptapCached={tiptapCached}
       markdownCached={markdownCached}
+      metaCached={metaCached}
       storageKey={storageKey}
       markdownStorageKey={markdownStorageKey}
+      metaStorageKey={metaStorageKey}
       hasCached={hasCached}
     />
   );

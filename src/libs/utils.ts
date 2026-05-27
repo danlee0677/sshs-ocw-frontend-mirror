@@ -12,14 +12,18 @@ export const useableTags = ['Math', 'Physics', 'Informatics', 'Chemistry', 'Biol
 
 export const LESSON_TIPTAP_CREATE_STORAGE_KEY = "LectureEditor_Create_v01"
 export const LESSON_MARKDOWN_CREATE_STORAGE_KEY = "Markdown_Create_v01"
+export const LESSON_META_CREATE_STORAGE_KEY = "LessonMeta_Create_v01"
 export const lessonTiptapEditStorageKey = (id: string) => `LectureEditor_Edit_${id}_v01`
 export const lessonMarkdownEditStorageKey = (id: string) => `Markdown_Edit_${id}_v01`
+export const lessonMetaEditStorageKey = (id: string) => `LessonMeta_Edit_${id}_v01`
 
 
-export const MENTORING_TIPTAP_CREATE_STORAGE_KEY = "LectureEditor_Create_v01"
-export const MENTORING_MARKDOWN_CREATE_STORAGE_KEY = "Markdown_Create_v01"
-export const mentoringTiptapEditStorageKey = (id: string) => `LectureEditor_Edit_${id}_v01`
-export const mentoringMarkdownEditStorageKey = (id: string) => `Markdown_Edit_${id}_v01`
+export const MENTORING_TIPTAP_CREATE_STORAGE_KEY = "MentoringEditor_Create_v01"
+export const MENTORING_MARKDOWN_CREATE_STORAGE_KEY = "MentoringMarkdown_Create_v01"
+export const MENTORING_META_CREATE_STORAGE_KEY = "MentoringMeta_Create_v01"
+export const mentoringTiptapEditStorageKey = (id: string) => `MentoringEditor_Edit_${id}_v01`
+export const mentoringMarkdownEditStorageKey = (id: string) => `MentoringMarkdown_Edit_${id}_v01`
+export const mentoringMetaEditStorageKey = (id: string) => `MentoringMeta_Edit_${id}_v01`
 
 export const isStudentRegex: RegExp = /@sshs\.hs\.kr$/;
 

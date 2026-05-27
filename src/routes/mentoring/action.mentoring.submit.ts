@@ -1,7 +1,7 @@
 import { redirect, type ActionFunctionArgs } from "react-router";
 import z from "zod";
 import { http } from "../../libs/http";
-import { MENTORING_TIPTAP_CREATE_STORAGE_KEY, MENTORING_MARKDOWN_CREATE_STORAGE_KEY, mentoringTiptapEditStorageKey, mentoringMarkdownEditStorageKey } from "../../libs/utils";
+import { MENTORING_TIPTAP_CREATE_STORAGE_KEY, MENTORING_MARKDOWN_CREATE_STORAGE_KEY, MENTORING_META_CREATE_STORAGE_KEY, mentoringTiptapEditStorageKey, mentoringMarkdownEditStorageKey, mentoringMetaEditStorageKey } from "../../libs/utils";
 import { isAxiosError } from "axios";
 import { notifications } from "@mantine/notifications";
 
@@ -58,9 +58,11 @@ export async function clientAction({ request }: ActionFunctionArgs) {
     if (request.method === "POST") {
       localStorage.removeItem(MENTORING_TIPTAP_CREATE_STORAGE_KEY);
       localStorage.removeItem(MENTORING_MARKDOWN_CREATE_STORAGE_KEY);
+      localStorage.removeItem(MENTORING_META_CREATE_STORAGE_KEY);
     } else if (request.method === "PATCH" && mentoringId) {
       localStorage.removeItem(mentoringTiptapEditStorageKey(mentoringId));
       localStorage.removeItem(mentoringMarkdownEditStorageKey(mentoringId));
+      localStorage.removeItem(mentoringMetaEditStorageKey(mentoringId));
     }
 
     notifications.show({
