@@ -1,7 +1,7 @@
 import MainPageAppshell from "../../components/appshell/MainPageAppshell";
 import { Box, Flex, Image, Group, Paper, Stack, Text, Title, ScrollArea } from '@mantine/core';
 import { useElementSize } from '@mantine/hooks';
-import classes from './main.module.css'
+import classes from '../../styles/shared.module.css'
 // import { ProgressCard } from './Progress'
 import { HomeBadge } from "./HomeBadge";
 import { recentViewSchema, streakSchema, userSchema, type RecentView } from "../../libs/types";

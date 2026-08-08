@@ -1,5 +1,5 @@
 import { Text, Group, TextInput, Stack, Button } from "@mantine/core";
-import classes from './setting.module.css'
+import classes from '../../styles/shared.module.css'
 import MainPageAppshell from "../../components/appshell/MainPageAppshell";
 
 function Setting() {

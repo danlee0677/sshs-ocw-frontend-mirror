@@ -2,7 +2,7 @@ import '@mantine/core/styles.css';
 import '@mantine/tiptap/styles.css';
 import '@mantine/dropzone/styles.css';
 import '@mantine/notifications/styles.css'
-import { createTheme, MantineProvider } from "@mantine/core";
+import { ColorSchemeScript, createTheme, localStorageColorSchemeManager, MantineProvider } from "@mantine/core";
 import { ModalsProvider } from "@mantine/modals";
 import { Links, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData, useOutletContext } from "react-router";
 import { http } from "./libs/http";
@@ -10,9 +10,27 @@ import { Notifications } from '@mantine/notifications'
 import { userSchema, type User } from "./libs/types";
 import ErrorPage from './error/ErrorPage';
 import LoadingPage from './loading/LoadingPage';
+import { BREAKPOINTS, COLOR_SCHEME_STORAGE_KEY, CONTENT_MAX_WIDTH } from './libs/styles';
+
+// Mantine persists the scheme itself. Do NOT hand-roll a cookie, a context, or a
+// useEffect that syncs to localStorage — each one reintroduces the flash that
+// ColorSchemeScript exists to prevent.
+const colorSchemeManager = localStorageColorSchemeManager({
+  key: COLOR_SCHEME_STORAGE_KEY,
+});
 
 const theme = createTheme({
   fontFamily: 'Pretendard, Inter, system-ui, Avenir, Helvetica, Arial, sans-serif',
+  breakpoints: { ...BREAKPOINTS },
+  // Mantine's default primary shade is tuned for light surfaces and is too dark
+  // to read against a dark one. Setting it here fixes every Button, Anchor, Tabs
+  // indicator and filled variant at once, instead of per-component later.
+  primaryShade: { light: 6, dark: 4 },
+  components: {
+    Container: {
+      defaultProps: { size: CONTENT_MAX_WIDTH, px: 'md' },
+    },
+  },
 });
 
 export function Layout({ children }: { children: React.ReactNode; }) {
@@ -22,15 +40,40 @@ export function Layout({ children }: { children: React.ReactNode; }) {
         <meta charSet="UTF-8" />
         <meta
           name="viewport"
-          content="width=device-width, initial-scale=1.0"
+          content="width=device-width, initial-scale=1.0, viewport-fit=cover"
         />
         <title>SSHS TIPS</title>
+        {/* Placement is load-bearing. This emits a small blocking inline script
+            that reads localStorage and stamps data-mantine-color-scheme onto
+            <html> BEFORE first paint. Rendered after the stylesheet <Links />,
+            or omitted, every dark-mode user gets a white flash on every load. */}
+        <ColorSchemeScript
+          defaultColorScheme='light'
+          localStorageKey={COLOR_SCHEME_STORAGE_KEY}
+        />
         <Meta />
         <Links />
       </head>
       <body>
-        <MantineProvider theme={theme}>
-          <Notifications position='bottom-right' />
+        {/* `defaultColorScheme='light'` is deliberate FOR THE DURATION of the
+            migration, not a preference: ~90 light-assuming hardcoded colors are
+            still spread across the CSS modules, so 'auto' would hand every
+            OS-dark visitor a half-broken app for the whole project. Dark stays
+            opt-in via the toggle, so the people seeing it are the ones testing
+            it. Flip to 'auto' in Prompt 24, once the sweep is done.
+
+            The storage key MUST match ColorSchemeScript's, hence the shared
+            constant. MantineProvider has no `localStorageKey` prop — the key is
+            configured through a colorSchemeManager, defined above. */}
+        <MantineProvider
+          theme={theme}
+          defaultColorScheme='light'
+          colorSchemeManager={colorSchemeManager}
+        >
+          <Notifications
+            position='bottom-right'
+            styles={{ root: { maxWidth: 'min(400px, calc(100vw - 32px))' } }}
+          />
           <ModalsProvider>
             {children}
           </ModalsProvider>

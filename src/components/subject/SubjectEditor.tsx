@@ -4,7 +4,11 @@ import { useDisclosure, useListState } from "@mantine/hooks";
 import { type Subject } from "../../libs/types";
 import { isUser, PLACEHOLDER_SUBJECT, uploadImage, useableTags } from "../../libs/utils";
 import OrderTable from "./OrderTable";
-import classes from "./subject.module.css"
+import shared from "../../styles/shared.module.css"
+import page from "./subject.module.css"
+
+// Shared page chrome plus this component's own rules. Page keys win on collision.
+const classes = { ...shared, ...page }
 import MainPageAppshell from "../appshell/MainPageAppshell";
 import { Dropzone, IMAGE_MIME_TYPE } from "@mantine/dropzone";
 import { IconCheck, IconPhoto, IconUpload, IconX } from "@tabler/icons-react";

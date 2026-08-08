@@ -5,7 +5,11 @@ import { IconHeart, IconPencilPlus } from "@tabler/icons-react";
 import { http } from "../../libs/http";
 import { permissionCheckSchema, subjectSchema, type Subject, type User } from "../../libs/types";
 import MainPageAppshell from "../../components/appshell/MainPageAppshell";
-import classes from "./subjectViewer.module.css"
+import shared from "../../styles/shared.module.css"
+import page from "./subjectViewer.module.css"
+
+// Shared page chrome plus this page's own rules. Page keys win on collision.
+const classes = { ...shared, ...page }
 import { useUserContext } from "../../root";
 import { isUser } from "../../libs/utils";
 import { notifications } from "@mantine/notifications";

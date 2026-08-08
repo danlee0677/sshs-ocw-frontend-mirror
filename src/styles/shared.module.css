@@ -1,0 +1,264 @@
+/* Shared page chrome — the single source of truth for rules that were previously
+   copy-pasted into four separate CSS modules:
+
+     src/routes/home/main.module.css
+     src/routes/settings/setting.module.css
+     src/routes/subject/subjectViewer.module.css
+     src/components/subject/subject.module.css
+
+   Every hardcoded color below existed FOUR times before this extraction, which
+   is why recoloring for dark mode had to happen here first: doing it in place
+   would have meant four edits per color and near-certain drift.
+
+   HOW CONSUMERS REACH THESE: each component imports this file DIRECTLY. Where a
+   page also has rules of its own it imports both and merges:
+
+     import shared from '../../styles/shared.module.css'
+     import page from './subjectViewer.module.css'
+     const classes = { ...shared, ...page }
+
+   CSS Modules `composes:` was tried first and rejected — it is the wrong tool
+   here. `composes` produces the correct class-name mapping, but it does not make
+   this file's CSS reach every consuming route's chunk: with the page modules
+   reduced to nothing but `composes` rules, Vite emitted NO CSS asset at all for
+   the Home route while duplicating these rules into three other chunks, so Home
+   rendered with class names that matched nothing. Adding a side-effect
+   `import './shared.module.css'` in root.tsx did not help either: a CSS *module*
+   import with no used bindings gets tree-shaken away (unlike a plain .css
+   import). Importing the module and using its exports is what actually keeps it
+   alive, so that is what the consumers do.
+
+   main.module.css and setting.module.css were DELETED rather than reduced to
+   re-export shims: after this extraction neither had a single rule of its own.
+
+   `::selection` used to live here four times over. It is global regardless of
+   CSS Modules, so those four copies were overriding one another for no reason.
+   It now lives exactly once, in src/index.css.
+
+   The @font-face blocks are declared HERE ONLY. They were also duplicated four
+   times; @font-face is global, so the duplicates were redundant downloads-by-
+   declaration at best. */
+
+@font-face {
+    font-family: 'JalnanGothic';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_231029@1.1/JalnanGothic.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Paperozi';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-display: swap;
+}
+
+/* ---------------------------------------------------------------- typography */
+
+.JalnanGothic {
+    font-family: 'JalnanGothic';
+}
+
+.Paperozi {
+    font-family: 'Paperozi';
+}
+
+.Text1 {
+    width: 70%;
+}
+
+.Text2 {
+    font-family: 'JalnanGothic';
+    /* was: color: gray */
+    color: var(--mantine-color-dimmed);
+}
+
+.Link {
+    /* was: color: gray */
+    color: var(--mantine-color-dimmed);
+    text-decoration: underline;
+    display: inline-block;
+    cursor: pointer;
+}
+
+/* ------------------------------------------------------------------- layout */
+
+.flex1 {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.Inline {
+    display: inline;
+}
+
+.Vertical_align {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.Main_pfp_image {
+    display: inline;
+}
+
+.Image1 {
+    border-radius: 4px;
+}
+
+.LoginInput {
+    margin: 10px 0 10px 0;
+    width: 60%;
+}
+
+.UndraggableImage {
+    -webkit-user-drag: none !important;
+    -khtml-user-drag: none !important;
+    -moz-user-drag: none !important;
+    -o-user-drag: none !important;
+    user-select: none !important;
+    pointer-events: none; /* 클릭까지 막고 싶으면 */
+}
+
+/* ------------------------------------------------------------ hover surfaces */
+
+.Box1 {
+    transition: 0.2s ease-in-out;
+}
+
+/* `.Box2` is a hover target and never had base styling of its own. This rule is
+   intentionally EMPTY, purely so `Box2` appears in this module's class-name
+   exports for `classes.Box2` in Home.tsx. Adding any declaration here (a
+   transition, a position) would be a genuine visual change, and this extraction
+   must not have one. The empty rule is dropped from the emitted CSS; the export
+   map is computed before minification, so the name survives. */
+.Box2 {
+    /* see the :hover rule in the hover-capable block below */
+}
+
+/* -------------------------------------------------------- selectable tiles */
+
+.ButtonText {
+    /* was: color: black */
+    color: var(--mantine-color-text);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    font-size: 20px;
+    transform: translate(-50%, -40%);
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0;
+    transition: 0.3s ease;
+    font-family: 'JalnanGothic';
+    -webkit-user-select: none; /* 크롬, 사파리 */
+    -moz-user-select: none;    /* 파이어폭스 */
+    -ms-user-select: none;     /* 구버전 IE/Edge */
+    user-select: none;
+}
+
+/* The blue "toy button" tiles. Converted from lightskyblue / navy /
+   rgb(42,141,222) to the Mantine blue scale, preserving the 3D bottom-border
+   effect and the translateY press.
+
+   The 3px outline uses --mantine-color-text, NOT --mantine-color-default-border
+   as the color contract's generic "any border" row would suggest. That row is
+   about dividers and card edges; this is a deliberate high-contrast cartoon
+   outline, and default-border (a subtle gray) erases the effect entirely against
+   the blue fill. --mantine-color-text keeps the intent in both schemes: near
+   black on light, near white on dark. */
+.selectBox {
+    position: relative;
+    transition: transform 0.2s ease, background-color 0.5s ease, border-bottom 0.5s ease;
+    border: 3px solid var(--mantine-color-text);
+    border-bottom: 9px solid light-dark(var(--mantine-color-blue-6), var(--mantine-color-blue-4));
+    background-color: light-dark(var(--mantine-color-blue-2), var(--mantine-color-blue-9));
+    border-radius: 10%;
+    width: 100px;
+    height: 100px;
+    -webkit-user-drag: none !important;
+    -khtml-user-drag: none !important;
+    -moz-user-drag: none !important;
+    -o-user-drag: none !important;
+}
+
+.selected {
+    background-color: light-dark(var(--mantine-color-blue-5), var(--mantine-color-blue-8));
+    border-bottom: 6px solid light-dark(var(--mantine-color-blue-9), var(--mantine-color-blue-3));
+    transform: translateY(2px);
+}
+
+/* On a coarse pointer there is no hover, so the tile label would never appear at
+   all if it were only revealed on :hover. Reveal it unconditionally instead —
+   otherwise every one of these controls ships unlabelled on a phone, which the
+   plan's own definition of done forbids. */
+@media (hover: none) {
+    .ButtonText {
+        opacity: 1;
+        color: var(--mantine-color-white);
+    }
+}
+
+/* All hover styling is gated on a real hover-capable pointer. On touch, :hover
+   sticks after a tap and reads as a stuck selection. */
+@media (hover: hover) and (pointer: fine) {
+    .Box1:hover {
+        transition: 0.2s ease-in-out;
+        border-radius: 10px;
+        cursor: pointer;
+        /* was: box-shadow: 0px 3px 3px 3px gainsboro — an opaque light-gray
+           shadow is invisible on a dark surface. */
+        box-shadow: var(--mantine-shadow-md);
+    }
+
+    .Box2:hover {
+        /* was: background-color: rgb(226, 226, 226) */
+        background-color: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5));
+    }
+
+    .Link:hover {
+        color: var(--mantine-color-dimmed);
+        text-decoration: underline;
+        display: inline-block;
+    }
+
+    .selectBox:hover {
+        background-color: light-dark(var(--mantine-color-blue-4), var(--mantine-color-blue-7));
+        border-bottom: 9px solid light-dark(var(--mantine-color-blue-8), var(--mantine-color-blue-3));
+    }
+
+    .selected:hover {
+        background-color: light-dark(var(--mantine-color-blue-4), var(--mantine-color-blue-7));
+        border-bottom: 6px solid light-dark(var(--mantine-color-blue-8), var(--mantine-color-blue-3));
+    }
+
+    .selectBox:hover .ButtonText {
+        opacity: 1;
+        color: var(--mantine-color-white);
+    }
+}
+
+/* ------------------------------------------------------------ speech bubble */
+
+/* Stays dark in BOTH schemes — it is a tooltip-style callout that reads as
+   raised above the page. Only the dark-mode value lightens, for separation from
+   the (now dark) page behind it. */
+.SpeechBubble {
+    position: relative;
+    background-color: light-dark(var(--mantine-color-dark-6), var(--mantine-color-dark-4));
+    font-family: 'Paperozi';
+    font-size: 13px;
+    color: var(--mantine-color-white);
+    width: 120px;
+    height: 60px;
+    top: -20px;
+    left: 200px;
+    opacity: 90%;
+    padding: 20px;
+    line-height: 15px;
+    white-space: normal;
+    word-break: break-all;
+}

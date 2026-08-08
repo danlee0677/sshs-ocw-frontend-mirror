@@ -1,7 +1,9 @@
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css");
 
-.ProseMirror {
-  font-synthesis: style;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 :root {
@@ -9,9 +11,18 @@
   line-height: 1.5;
   font-weight: 400;
 
+  /* Declares that the page supports BOTH schemes, so the browser renders the
+     things this stylesheet does not control — native scrollbars, form control
+     chrome, the canvas behind the document — to match. Without it a dark page
+     gets a white scrollbar and light native widgets.
+
+     This is not app styling and must not be confused with one. Mantine sets the
+     resolved value via `color-scheme: var(--mantine-color-scheme)` under
+     `[data-mantine-color-scheme]`, which is more specific and therefore wins;
+     this declaration is the pre-Mantine default. Do NOT add `color` or
+     `background-color` here — those come from var(--mantine-color-text) and
+     var(--mantine-color-body), which MantineProvider sets on body. */
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -19,54 +30,39 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+html,
+body {
+  max-width: 100%;
+  /* TEMPORARY responsive-migration backstop — REMOVE in Prompt 22.
+     `clip`, not `hidden`: `hidden` would make body a scroll container and
+     break `position: sticky` in the TipTap editor toolbars. */
+  overflow-x: clip;
 }
 
 body {
   margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+.ProseMirror {
+  font-synthesis: style;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+/* Zero-specificity fluid media so Mantine's `Image` h/w props and any
+   component style always win. `svg` is deliberately excluded: every icon
+   is a Tabler <svg> sized by attribute, and `height: auto` collapses them.
+   `.ProseMirror` is excluded because editor nodes set dimensions on
+   purpose — handled in Prompt 10. */
+:where(img, video, canvas):not(:where(.ProseMirror *)) {
+  max-width: 100%;
+  height: auto;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+/* Single global selection style. `::selection` is global even when written in a
+   CSS module, so the four copies that previously lived in main/setting/
+   subjectViewer/subject.module.css were fighting each other for no reason.
+   One scheme-aware rule here replaces all of them. */
+::selection {
+  background-color: light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+  color: var(--mantine-color-text);
 }
