@@ -26,7 +26,10 @@ import { IconDeviceDesktop, IconMoon, IconSun } from '@tabler/icons-react';
 
 /** Compact sun/moon button for the header bar (`sm` and up). */
 export function ColorSchemeToggle() {
-  const { colorScheme, setColorScheme } = useMantineColorScheme();
+  // Only `setColorScheme` is needed here. The compact control renders nothing
+  // from the raw setting — icon, label and aria-pressed all describe what is on
+  // screen, which only `useComputedColorScheme` can tell us.
+  const { setColorScheme } = useMantineColorScheme();
   const computed = useComputedColorScheme('light', {
     getInitialValueInEffect: false,
   });
@@ -48,7 +51,12 @@ export function ColorSchemeToggle() {
         size='lg'
         radius='md'
         aria-label={label}
-        aria-pressed={colorScheme === 'dark'}
+        // `isDark` (computed), NOT `colorScheme === 'dark'`. On 'auto' with a
+        // dark OS, `colorScheme` is the literal 'auto', so comparing it would
+        // report aria-pressed=false while the icon and label both say dark —
+        // the screen reader would contradict the visible control. Everything
+        // describing what is ON SCREEN must come from the computed scheme.
+        aria-pressed={isDark}
         onClick={() => setColorScheme(next)}
       >
         {isDark ? <IconSun size={20} stroke={1.5} /> : <IconMoon size={20} stroke={1.5} />}

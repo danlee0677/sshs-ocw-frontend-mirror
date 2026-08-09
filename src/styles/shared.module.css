@@ -129,21 +129,28 @@
     transition: 0.2s ease-in-out;
 }
 
-/* `.Box2` is a hover target and never had base styling of its own. This rule is
-   intentionally EMPTY, purely so `Box2` appears in this module's class-name
-   exports for `classes.Box2` in Home.tsx. Adding any declaration here (a
-   transition, a position) would be a genuine visual change, and this extraction
-   must not have one. The empty rule is dropped from the emitted CSS; the export
-   map is computed before minification, so the name survives. */
-.Box2 {
-    /* see the :hover rule in the hover-capable block below */
-}
+/* `.Box2` is a hover target and never had base styling of its own, so there is
+   deliberately no base rule for it here — an empty one would contribute nothing.
+   The `Box2` class name is exported to JS solely because it appears in the
+   `.Box2:hover` selector inside the hover-capable block below, and Home.tsx
+   depends on that export via `classes.Box2`. If that hover rule is ever removed
+   or renamed, `classes.Box2` becomes undefined SILENTLY — no build error, no
+   lint error, just an unstyled element. */
 
 /* -------------------------------------------------------- selectable tiles */
 
+/* Label color is set per CONTEXT, not per state, because the two contexts never
+   coexist on one device:
+     - hover-capable pointer: the label is only ever visible while hovering, so
+       it only needs to contrast with the HOVER fill (white on blue-8, 5.0:1).
+     - coarse pointer: there is no hover, so the label is always visible over the
+       BASE or SELECTED fill — which is what this base rule below covers.
+   Do not use var(--mantine-color-text) here. It resolves to #c9c9c9 in dark,
+   which lands at 3.7:1 on blue-9 and fails AA. Black/white is the only pair that
+   clears 4.5:1 against every fill these tiles use. */
 .ButtonText {
     /* was: color: black */
-    color: var(--mantine-color-text);
+    color: light-dark(var(--mantine-color-black), var(--mantine-color-white));
     position: absolute;
     top: 50%;
     left: 50%;
@@ -194,11 +201,15 @@
 /* On a coarse pointer there is no hover, so the tile label would never appear at
    all if it were only revealed on :hover. Reveal it unconditionally instead —
    otherwise every one of these controls ships unlabelled on a phone, which the
-   plan's own definition of done forbids. */
+   plan's own definition of done forbids.
+
+   ONLY opacity is set here. Do NOT re-add a color override: without hover the
+   fill stays at its BASE value, and white on blue-2 is 1.5:1 — invisible, the
+   exact failure this block exists to prevent. The base rule's
+   light-dark(black, white) is already correct for both base and selected fills. */
 @media (hover: none) {
     .ButtonText {
         opacity: 1;
-        color: var(--mantine-color-white);
     }
 }
 
@@ -225,14 +236,24 @@
         display: inline-block;
     }
 
+    /* blue-8 in BOTH schemes, deliberately. The label that appears on hover is
+       white, and across Mantine's blue scale only blue-8 (5.0:1) and blue-9
+       (6.1:1) clear 4.5:1 against white — blue-7 is 4.2:1 and fails. blue-8 is
+       also the faithful mapping of the original hover fill rgb(74,118,176),
+       whose luminance (0.176) sits right next to blue-8's (0.159); the earlier
+       blue-4 mapping was far too light and had dropped this to 2.5:1.
+       Light darkens on hover (blue-2 → blue-8), dark lightens (blue-9 → blue-8):
+       both directions read as a state change, which is the point. */
     .selectBox:hover {
-        background-color: light-dark(var(--mantine-color-blue-4), var(--mantine-color-blue-7));
-        border-bottom: 9px solid light-dark(var(--mantine-color-blue-8), var(--mantine-color-blue-3));
+        background-color: var(--mantine-color-blue-8);
+        border-bottom: 9px solid light-dark(var(--mantine-color-blue-9), var(--mantine-color-blue-2));
     }
 
+    /* In dark, `.selected` is already blue-8, so the fill cannot carry the hover
+       feedback here — the lightened bottom border does it instead. */
     .selected:hover {
-        background-color: light-dark(var(--mantine-color-blue-4), var(--mantine-color-blue-7));
-        border-bottom: 6px solid light-dark(var(--mantine-color-blue-8), var(--mantine-color-blue-3));
+        background-color: var(--mantine-color-blue-8);
+        border-bottom: 6px solid light-dark(var(--mantine-color-blue-9), var(--mantine-color-blue-2));
     }
 
     .selectBox:hover .ButtonText {
