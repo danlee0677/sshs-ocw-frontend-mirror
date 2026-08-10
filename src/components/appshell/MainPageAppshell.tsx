@@ -1,5 +1,5 @@
 import { useEffect, type ReactNode } from "react";
-import { AppShell, Box, Group, Image, TextInput, UnstyledButton, Button, Burger, Drawer, ScrollArea, Divider, Stack, Avatar, Menu } from "@mantine/core";
+import { ActionIcon, AppShell, Box, Group, Image, TextInput, UnstyledButton, Button, Burger, Drawer, ScrollArea, Divider, Stack, Avatar, Menu } from "@mantine/core";
 import { IconSearch } from '@tabler/icons-react';
 import { Form, Link, useFetcher } from "react-router";
 import { FROM_LG_QUERY, HEADER_HEIGHT, linkStyle } from "../../libs/styles";
@@ -37,12 +37,29 @@ function SearchForm({ fullWidth = false, onSubmit }: { fullWidth?: boolean; onSu
     >
       <Group className={classes.searchArea}>
         <TextInput
+          /*
+           * `auto` is required for the submit control to work at all. Mantine's
+           * Input defaults `leftSectionPointerEvents` to `"none"`, which it
+           * applies as `pointer-events` on the section — so the submit button
+           * that used to live here was never clickable. Search worked only
+           * through implicit form submission on Enter.
+           */
+          leftSectionPointerEvents="auto"
           leftSection={
-            <Button type="submit" style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0 }}>
-              {/* No `color` prop. A hardcoded black icon is invisible on a dark
-                * header; unset, it inherits `currentColor`. */}
+            /*
+             * ActionIcon, not Button. A `filled` Button sets
+             * `--button-color: var(--mantine-color-white)` on its root, so an
+             * icon inheriting `currentColor` inside one renders WHITE — the
+             * inline style here killed the Button's background and border but
+             * never its color, leaving a white icon on a white input. `subtle`
+             * + `gray` is themed per scheme, so neither mode needs a literal.
+             *
+             * Size is bounded by the section: `--input-left-section-size` is
+             * `input-height - 2px` ≈ 34px, so anything above `md` (28px) clips.
+             */
+            <ActionIcon type="submit" variant="subtle" color="gray" size="md" aria-label="검색">
               <IconSearch size={16} stroke={1.5} />
-            </Button>}
+            </ActionIcon>}
           placeholder="검색어를 입력해 주세요."
           name="keyword"
           maxLength={20}

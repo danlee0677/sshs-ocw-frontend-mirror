@@ -59,16 +59,43 @@ export const TABLET_QUERY = `(max-width: ${BREAKPOINTS.md})` as const;
 /**
  * `min-width` companions to the two above. Use THESE, not the negation of a
  * max-width query, whenever the JS result has to agree with a Mantine
- * breakpoint — `visibleFrom` / `hiddenFrom` and `AppShell`'s `navbar.breakpoint`
- * are all `min-width`.
+ * breakpoint.
  *
- * The two forms are NOT complements. At exactly 48em both `(max-width: 48em)`
- * and `(min-width: 48em)` match, so a max-width query reports "mobile" on the
- * first width at which Mantine has already switched to desktop. AppShell widens
- * the gap: `assignNavbarVariables` collapses the navbar at
- * `breakpoint - 0.1em`, i.e. 47.9em. Keying anything off MOBILE_QUERY that must
- * line up with the navbar therefore double-counts 768px exactly — you get the
- * mobile header and the desktop navbar at the same time.
+ * WHY THE NEGATION IS WRONG. Mantine never expresses "below the breakpoint" as a
+ * bare `max-width: <bp>`. It subtracts 0.1 **px** first — px, not em — and
+ * converts afterwards. Both code paths share that convention:
+ *
+ *   MantineClasses.mjs:17-19        (visibleFrom / hiddenFrom)
+ *     .mantine-visible-from-X  hidden below  max-width: em(px - 0.1)
+ *     .mantine-hidden-from-X   hidden from   min-width: em(px)
+ *
+ *   assign-navbar-variables.mjs:87  (AppShell navbar + aside)
+ *     collapsed.mobile applies at   max-width: em(px - 0.1)
+ *
+ * For `sm` the chain is px('48em') = 768 → 767.9 → em(767.9), giving
+ * `47.99375em` — NOT 47.9em; the subtraction is a tenth of a pixel, not a tenth
+ * of an em. So at exactly 768px Mantine has already switched to desktop while
+ * `(max-width: 48em)` still reports mobile. Anything keyed off MOBILE_QUERY that
+ * must line up with the navbar therefore double-counts 768px exactly — the width
+ * of an iPad in portrait — rendering the mobile header and the desktop navbar at
+ * the same time.
+ *
+ * RESIDUAL, and it is not worth engineering around. Because the boundary is
+ * `px - 0.1` rather than `px`, the min- and max-width forms disagree across a
+ * 0.1px band — [767.9, 768) for `sm`. That band is inherent to Mantine's own
+ * convention, not to these constants: pairing `visibleFrom="lg"` with
+ * `hiddenFrom="lg"` overlaps the same way, so MainPageAppshell renders both the
+ * Burger and the category links across [1199.9, 1200). Reachable only at
+ * fractional zoom widths.
+ *
+ * ONE MOVING BOUNDARY. AppShell's navbar query is not constant. The branch at
+ * assign-navbar-variables.mjs:31 runs when `collapsed.mobile` is FALSE — i.e.
+ * while the navbar is OPEN — and keys `maxMediaStyles` by the raw breakpoint
+ * name, emitting a plain `max-width: 48em` that DOES include 768. The boundary
+ * therefore shifts by 0.1px depending on open state. LessonViewerAppshell is
+ * safe from this only because its close-on-desktop effect stops `opened` from
+ * persisting at >= 768px; that effect is load-bearing for correctness, not just
+ * for tidiness.
  */
 export const FROM_SM_QUERY = `(min-width: ${BREAKPOINTS.sm})` as const;
 export const FROM_MD_QUERY = `(min-width: ${BREAKPOINTS.md})` as const;

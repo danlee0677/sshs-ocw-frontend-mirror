@@ -40,10 +40,12 @@ export default function LessonViewerAppshell({ children, subject, lesson, progre
    * value, so the `<Form method="get">` rule in styles.ts does not apply.
    *
    * FROM_SM_QUERY, not MOBILE_QUERY. This value has to agree with AppShell's own
-   * navbar breakpoint, and the max-width form disagrees with it at exactly 48em
-   * — see the comment on these constants in styles.ts. With the max-width form,
-   * 768px renders the mobile header AND the desktop navbar simultaneously, and
-   * the `inert` gates below would then disable a navbar that is on screen.
+   * navbar boundary, which is `max-width: 47.99375em` (= 767.9px), not 48em —
+   * see the derivation on these constants in styles.ts. MOBILE_QUERY still
+   * reports mobile at exactly 768px, where Mantine has already put the navbar in
+   * desktop mode, so it would render the mobile header AND the visible desktop
+   * navbar at once and then `inert` a navbar that is on screen. 768px is iPad
+   * portrait, so this is a real width, not a theoretical one.
    */
   const isDesktopNav = useMediaQuery(FROM_SM_QUERY, false, { getInitialValueInEffect: false });
 
