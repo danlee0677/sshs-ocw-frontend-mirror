@@ -1,16 +1,17 @@
-import { type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { AppShell, Box, Group, Image, TextInput, UnstyledButton, Button, Burger, Drawer, ScrollArea, Divider, Stack, Avatar, Menu } from "@mantine/core";
 import { IconSearch } from '@tabler/icons-react';
 import { Form, Link, useFetcher } from "react-router";
-import { HEADER_HEIGHT, linkStyle } from "../../libs/styles";
+import { FROM_LG_QUERY, HEADER_HEIGHT, linkStyle } from "../../libs/styles";
 import classes from "./Appshell.module.css";
 import logo from '@/assets/app-logo.png';
 import { isUser } from "../../libs/utils";
 import { useUserContext } from "../../root";
-import { useDisclosure } from "@mantine/hooks";
+import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import { ColorSchemeToggle, ColorSchemeToggleFull } from "./ColorSchemeToggle";
 
 const links = [
+  { link: '/search?tags=Mathematics', label: '수학'},
   { link: '/search?tags=Physics', label: '물리' },
   { link: '/search?tags=Chemistry', label: '화학' },
   { link: '/search?tags=Biology', label: '생명과학' },
@@ -71,6 +72,34 @@ function MainPageAppshell({ children, showSearch = true }: MainPageAppshellProps
   const fetcher = useFetcher();
   const [opened, { toggle, close }] = useDisclosure(false);
 
+  /*
+   * Release the Drawer when the viewport crosses into desktop.
+   *
+   * `hiddenFrom="lg"` only sets `display: none` on the Drawer's own Box, but
+   * Mantine mounts `<RemoveScroll enabled={opened}>` as that Box's PARENT (see
+   * ModalBase.mjs), so hiding the Drawer does not release the body scroll lock.
+   * Open the Drawer at 800px, then rotate or resize past 1200px: the Drawer and
+   * its close button vanish while `opened` stays true, and the page is locked
+   * with nothing left on screen to unlock it — the Burger is `hiddenFrom="lg"`
+   * too. Pre-existing, but every widening of this boundary widens the band it
+   * can be triggered from.
+   *
+   * FROM_LG_QUERY rather than a max-width query: `hiddenFrom="lg"` is
+   * `min-width: 75em`, and at exactly 75em a max-width query still reports
+   * mobile — so the guard would miss the one width it exists for. See styles.ts.
+   *
+   * Nothing here is inside a `<Form method="get">`, so the never-unmount-a-field
+   * rule does not apply: the Drawer's search is a separate form from the
+   * header's, and closing does not submit either.
+   */
+  const isDesktopNav = useMediaQuery(FROM_LG_QUERY, false, { getInitialValueInEffect: false });
+
+  useEffect(() => {
+    if (isDesktopNav) {
+      close();
+    }
+  }, [isDesktopNav, close]);
+
   // `close` on every link: tapping a category used to navigate and leave the
   // Drawer open over the new page. Calling it when the Drawer is already shut
   // (the header copies) is a no-op.
@@ -100,20 +129,29 @@ function MainPageAppshell({ children, showSearch = true }: MainPageAppshellProps
         <div className={classes.inner}>
           <Group wrap="nowrap" miw={0}>
             {/* Burger and the link group are complements: the six Korean
-              * categories plus search, avatar and toggle do not fit between
-              * 768 and 992, so the links collapse into the Drawer there. The
-              * Drawer below must share this `md` boundary. */}
+              * categories plus logo, search, avatar and toggle need ~1180px, so
+              * below `lg` the links collapse into the Drawer. The Drawer below
+              * and the guard effect above must share this `lg` boundary.
+              *
+              * This was `md` and it was measured wrong: at 992px the links
+              * appeared but had roughly 330px to fit ~470px of label, so every
+              * one of them ellipsed — 물리 rendered as `물...`. All-or-nothing is
+              * the right rule for labels this short. */}
             <Burger
               opened={opened}
               onClick={toggle}
               size="md"
-              hiddenFrom="md"
+              hiddenFrom="lg"
               aria-label="Toggle navigation"
             />
-            <Button component={Link} to={"/"} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0 }}>
+            {/* `flexShrink: 0` is not cosmetic: Mantine's Button label part is
+              * `white-space: nowrap; overflow: hidden`, so once this Button is
+              * allowed to shrink it silently CROPS the logo image rather than
+              * scaling it. */}
+            <Button component={Link} to={"/"} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0, flexShrink: 0 }}>
               <Image alt="logo" h={36} w="auto" src={logo} />
             </Button>
-            <Group ml="xl" gap={5} className={classes.links} visibleFrom="md">
+            <Group ml="xl" gap={5} className={classes.links} visibleFrom="lg">
               {items}
             </Group>
           </Group>
@@ -175,7 +213,7 @@ function MainPageAppshell({ children, showSearch = true }: MainPageAppshellProps
           padding="md"
           // Matches the Burger. If these two ever disagree there is a width band
           // where the Burger renders but the Drawer it opens is display:none.
-          hiddenFrom="md"
+          hiddenFrom="lg"
           position="left"
           title={<Image alt="logo" h={32} w="auto" src={logo} />}
           closeOnClickOutside

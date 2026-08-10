@@ -57,6 +57,24 @@ export const MOBILE_QUERY = `(max-width: ${BREAKPOINTS.sm})` as const;
 export const TABLET_QUERY = `(max-width: ${BREAKPOINTS.md})` as const;
 
 /**
+ * `min-width` companions to the two above. Use THESE, not the negation of a
+ * max-width query, whenever the JS result has to agree with a Mantine
+ * breakpoint — `visibleFrom` / `hiddenFrom` and `AppShell`'s `navbar.breakpoint`
+ * are all `min-width`.
+ *
+ * The two forms are NOT complements. At exactly 48em both `(max-width: 48em)`
+ * and `(min-width: 48em)` match, so a max-width query reports "mobile" on the
+ * first width at which Mantine has already switched to desktop. AppShell widens
+ * the gap: `assignNavbarVariables` collapses the navbar at
+ * `breakpoint - 0.1em`, i.e. 47.9em. Keying anything off MOBILE_QUERY that must
+ * line up with the navbar therefore double-counts 768px exactly — you get the
+ * mobile header and the desktop navbar at the same time.
+ */
+export const FROM_SM_QUERY = `(min-width: ${BREAKPOINTS.sm})` as const;
+export const FROM_MD_QUERY = `(min-width: ${BREAKPOINTS.md})` as const;
+export const FROM_LG_QUERY = `(min-width: ${BREAKPOINTS.lg})` as const;
+
+/**
  * Single source of truth for appshell header height (px). The appshells
  * currently disagree — TSX passes `8dvh`, the CSS module hardcodes 56px.
  */

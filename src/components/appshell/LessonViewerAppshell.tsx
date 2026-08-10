@@ -1,7 +1,8 @@
+import { useEffect } from "react";
 import { AppShell, Box, Burger, Divider, Group, Flex, Image, Stack, ScrollArea, Space, Text } from "@mantine/core";
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import { Link } from "react-router";
-import { HEADER_HEIGHT, MOBILE_QUERY, linkStyle } from "../../libs/styles";
+import { FROM_SM_QUERY, HEADER_HEIGHT, linkStyle } from "../../libs/styles";
 import classes from "./lessonViewer.module.css"
 import { type RecentView, type Subject, type Lesson } from "../../libs/types";
 import logo from '../../assets/app-logo.png'
@@ -37,12 +38,28 @@ export default function LessonViewerAppshell({ children, subject, lesson, progre
    * render — no flash of the wrong layout. Safe here: the app is a SPA and only
    * root.tsx is in the prerendered shell. Nothing unmounts as a result of this
    * value, so the `<Form method="get">` rule in styles.ts does not apply.
+   *
+   * FROM_SM_QUERY, not MOBILE_QUERY. This value has to agree with AppShell's own
+   * navbar breakpoint, and the max-width form disagrees with it at exactly 48em
+   * — see the comment on these constants in styles.ts. With the max-width form,
+   * 768px renders the mobile header AND the desktop navbar simultaneously, and
+   * the `inert` gates below would then disable a navbar that is on screen.
    */
-  const isMobile = useMediaQuery(MOBILE_QUERY, false, { getInitialValueInEffect: false });
+  const isDesktopNav = useMediaQuery(FROM_SM_QUERY, false, { getInitialValueInEffect: false });
+
+  // Leaving mobile while the navbar is open leaves `opened` stuck true, so
+  // coming back down later reopens it over the lesson unasked. No scroll lock is
+  // involved here (AppShell.Navbar is not a modal) — this is state hygiene, not
+  // the Drawer bug that MainPageAppshell has.
+  useEffect(() => {
+    if (isDesktopNav) {
+      close();
+    }
+  }, [isDesktopNav, close]);
 
   return (
     <AppShell
-      header={{ height: HEADER_HEIGHT, collapsed: !isMobile }}
+      header={{ height: HEADER_HEIGHT, collapsed: isDesktopNav }}
       /*
        * `collapsed` was missing entirely. In Mantine v8's assignNavbarVariables,
        * an undefined `collapsed.mobile` makes the `!navbar?.collapsed?.mobile`
@@ -71,10 +88,20 @@ export default function LessonViewerAppshell({ children, subject, lesson, progre
       }}
     >
       {/*
-        * Mobile-only header: [☰] 단원 제목… [🌙]. Collapsed (translated out, not
-        * unmounted) from `sm` up, where the navbar is permanently visible.
+        * Mobile-only header: [☰] 단원 제목… [🌙]. Collapsed from `sm` up, where
+        * the navbar is permanently visible.
+        *
+        * `inert` is load-bearing, not decoration. Collapsing a header in Mantine
+        * is `transform: translateY(-100%)` plus zeroing the offset — there is no
+        * `display: none`, no `visibility`, no `inert` (see
+        * assign-header-variables.mjs). Off-screen but still in the DOM means
+        * still in the tab order and still in the accessibility tree: without
+        * this, a desktop keyboard user tabs into an invisible Burger that
+        * toggles a navbar which is not collapsible at that width — so it appears
+        * to do nothing — and then into a second, invisible scheme toggle. Screen
+        * readers announce both.
         */}
-      <AppShell.Header px="md">
+      <AppShell.Header px="md" inert={isDesktopNav || undefined}>
         <Group h="100%" wrap="nowrap" gap="sm">
           <Burger
             opened={opened}
@@ -90,7 +117,11 @@ export default function LessonViewerAppshell({ children, subject, lesson, progre
         </Group>
       </AppShell.Header>
 
-      <AppShell.Navbar>
+      {/* Same reasoning as the header, one breakpoint down: a collapsed navbar
+        * is `translateX(-100%)`, so below `sm` every lesson link stays tabbable
+        * behind the closed drawer. Less acute than the header case — it is a
+        * touch width — but a narrow desktop window has a keyboard. */}
+      <AppShell.Navbar inert={(!isDesktopNav && !opened) || undefined}>
         <Stack w="100%" gap={0} align="center" h="100%">
           {/*
             * Flex sizing replaces `h="5%"` / `h="75%"` / `flexGrow: 1`, which did

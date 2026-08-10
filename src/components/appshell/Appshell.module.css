@@ -50,20 +50,34 @@
  * `flex-wrap: nowrap` matters: Mantine's Group defaults to `wrap: 'wrap'`, and a
  * wrapped row inside a fixed-height header drops its second line out of view.
  *
- * `min-width: 0` is one link in a chain that must be unbroken or none of the
- * truncation below happens:
- *   .inner → the left <Group> (miw={0} in the TSX) → .links → .link
+ * DELIBERATELY NOT SHRINKABLE. This used to be `min-width: 0; overflow: hidden`,
+ * the head of a truncation chain ending in an ellipsis on `.link`. Measured at
+ * 992px that produced `물...` from 물리 — a two-character word replaced by a
+ * three-character ellipsis, which is not a degradation, just a worse label. The
+ * links now hold their natural width and the breakpoint decides whether they
+ * appear at all; see `visibleFrom="lg"` in MainPageAppshell.
  */
 .links {
-  min-width: 0;
-  overflow: hidden;
+  flex: 0 0 auto;
   flex-wrap: nowrap;
 }
 
-/* Wrapper around the search TextInput, in both the header and the Drawer. */
+/*
+ * Wrapper around the search TextInput, in both the header and the Drawer.
+ *
+ * This is now the designated shrink victim in the header row: the logo, the
+ * links, the toggle and the avatar all refuse to shrink, so any shortfall has to
+ * land here. `min-width: 0` on the wrapper is not enough on its own — an
+ * `<input>` carries an intrinsic preferred width that a flex item will not go
+ * below, so the input itself needs the override.
+ */
 .searchArea {
   min-width: 0;
   flex-wrap: nowrap;
+}
+
+.searchArea input {
+  min-width: 0;
 }
 
 .link {
@@ -76,17 +90,21 @@
   font-weight: 500;
   color: var(--mantine-color-text);
 
-  /* `overflow: hidden` on .links only clips. The ellipsis has to be declared on
-   * the element that holds the text. */
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* Never shrink and never ellipsis. Korean category labels are 2–4 characters;
+   * truncating one costs more meaning than it saves space. If the six links plus
+   * the logo do not fit, the correct answer is the Burger, not `물...`. */
+  flex: 0 0 auto;
   white-space: nowrap;
 
-  /* NOTE: this is `max-width: 48em` while Mantine's `visibleFrom="sm"` is
-   * `min-width: 48em` — they overlap at exactly 48em. Harmless in practice, but
-   * worth knowing when testing at precisely 768px. */
-  @media (max-width: $mantine-breakpoint-sm) {
+  /* Below `lg` the only `.link`s rendered are the Drawer's — the header group is
+   * `visibleFrom="lg"` — so this doubles as "the Drawer copy" and gives those
+   * rows a 44px-class tap target.
+   *
+   * NOTE: `max-width: 75em` and Mantine's `visibleFrom="lg"` (`min-width: 75em`)
+   * both match at exactly 75em, so at precisely 1200px the header links pick up
+   * the Drawer's larger padding for one pixel-width. Harmless; worth knowing
+   * when testing at exactly 1200px. */
+  @media (max-width: $mantine-breakpoint-lg) {
     border-radius: 0;
     padding: var(--mantine-spacing-md);
   }
