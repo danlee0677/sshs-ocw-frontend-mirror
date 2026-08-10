@@ -3,7 +3,7 @@ import { Form, useLoaderData, useLocation, useNavigate, type LoaderFunctionArgs 
 import { Button, Checkbox, CheckIcon, Combobox, Flex, Group, Pagination, Paper, Pill, PillsInput, ScrollArea, Space, Stack, Table, Tabs, Text, TextInput, useCombobox } from "@mantine/core";
 import { useableTags } from "../../libs/utils";
 import classes from './search.module.css'
-import SearchAppshell from "../../components/appshell/SearchAppshell";
+import MainPageAppshell from "../../components/appshell/MainPageAppshell";
 import { http } from "../../libs/http";
 import { searchParamsSchema, resultSchema, type ResultType, type SearchParamsType } from "../../libs/types";
 
@@ -54,9 +54,9 @@ export default function SearchResult() {
   const location = useLocation();
 
   return (
-    <SearchAppshell>
+    <MainPageAppshell showSearch={false}>
       <SearchContent key={location.search} searchResult={searchResult} searchParams={searchParams} />
-    </SearchAppshell>
+    </MainPageAppshell>
   )
 }
 

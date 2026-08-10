@@ -1,22 +1,88 @@
+/*
+ * Lesson-viewer navbar chrome (LessonViewerAppshell only).
+ *
+ * HOVER CONTRACT: every `:hover` here is wrapped in
+ * `@media (hover: hover) and (pointer: fine)`. On touch, `:hover` sticks after a
+ * tap, so the last lesson you opened stays visually highlighted and competes
+ * with `.selected` — which is the one row that is *supposed* to look selected.
+ * Both hovers are SURFACE-ONLY (background), reveal no content and are not the
+ * sole affordance (the whole row is a link), so neither needs a
+ * `@media (hover: none)` counterpart. See RESPONSIVE_PLAN.md.
+ */
+
+.ProgressGroup {
+  /* Every one of these rows is a link and the primary way to move between
+   * lessons on a phone. 48px clears the 44px tap-target floor with room for the
+   * progress rail's margin. */
+  min-height: 48px;
+}
+
 .selected {
-    background-color: #e1e1e1;
+  /* Was `#e1e1e1` — light gray on a dark navbar reads as the *highlighted* row
+   * being the washed-out one, inverting the meaning. */
+  background-color: light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-4));
 }
 
 .ProgressText {
-    display: flex;
-    flex: 1;
-    align-items: center;
-    color: black;
+  /* Was `display: flex`. `text-overflow` does not apply to a flex container's
+   * own anonymous text, so the ellipsis silently did nothing and long Korean
+   * lesson titles overflowed the 300px navbar. `block` makes this an ellipsis
+   * target; vertical centring now comes from the parent `<Group align="center">`
+   * rather than the old `align-items: center`. */
+  display: block;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  /* Was `black` — invisible on a dark navbar. */
+  color: var(--mantine-color-text);
 }
 
-.ProgressGroup:hover {
-    background-color: rgb(239, 239, 239);
+@media (hover: hover) and (pointer: fine) {
+  .ProgressGroup:hover {
+    /* Was `rgb(239, 239, 239)`. */
+    background-color: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5));
+  }
+
+  /* Hovering the already-selected row must not dim it back to the unselected
+   * hover shade, so this repeats `.selected` rather than inheriting it. */
+  .ProgressGroup.selected:hover {
+    background-color: light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-4));
+  }
 }
 
-.ProgressGroup.selected:hover {
-    background-color: #e1e1e1;
-}
-
+/*
+ * The 4px progress rail at the left of each lesson row.
+ *
+ * Sizing lives here, not in the TSX. It used to be `w='4px' h='90%'`, and that
+ * `90%` only resolved because the row carried a hardcoded `h='60px'`; the row
+ * is now sized by its content plus `min-height`, against which a percentage
+ * height resolves to `auto` and collapses the rail to nothing. `align-self:
+ * stretch` overrides the parent Group's `align-items: center` for this one item
+ * and needs no definite parent height.
+ */
 .ProgressRect {
-    border-radius: 2px;
+  border-radius: 2px;
+  flex: 0 0 4px;
+  align-self: stretch;
+  margin-block: 6px;
+}
+
+/*
+ * Visited / unvisited are CSS classes rather than the old inline `bg` prop.
+ * `light-dark()` is compiled by postcss-preset-mantine and only works inside a
+ * stylesheet — written in a TSX `bg=` or `style=` it would ship as the raw
+ * native function and silently do nothing on any engine without support.
+ */
+.ProgressRectVisited {
+  /* Was `#007bffff` — a hardcoded blue that ignored the theme's primary color. */
+  background-color: var(--mantine-primary-color-filled);
+}
+
+.ProgressRectUnvisited {
+  /* Was `#aaaaaa`. Mid-gray sits at almost exactly the luminance of a dark
+   * navbar, so the entire progress affordance disappeared in dark mode. */
+  background-color: light-dark(var(--mantine-color-gray-4), var(--mantine-color-dark-3));
 }

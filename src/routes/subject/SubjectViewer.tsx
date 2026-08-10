@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useFetcher, useLoaderData, useNavigate, type ActionFunctionArgs, type LoaderFunctionArgs } from "react-router";
-import { Stack, Title, UnstyledButton, Flex, Text, Image, Pagination, Space, Pill, Group } from "@mantine/core";
+import { Stack, Title, UnstyledButton, Flex, Text, Image, Pagination, Space, Pill, Group, ScrollArea } from "@mantine/core";
 import { IconHeart, IconPencilPlus } from "@tabler/icons-react";
 import { http } from "../../libs/http";
 import { permissionCheckSchema, subjectSchema, type Subject, type User } from "../../libs/types";
@@ -65,7 +65,11 @@ export default function SubjectViewer() {
 
   return (
     <MainPageAppshell>
-      <SubjectContent subject={subject} user={user} canEdit={canEdit} key={subject._id} />
+      {/* AppShell.Main is `overflow: hidden`, so each page owns its own scroll
+        * container. Without this the page clips instead of scrolling. */}
+      <ScrollArea w="100%" h="100%">
+        <SubjectContent subject={subject} user={user} canEdit={canEdit} key={subject._id} />
+      </ScrollArea>
     </MainPageAppshell>
   )
 }

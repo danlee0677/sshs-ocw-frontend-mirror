@@ -1,36 +1,69 @@
+/*
+ * Appshell chrome for MainPageAppshell — every route except the lesson viewer.
+ *
+ * HOVER CONTRACT: every `:hover` rule here is wrapped in
+ * `@media (hover: hover) and (pointer: fine)` — on touch, `:hover` sticks after
+ * a tap and reads as a stuck selection. Both hovers below are SURFACE-ONLY
+ * (background, border, shadow, transform); they reveal no content and are not
+ * the sole click affordance, so neither needs a `@media (hover: none)`
+ * counterpart. See the Hover contract in RESPONSIVE_PLAN.md.
+ */
+
 .LogOutButton {
     transition: all 0.4s ease;
-    width: 100px;
-    height: 35px;
-    border: 2px solid gray;
-    text-align: center;
+    /* Was `width: 100px; height: 35px`. Fixed dimensions clipped longer Korean
+     * labels and fell short of the 44px tap target. Flex centring replaces the
+     * old `text-align: center`, which only centred horizontally. */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    min-width: 88px;
+    padding: 0 var(--mantine-spacing-sm);
+    border: 2px solid var(--mantine-color-default-border);
     user-select: none;
     -webkit-user-select: none;
 }
 
-.LogOutButton:hover {
-    border: 2px solid gray;
-    transform: translateY(-5px);
-    box-shadow: 0px 2px 2px 1px rgba(0, 0, 0, 0.262);
-}
-
-.searchIcon:hover {
-    cursor: pointer;
-}
-
 .header {
-  height: 56px;
-  margin-bottom: 120px;
+  /* Height deliberately NOT set here. MainPageAppshell owns it through
+   * `header={{ height: HEADER_HEIGHT }}` (src/libs/styles.ts), which Mantine
+   * publishes as `--app-shell-header-height`. A copy in this file was a second
+   * source of truth that disagreed with the TSX. */
   background-color: var(--mantine-color-body);
   padding-left: var(--mantine-spacing-md);
   padding-right: var(--mantine-spacing-md);
 }
 
 .inner {
-  height: 56px;
+  height: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: var(--mantine-spacing-sm);
+  min-width: 0;
+}
+
+/*
+ * The category-link group in the header.
+ *
+ * `flex-wrap: nowrap` matters: Mantine's Group defaults to `wrap: 'wrap'`, and a
+ * wrapped row inside a fixed-height header drops its second line out of view.
+ *
+ * `min-width: 0` is one link in a chain that must be unbroken or none of the
+ * truncation below happens:
+ *   .inner → the left <Group> (miw={0} in the TSX) → .links → .link
+ */
+.links {
+  min-width: 0;
+  overflow: hidden;
+  flex-wrap: nowrap;
+}
+
+/* Wrapper around the search TextInput, in both the header and the Drawer. */
+.searchArea {
+  min-width: 0;
+  flex-wrap: nowrap;
 }
 
 .link {
@@ -41,17 +74,39 @@
   text-decoration: none;
   font-size: var(--mantine-font-size-sm);
   font-weight: 500;
-  color: black;
+  color: var(--mantine-color-text);
 
+  /* `overflow: hidden` on .links only clips. The ellipsis has to be declared on
+   * the element that holds the text. */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  /* NOTE: this is `max-width: 48em` while Mantine's `visibleFrom="sm"` is
+   * `min-width: 48em` — they overlap at exactly 48em. Harmless in practice, but
+   * worth knowing when testing at precisely 768px. */
   @media (max-width: $mantine-breakpoint-sm) {
     border-radius: 0;
     padding: var(--mantine-spacing-md);
   }
 }
 
-.link:hover {
-  color: black;
-  background-color: var(--mantine-color-gray-0);
+@media (hover: hover) and (pointer: fine) {
+  .link:hover {
+    color: var(--mantine-color-text);
+    /* Was `var(--mantine-color-gray-0)` — near-white, so the dark-mode hover
+     * painted a white bar across the header. */
+    background-color: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5));
+  }
+
+  .LogOutButton:hover {
+    border: 2px solid var(--mantine-color-default-border);
+    transform: translateY(-5px);
+    /* Was `rgba(0, 0, 0, 0.262)` — an opaque black shadow is invisible on a dark
+     * surface. Mantine's shadows are tuned per scheme. */
+    box-shadow: var(--mantine-shadow-sm);
+  }
 }
 
 .menuProfileHeader {
