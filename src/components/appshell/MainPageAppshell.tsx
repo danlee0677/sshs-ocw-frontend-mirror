@@ -11,7 +11,7 @@ import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import { ColorSchemeToggle, ColorSchemeToggleFull } from "./ColorSchemeToggle";
 
 const links = [
-  { link: '/search?tags=Mathematics', label: '수학'},
+  { link: '/search?tags=Math', label: '수학'},
   { link: '/search?tags=Physics', label: '물리' },
   { link: '/search?tags=Chemistry', label: '화학' },
   { link: '/search?tags=Biology', label: '생명과학' },
