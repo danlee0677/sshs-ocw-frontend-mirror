@@ -49,10 +49,22 @@ export default function LessonViewerAppshell({ children, subject, lesson, progre
    */
   const isDesktopNav = useMediaQuery(FROM_SM_QUERY, false, { getInitialValueInEffect: false });
 
-  // Leaving mobile while the navbar is open leaves `opened` stuck true, so
-  // coming back down later reopens it over the lesson unasked. No scroll lock is
-  // involved here (AppShell.Navbar is not a modal) — this is state hygiene, not
-  // the Drawer bug that MainPageAppshell has.
+  /*
+   * DO NOT DELETE AS "TIDINESS" — this effect is load-bearing for the boundary
+   * above.
+   *
+   * The visible reason is state hygiene: leaving mobile with the navbar open
+   * leaves `opened` stuck true, so coming back down later reopens it over the
+   * lesson unasked. No scroll lock is involved (AppShell.Navbar is not a modal),
+   * so it is not the Drawer bug MainPageAppshell has.
+   *
+   * The invisible reason is that AppShell's navbar boundary MOVES with
+   * `opened`. `collapsed.mobile` false takes a different branch in
+   * assign-navbar-variables (:31 rather than :87) which skips the 0.1px
+   * subtraction and emits a plain `max-width: 48em` — inclusive of 768. Keeping
+   * `opened` false at >= 768px is what stops that alternate boundary from ever
+   * being the live one, and so what keeps FROM_SM_QUERY in agreement with it.
+   */
   useEffect(() => {
     if (isDesktopNav) {
       close();
