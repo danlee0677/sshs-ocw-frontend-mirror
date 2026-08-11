@@ -243,7 +243,7 @@ function MainPageAppshell({ children, showSearch = true }: MainPageAppshellProps
               * no search box anywhere in the app. */}
             <SearchForm fullWidth onSubmit={close} />
             {/* Not gated by `hiddenFrom`: the Drawer itself is already
-              * `hiddenFrom="md"`, and gating at `sm` would leave the 768–992
+              * `hiddenFrom="lg"`, and gating at `sm` would leave the 992–1200
               * Drawer without a toggle. */}
             <Box py="md">
               <ColorSchemeToggleFull />
@@ -278,9 +278,13 @@ function MainPageAppshell({ children, showSearch = true }: MainPageAppshellProps
         * of every page.
         *
         * `overflow: hidden` means each page scrolls inside its own ScrollArea —
-        * do not add a second one. All twelve consumers now have exactly one;
+        * do not add a second one. All 14 consumers now have exactly one;
         * Settings.tsx and SubjectViewer.tsx were the last two without, and
         * clipped at short viewports until they were wrapped.
+        *
+        * "Page-level" is the operative word: Profile.tsx has a second, NESTED
+        * ScrollArea inside its badge list, which is an inner list scroller and is
+        * allowed. Counting `<ScrollArea>` tokens per file mis-flags it.
         */}
       <AppShell.Main style={{ height: "100dvh", overflow: "hidden" }}>
         {children}

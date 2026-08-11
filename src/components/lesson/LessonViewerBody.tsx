@@ -17,7 +17,9 @@ import TextAlign from '@tiptap/extension-text-align';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 // load all language: change if necessary
 import { createLowlight, all } from 'lowlight'
-import 'highlight.js/styles/github-dark.css' // todo: change when dark mode
+// Replaces `highlight.js/styles/github-dark.css`, which was applied
+// unconditionally in both schemes. See the header of proseMirror.css.
+import '../../styles/proseMirror.css'
 import { Flex, ScrollArea, Stack, Space, Title } from "@mantine/core";
 import LessonViewerAppshell from "../appshell/LessonViewerAppshell";
 import type { Lesson, RecentView, Subject } from "../../libs/types";
@@ -88,12 +90,14 @@ function LessonViewerBody({ lesson, subject, progress }: LessonViewerProps) {
       <ScrollArea w="100%" h="100%" scrollbarSize={10} >
         <RichTextEditor editor={editor} >
           <Flex h="100%" w="100%" justify="center">
-            <Stack w="70%" justify='center'>
+            {/* was a flat w="70%": 252px of readable width on a 360px phone,
+                about twelve Korean characters per line */}
+            <Stack w={{ base: '100%', sm: '90%', lg: '70%' }} px={{ base: 'md', sm: 'lg' }} justify='center'>
               <Space h="sm" />
 
               <Stack gap="md" w="100%">
                 <LessonViewerNavigateCard subject={subject} lesson={lesson} />
-                <Title order={1}>{lesson.title}</Title>
+                <Title order={1} fz={{ base: 'h3', sm: 'h1' }}>{lesson.title}</Title>
                 <Flex w="100%" justify="flex-end">
                   <Title order={4}>{lesson.createdBy}</Title>
                 </Flex>

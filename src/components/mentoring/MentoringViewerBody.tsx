@@ -17,7 +17,8 @@ import TextAlign from '@tiptap/extension-text-align';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 // load all language: change if necessary
 import { createLowlight, all } from 'lowlight'
-import 'highlight.js/styles/github-dark.css' // todo: change when dark mode
+// Replaces `highlight.js/styles/github-dark.css` — see proseMirror.css.
+import '../../styles/proseMirror.css'
 import type { Mentoring } from "../../libs/types";
 
 const lowlight = createLowlight(all);

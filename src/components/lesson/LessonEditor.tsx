@@ -24,7 +24,9 @@ import TextAlign from '@tiptap/extension-text-align'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 // load all language: change if necessary
 import { createLowlight, all } from 'lowlight'
-import 'highlight.js/styles/github-dark.css' // todo: change when dark mode
+// Replaces `highlight.js/styles/github-dark.css`. Shared with the two viewers
+// and MentoringEditor — see the header of proseMirror.css.
+import '../../styles/proseMirror.css'
 import { type Lesson } from "../../libs/types";
 
 import { uploadImage, PLACEHOLDER_MARKDOWN, PLACEHOLDER_LESSON } from "../../libs/utils";

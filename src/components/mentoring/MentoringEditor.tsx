@@ -25,7 +25,8 @@ import TextAlign from '@tiptap/extension-text-align';
 
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { createLowlight, all } from 'lowlight';
-import 'highlight.js/styles/github-dark.css';
+// Replaces `highlight.js/styles/github-dark.css` — see proseMirror.css.
+import '../../styles/proseMirror.css';
 import { type Mentoring, type MentoringFile } from "../../libs/types";
 
 import { uploadImage, PLACEHOLDER_MENTORING_MARKDOWN, PLACEHOLDER_MENTORING, useableTags } from "../../libs/utils";

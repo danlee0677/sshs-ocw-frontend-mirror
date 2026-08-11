@@ -1,35 +1,31 @@
-@font-face {
-    font-family: 'JalnanGothic';
-    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_231029@1.1/JalnanGothic.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-}
+/* Page-specific rules for Profile.tsx ONLY.
+   Profile.tsx imports src/styles/shared.module.css alongside this file and
+   merges them as `{ ...shared, ...page }`.
 
-.JalnanGothic {
-    font-family: 'JalnanGothic';
-}
-
-.Box2:hover {
-    background-color: rgb(226, 226, 226);
-}
+   Deleted during the dark-mode migration:
+   - the @font-face for JalnanGothic and the `.JalnanGothic` rule — both are
+     already declared in shared.module.css (with font-display: swap, which the
+     copy here lacked), and this page now imports it.
+   - `.BigGroupBox` — unreferenced anywhere in src/.
+   - `.cell` — CSS Modules are per-file scoped, so this file's copy and
+     StreakBody's were two independent rules, not one shared one. Profile.tsx now
+     imports StreakBody.module.css directly for the legend swatches, which keeps
+     them identical to the grid cells by construction.
+   - `.Box2:hover` — shared.module.css already declares it, gated and with the
+     light-dark() pair. Because Profile.tsx merges `{ ...shared, ...page }` and
+     page keys win, a copy here would capture `classes.Box2` and leave shared's
+     rule dead on this page: two sources of truth for the one class
+     shared.module.css:143-149 singles out as fragile. Removing it lets
+     `classes.Box2` fall through to shared. */
 
 .GroupBox {
     padding: 20px;
     min-height: 200px;
 }
 
-.BigGroupBox {
-    border: 1px gray solid;
-    border-radius: 20px;
-}
-
 .BadgeArea {
-    border: 2px slategray solid;
+    /* was: 2px slategray solid — this is a card edge, so the Color contract's
+       default border row applies rather than the high-contrast outline row */
+    border: 1px solid var(--mantine-color-default-border);
     border-radius: 10px;
-}
-
-
-.cell {
-    border-radius: 5px;
-    cursor: default;
 }

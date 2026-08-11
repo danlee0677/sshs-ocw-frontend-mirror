@@ -123,6 +123,27 @@
     pointer-events: none; /* 클릭까지 막고 싶으면 */
 }
 
+/* ------------------------------------------------------------ raised surfaces */
+
+/* Home's profile card. Was `bg='rgb(232, 240, 255)'` inline on the Paper, which
+   could not be fixed in place: `light-dark()` is a postcss-preset-mantine
+   transform and PostCSS never sees a TSX `bg=` prop, so written there it would
+   ship as raw native CSS with no fallback. The value had to move into a module
+   to be scheme-aware at all. See the Color contract, "tinted accent surface". */
+/* The class is DOUBLED deliberately — do not "simplify" it to a single class.
+   Mantine's Paper root sets `background-color: var(--mantine-color-body)` at
+   specificity (0,1,0) (@mantine/core/styles/Paper.css, .m_1b7284a3). A single
+   `.ProfileCard` ties that exactly, so the LIGHT branch would win only by
+   stylesheet order — an accident of chunking, not a guarantee. The DARK branch
+   is already safe because light-dark() compiles it with a
+   `[data-mantine-color-scheme='dark']` prefix, taking it to (0,2,0).
+   That asymmetry — dark wins, light silently loses — is the same trap
+   documented at the top of src/styles/proseMirror.css. Doubling gives both
+   branches the same guarantee without reaching for !important. */
+.ProfileCard.ProfileCard {
+    background-color: light-dark(var(--mantine-color-blue-0), var(--mantine-color-dark-6));
+}
+
 /* ------------------------------------------------------------ hover surfaces */
 
 .Box1 {

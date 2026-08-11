@@ -27,27 +27,48 @@
     font-size: 18px;
 }
 
-.searchIcon:hover {
-    cursor: pointer;
-}
+/* `.searchIcon:hover { cursor: pointer }` deleted — dead rule, no element in
+   src/ ever referenced it. Same rule Prompt 6 removed from the appshell module. */
 
 .searchBar {
-    width: 50%;
+    /* was width: 50%, which pinned the input regardless of viewport. Sizing now
+       comes from a `flex={1}` prop so the input grows and the button never wraps. */
+    width: 100%;
 }
 
 .GroupBox {
     font-family: 'Paperozi_light';
-    border: 3px rgb(147, 147, 147) solid;
-    border-radius: 5%;
+    /* was: 3px rgb(147, 147, 147) solid. This is the filter sidebar's card edge,
+       so the Color contract's default border row applies — and 3px of
+       default-border reads as a heavy slab, so it drops to 1px.
+       `border-radius: 5%` was a percentage of the box: now that the sidebar is
+       { base: '100%', md: '28%' } that would render as a width-dependent
+       ellipse. A fixed radius token does not warp. */
+    border: 1px solid var(--mantine-color-default-border);
+    border-radius: var(--mantine-radius-md);
 }
 
+/* Hover contract, category three: hover was the ONLY signal these cells are
+   clickable, and `cursor: pointer` does not exist on a coarse pointer. Gating
+   the hover rule alone would leave them looking like plain text on every phone,
+   so the accent color is permanent and survives the gate; the underline is the
+   touch counterpart, re-derived against the base state rather than copied. */
 .resultTitle {
     cursor: pointer;
+    color: light-dark(var(--mantine-color-blue-7), var(--mantine-color-blue-4));
 }
 
-.resultTitle:hover {
-    color: var(--mantine-color-blue-6);
-    text-decoration: underline;
+@media (hover: hover) and (pointer: fine) {
+    .resultTitle:hover {
+        color: var(--mantine-color-blue-6);
+        text-decoration: underline;
+    }
+}
+
+@media (hover: none) {
+    .resultTitle {
+        text-decoration: underline;
+    }
 }
 
 .searchButton {
@@ -55,8 +76,11 @@
     border-color: var(--mantine-color-default-border);
 }
 
-.searchButton:hover {
-    color: var(--mantine-color-blue-6);
-    border-color: var(--mantine-color-blue-6);
-    background-color: var(--mantine-color-blue-light);
+/* Surface + accent only, nothing revealed — gated with no counterpart. */
+@media (hover: hover) and (pointer: fine) {
+    .searchButton:hover {
+        color: var(--mantine-color-blue-6);
+        border-color: var(--mantine-color-blue-6);
+        background-color: var(--mantine-color-blue-light);
+    }
 }

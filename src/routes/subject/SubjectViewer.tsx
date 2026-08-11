@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useFetcher, useLoaderData, useNavigate, type ActionFunctionArgs, type LoaderFunctionArgs } from "react-router";
-import { Stack, Title, UnstyledButton, Flex, Text, Image, Pagination, Space, Pill, Group, ScrollArea } from "@mantine/core";
+import { Badge, Stack, Title, UnstyledButton, Flex, Text, Image, Pagination, Space, Pill, Group, ScrollArea } from "@mantine/core";
 import { IconHeart, IconPencilPlus } from "@tabler/icons-react";
 import { http } from "../../libs/http";
 import { permissionCheckSchema, subjectSchema, type Subject, type User } from "../../libs/types";
@@ -113,10 +113,15 @@ function SubjectContent({ subject, user, canEdit }: { subject: Subject; user: Us
   const paddedLessons = padArray(subject.contents);
 
   return (
-    <Flex w={'100%'} justify={'center'} gap={'md'}>
-      <Flex w={'30%'} align={'center'}> {/* Subject Details */}
-        <Stack w={'80%'} align="center" gap={'xs'} className={classes.Border} mt={'30px'}>
-          <Image mt={'lg'} w={'160px'} src={subject.image_url} className={classes.SubjectImage}></Image>
+    <Flex
+      w={'100%'}
+      direction={{ base: 'column', md: 'row' }}
+      align={{ base: 'stretch', md: 'flex-start' }}
+      justify={'center'}
+      gap={'md'}>
+      <Flex w={{ base: '100%', md: '30%' }} justify={'center'}> {/* Subject Details */}
+        <Stack w={{ base: '100%', md: '80%' }} px="md" align="center" gap={'xs'} className={classes.Border} mt={'30px'}>
+          <Image mt={'lg'} w={{ base: 120, md: 160 }} src={subject.image_url} className={classes.SubjectImage}></Image>
           <Group gap={'xs'}>
             <Title order={1} className={classes.JalnanGothic}>{subject.title}</Title>
             {canEdit &&
@@ -124,11 +129,19 @@ function SubjectContent({ subject, user, canEdit }: { subject: Subject; user: Us
                 <IconPencilPlus></IconPencilPlus>
               </UnstyledButton>}
           </Group>
-          <Text w={'80%'} mih={'100px'} className={classes.Paperozi}>{subject.description}</Text>
+          {/* `w='80%'` here compounded with the parent Stack's 80% — 0.8 x 0.8 = 64%
+              of the viewport, ~230px on a 360px phone. The fixed mih went with it. */}
+          <Text w={'100%'} className={classes.Paperozi}>{subject.description}</Text>
           {subject.teacher_certified && (
-            <Pill bg="green" c="white" size="md">Teacher-certified</Pill>
+            /* Badge, not Pill. Was `bg="green" c="white"` (white on green-6 is
+               ~3.1:1, below AA), then briefly `<Pill color variant>` — but Pill has
+               NO `color` prop and its only variants are 'default' | 'contrast', so
+               both props were silently absorbed and the label rendered plain grey.
+               Badge supports them for real, resolving to --mantine-color-green-light
+               + -light-color: the Color contract's success/certified row. */
+            <Badge color="green" variant="light" size="md">Teacher-certified</Badge>
           )}
-          <Group gap={1} w={'80%'} align={'center'} justify={'center'}>
+          <Group gap={1} w={'100%'} align={'center'} justify={'center'}>
             {subject.tags.map((tag) => (<Pill mb={'2px'} renderRoot={(props) => <Link to={`/search?tags=${tag}`} {...props}></Link>} key={tag}>{tag}</Pill>))}
           </Group>
           <Group align="center">
@@ -150,38 +163,37 @@ function SubjectContent({ subject, user, canEdit }: { subject: Subject; user: Us
         </Stack>
       </Flex>
 
-      <Stack w={'50%'} h={'100%'} gap={0} align={'center'}> {/* Lectures */}
+      <Stack w={{ base: '100%', md: '50%' }} gap={0} align={'center'}> {/* Lectures */}
         <Title order={2} className={classes.JalnanGothic} m={"xl"}>목록</Title>
+        {/* `classes.*`, never `page.*`: the `page` CSS-module import is shadowed
+            inside this component by the `page` pagination state above. */}
         {paddedLessons.slice((page - 1) * pageNum, page * pageNum).map((lesson, i) => {
+          const stripe = i % 2 === 0 ? classes.rowEven : classes.rowOdd;
           return (
             lesson._id ?
-              <UnstyledButton h="66.4px" w="100%" key={lesson._id}
-                style={{
-                  backgroundColor: i % 2 === 0 ? "#f1f3f5" : "#ffffffff",
-                  color: "inherit",
-                }}
+              /* was h="66.4px": mih + vertical padding lets long Korean titles wrap
+                 to a second line instead of clipping */
+              <UnstyledButton mih={56} w="100%" py="xs" px="md" key={lesson._id}
+                className={stripe}
+                style={{ color: "inherit" }}
                 component={Link} to={`/lesson/${lesson._id}`}>
-                <Flex className={classes.List} h="100%" w="100%" justify="center" align={'center'}>
-                  <Text mt={'lg'} mb={'lg'} className={`${classes.JalnanGothic}`}>{lesson.title}</Text>
+                <Flex h="100%" w="100%" justify="center" align={'center'}>
+                  <Text className={`${classes.JalnanGothic}`}>{lesson.title}</Text>
                 </Flex>
               </UnstyledButton>
               :
-              <UnstyledButton h="66.4px" w="100%"
-                style={{
-                  backgroundColor: i % 2 === 0 ? "#f1f3f5" : "#ffffffff",
-                  color: "inherit",
-                  "&:hover": {
-                    color: "inherit"
-                  }
-                }}>
-                <Flex className={classes.List} h="100%" w="100%" justify="center" align={'center'}>
-                  <Text mt={'lg'} mb={'lg'} className={`${classes.JalnanGothic}`}>{lesson.title}</Text>
+              <UnstyledButton mih={56} w="100%" py="xs" px="md" key={`placeholder-${i}`}
+                className={stripe}
+                style={{ color: "inherit" }}>
+                <Flex h="100%" w="100%" justify="center" align={'center'}>
+                  <Text className={`${classes.JalnanGothic}`}>{lesson.title}</Text>
                 </Flex>
               </UnstyledButton>
           )
         })}
         <Space h="sm" />
-        <Pagination value={page} onChange={setPage} total={Math.max(1, Math.ceil(paddedLessons.length / pageNum))} />
+        {/* siblings/boundaries keep the control from overflowing below 400px */}
+        <Pagination value={page} onChange={setPage} siblings={1} boundaries={1} total={Math.max(1, Math.ceil(paddedLessons.length / pageNum))} />
       </Stack>
     </Flex>
   )

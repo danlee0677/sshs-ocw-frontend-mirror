@@ -1,6 +1,5 @@
 import MainPageAppshell from "../../components/appshell/MainPageAppshell";
-import { Box, Flex, Image, Group, Paper, Stack, Text, Title, ScrollArea } from '@mantine/core';
-import { useElementSize } from '@mantine/hooks';
+import { Box, Container, Flex, Image, Grid, Group, Paper, SimpleGrid, Stack, Text, Title, ScrollArea } from '@mantine/core';
 import classes from '../../styles/shared.module.css'
 // import { ProgressCard } from './Progress'
 import { HomeBadge } from "./HomeBadge";
@@ -12,6 +11,7 @@ import { useUserContext } from "../../root";
 import { isAxiosError } from "axios";
 import { FloatingActionButton } from "../../components/home/FloatingActionButton";
 import { calculateCurrentStreak, calculateMaxStreak } from "../../libs/utils";
+import { linkStyle } from "../../libs/styles";
 
 const PLACEHOLDER_RECENT_VIEW: RecentView = {
   subject: {
@@ -63,9 +63,6 @@ export async function clientLoader() {
 }
 
 function Home() {
-  const { ref, width } = useElementSize()
-  const isNarrow = width < 150;
-
   const { recentViewed, streak } = useLoaderData<typeof clientLoader>();
 
   const { user } = useUserContext();
@@ -97,56 +94,90 @@ function Home() {
   return (
     <MainPageAppshell>
       <ScrollArea w="100%" h="100%">
-        <Box p="md" w="100%" h="100%">
+        {/* Bare Container, no `size`: root.tsx already sets the default to
+            CONTENT_MAX_WIDTH (1200) plus px='md', so this centres the page and
+            restores the side padding that went missing when the old
+            50%+25%=75% Group became a full-width Grid. Passing size="lg" would
+            silently mean 1140 instead. `py` replaces the old `p="md"`; the
+            horizontal half comes from the Container default.
+            No h="100%": ScrollArea's viewport wrapper is `display: table` with no
+            definite height, so a percentage height here resolves to `auto` anyway. */}
+        <Container py="md" w="100%">
           <Stack gap="md" w="100%">
             {(user.roles.includes('admin') || user.roles.includes('creator')) &&
               <Stack align="center" w="100%">
                 <FloatingActionButton roles={user.roles}></FloatingActionButton>
               </Stack>}
-            <Group className={`${classes.Vertical_align} ${classes.Main1}`} w={'100%'} h={'65vh'}>
-              <Stack w={'50%'} h={'100%'}>
-                <Paper w={'100%'} h={'50%'} className={`${classes.Box1}`} bg={'rgb(232, 240, 255)'} component={Link} to={`/profile/${user._id}`} c={'black'}>
-                  <Flex w={'100%'} h={'100%'} justify={"flex-start"} align={'center'} px="xl" gap="xl">
-                    <Image w="150px" h="150px" fit="cover" src={user.pfp_url} className={classes.Main_pfp_image} radius="80px" />
-                    <Stack gap="xs" justify="center">
-                      <Title className={classes.JalnanGothic} mb={0}>{user?.username}님</Title>
-                      {user.description && (
-                        <Text size="sm" fw={550} c="#5d5d5d">{user.description}</Text>
-                      )}
-                      <Group gap="xs">
-                        <HomeBadge type={1} />
-                        <HomeBadge type={2} />
-                        <HomeBadge type={3} />
-                      </Group>
-                    </Stack>
-                  </Flex>
-                </Paper>
-                <Group w={'100%'} h={'50%'} gap="2%">
-                  <Paper w="49%" h="100%" className={classes.Box1} bg="#ffffff" p="md">
-                    <Stack h="100%">
-                      <Title order={3}>최장 스트릭</Title>
-                      <Title order={2} ta="center">
-                        {calculateMaxStreak(streak)}일
-                      </Title>
-                    </Stack>
+            {/* Was `<Group h='65vh'>` holding a 50% and a 25% column — 75% total, so
+                dead space on desktop and two crushed columns on mobile. A viewport
+                height on a page that can grow is also what caused the overlap at
+                768px. Grid handles both. */}
+            <Grid gutter="md" w="100%">
+              <Grid.Col span={{ base: 12, md: 7 }}>
+                <Stack h="100%" gap="md">
+                  {/* `c='black'` deleted rather than recolored — Paper inherits
+                      var(--mantine-color-text), and an explicit text color is exactly what
+                      would make this card unreadable in dark mode. `style={linkStyle}` is
+                      still required because it is `component={Link}`: with no color at all
+                      the anchor falls back to UA link blue. */}
+                  <Paper w={'100%'} mih={{ base: 180, sm: 220 }} className={`${classes.Box1} ${classes.ProfileCard}`} component={Link} to={`/profile/${user._id}`} style={linkStyle}>
+                    <Flex w={'100%'} h={'100%'} direction={{ base: 'column', sm: 'row' }} justify={"flex-start"} align={'center'} px={{ base: 'md', sm: 'xl' }} py={{ base: 'md', sm: 0 }} gap={{ base: 'md', sm: 'xl' }}>
+                      {/* `radius` is MantineRadius, not a responsive style prop — a
+                          percentage keeps it circular at both sizes without one. */}
+                      <Image w={{ base: 96, sm: 150 }} h={{ base: 96, sm: 150 }} fit="cover" src={user.pfp_url} className={classes.Main_pfp_image} radius="50%" />
+                      <Stack gap="xs" justify="center" miw={0} ta={{ base: 'center', sm: 'left' }}>
+                        <Title className={classes.JalnanGothic} mb={0} fz={{ base: 'h3', sm: 'h1' }}>{user?.username}님</Title>
+                        {user.description && (
+                          <Text size="sm" fw={550} c="dimmed">{user.description}</Text>
+                        )}
+                        {/* Flex, not Group: Group's `justify` is a plain JustifyContent
+                            and rejects a responsive object; Flex's accepts one. */}
+                        <Flex gap="xs" wrap="wrap" justify={{ base: 'center', sm: 'flex-start' }}>
+                          <HomeBadge type={1} />
+                          <HomeBadge type={2} />
+                          <HomeBadge type={3} />
+                        </Flex>
+                      </Stack>
+                    </Flex>
                   </Paper>
-                  <Paper w="49%" h="100%" className={classes.Box1} bg="#ffffff" p="md">
-                    <Stack h="100%">
-                      <Title order={3}>현재 스트릭</Title>
-                      <Title order={2} ta="center">
-                        {calculateCurrentStreak(streak)}일
-                      </Title>
-                    </Stack>
-                  </Paper>
-                </Group>
-              </Stack>
-              <Group className={`${classes.Box1}`} w={'25%'} h={'100%'}>
-                <Stack ref={ref} w={'100%'} h={'100%'} className={`${classes.Vertical_align}`} gap={0}>
+                  {/* SimpleGrid does the gap math; `w="49%"` in a `gap="2%"` Group did not.
+                      `mih` replaces the height these cards used to inherit from
+                      h='100%' inside h='50%' inside h='65vh'. A fixed minimum, not a
+                      viewport-relative one — the dvh coupling is what caused the 768px
+                      overlap this migration removed. */}
+                  <SimpleGrid cols={2} spacing="md" w="100%">
+                    <Paper className={classes.Box1} withBorder p="md" mih={{ base: 120, sm: 180 }}>
+                      <Stack h="100%" justify="space-between">
+                        <Title order={3}>최장 스트릭</Title>
+                        <Title order={2} ta="center">
+                          {calculateMaxStreak(streak)}일
+                        </Title>
+                      </Stack>
+                    </Paper>
+                    <Paper className={classes.Box1} withBorder p="md" mih={{ base: 120, sm: 180 }}>
+                      <Stack h="100%" justify="space-between">
+                        <Title order={3}>현재 스트릭</Title>
+                        <Title order={2} ta="center">
+                          {calculateCurrentStreak(streak)}일
+                        </Title>
+                      </Stack>
+                    </Paper>
+                  </SimpleGrid>
+                </Stack>
+              </Grid.Col>
+              <Grid.Col span={{ base: 12, md: 5 }}>
+                <Stack className={`${classes.Box1}`} h="100%" w="100%" gap={0} align="center" p="md">
                   <Text className={`${classes.JalnanGothic}`}>최근 이용한 강좌</Text>
+                  {/* The `useElementSize` + `isNarrow = width < 150` gate that used to
+                      wrap the titles is gone. It measured a width to decide whether to
+                      RENDER content, so the first paint was always wrong and then
+                      corrected — and its `ref` was attached to three different elements
+                      in one render, so it was measuring whichever mounted last. The
+                      `truncate` + `miw={0}` below already does the job in pure CSS. */}
                   {paddedProgress.map((v, i) => (
                     v.subject._id ?
-                      <Box className={`${classes.Box2} ${classes.Vertical_align}`} w={'100%'} h={'20%'} miw={0} key={v.lesson._id}>
-                        <Group wrap='nowrap' w={'80%'} h={'100%'} key={v.lesson._id}>
+                      <Box className={`${classes.Box2} ${classes.Vertical_align}`} w={'100%'} mih={72} miw={0} key={v.lesson._id}>
+                        <Group wrap='nowrap' w={'80%'} h={'100%'} miw={0}>
                           <Link to={`/subject/${v.subject._id}`} className="block"
                             style={{
                               display: 'flex',       // Makes the <a> tag a flex container
@@ -155,35 +186,38 @@ function Home() {
                             }}>
                             <Image fit="cover" w='75' h={'75'} src={v.subject.image_url} className={classes.Image1} />
                           </Link>
-                          {!isNarrow && (
-                            <Stack gap={0} miw={0}>
-                              <Link to={`/subject/${v.subject._id}`}>
-                                <Text style={{ color: "black" }} truncate fw={'bold'}>{v.subject.title}</Text>
-                              </Link>
-                              <Link to={`/lesson/${v.lesson._id}`}>
-                                <Text style={{ color: "black" }} truncate>{v.lesson.title}</Text>
-                              </Link>
-                            </Stack>
-                          )}
+                          {/* `style={linkStyle}` replaces an inline `color: "black"` on the
+                              inner Text. Deleting that color alone was not enough: nothing
+                              in index.css or Mantine's baseline resets anchors, so these
+                              would have fallen back to UA link blue + underline.
+                              linkStyle's `color: 'inherit'` is scheme-safe. */}
+                          <Stack gap={0} miw={0}>
+                            <Link to={`/subject/${v.subject._id}`} style={linkStyle}>
+                              <Text truncate fw={'bold'}>{v.subject.title}</Text>
+                            </Link>
+                            <Link to={`/lesson/${v.lesson._id}`} style={linkStyle}>
+                              <Text truncate>{v.lesson.title}</Text>
+                            </Link>
+                          </Stack>
                         </Group>
                       </Box>
                       : (i == 0 ?
-                        <Box ref={ref} w="100%" h="80%" className={`${classes.Vertical_align}`} key={i}>
+                        <Box w="100%" mih={72} className={`${classes.Vertical_align}`} key={i}>
                           <Text>다양한 강의를 수강해보세요!</Text>
                         </Box>
                         :
-                        <Box ref={ref} w="100%" h="20%" miw={0} />
+                        <Box w="100%" mih={72} miw={0} key={i} />
                       )
                   ))}
-                  <Link to={`/profile/${user._id}`}>
-                    <Text style={{ color: "black" }}>더보기</Text>
+                  <Link to={`/profile/${user._id}`} style={linkStyle}>
+                    <Text>더보기</Text>
                   </Link>
                 </Stack>
-              </Group>
-            </Group>
+              </Grid.Col>
+            </Grid>
           </Stack>
 
-        </Box>
+        </Container>
       </ScrollArea>
     </MainPageAppshell >
   )

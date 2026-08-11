@@ -14,3 +14,20 @@
 .SubjectImage {
     border-radius: 10px;
 }
+
+/* Lesson-list zebra striping. Was two inline literals (`#f1f3f5` / `#ffffffff`)
+   in a `style=` prop on the row buttons. That could not be fixed in place twice
+   over: `light-dark()` is a PostCSS transform and never runs on an inline style,
+   and an inline style beats every stylesheet anyway. Moving the values here is
+   what makes them fixable at all.
+
+   These names deliberately do not collide with anything in shared.module.css —
+   SubjectViewer merges the two objects as `{ ...shared, ...page }`, so a shared
+   key of the same name would be silently overwritten. */
+.rowEven {
+    background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
+}
+
+.rowOdd {
+    background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
+}

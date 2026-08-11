@@ -1,7 +1,10 @@
-import { useEffect, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Form, useLoaderData, useLocation, useNavigate, type LoaderFunctionArgs } from "react-router";
-import { Button, Checkbox, CheckIcon, Combobox, Flex, Group, Pagination, Paper, Pill, PillsInput, ScrollArea, Space, Stack, Table, Tabs, Text, TextInput, useCombobox } from "@mantine/core";
+import { Badge, Button, Checkbox, CheckIcon, Collapse, Combobox, Flex, Group, Pagination, Pill, PillsInput, ScrollArea, Stack, Table, Tabs, Text, TextInput, UnstyledButton, useCombobox } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
+import { IconChevronDown } from "@tabler/icons-react";
 import { useableTags } from "../../libs/utils";
+import { FROM_MD_QUERY } from "../../libs/styles";
 import classes from './search.module.css'
 import MainPageAppshell from "../../components/appshell/MainPageAppshell";
 import { http } from "../../libs/http";
@@ -77,8 +80,28 @@ const texthighlight = (text: string, keyword: string) => {
 }
 
 function SearchContent({ searchResult, searchParams }: { searchResult: ResultType, searchParams: SearchParamsType }) {
-  const [activeTab, setActiveTab] = useState<TabValue>("subjectTitle")
+  // null = "no explicit choice yet", so the fallback below picks the first
+  // available tab. The old initial value of "subjectTitle" was simply wrong
+  // whenever that search type was unchecked, which is what the removed effect
+  // existed to paper over.
+  const [selectedTab, setSelectedTab] = useState<TabValue | null>(null)
   const [page, setPage] = useState(1);
+
+  // Mobile filter disclosure.
+  //
+  // FROM_MD_QUERY (min-width: 62em), NOT the negation of TABLET_QUERY
+  // (max-width: 62em). The toggle below is `hiddenFrom="md"`, which Mantine
+  // compiles to `(min-width: 62em) { display: none !important }` — so keying the
+  // JS off a max-width query made both match at exactly 62em/992px: the panel
+  // collapsed AND the toggle that opens it was hidden, leaving an empty card
+  // with no way in. Both sides now evaluate the SAME query and therefore agree
+  // at every width. See the FROM_*_QUERY doc in libs/styles.ts.
+  //
+  // getInitialValueInEffect:false reads matchMedia synchronously — safe, this is
+  // a SPA and SearchContent never appears in the prerendered shell.
+  const isDesktopFilters = useMediaQuery(FROM_MD_QUERY, false, { getInitialValueInEffect: false })
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const filtersExpanded = isDesktopFilters || filtersOpen
 
   const ITEMS_PER_PAGE = 10;
   const TITLE_WIDTH = 250;
@@ -135,13 +158,15 @@ function SearchContent({ searchResult, searchParams }: { searchResult: ResultTyp
     return arr.filter(Boolean) as TabValue[];
   }, [searchParams.subjectTitle, searchParams.subjectDescription, searchParams.lessonTitle])
 
-  useEffect(() => {
-    if (availableTabs.length === 0) return;
-    if (!availableTabs.includes(activeTab)) {
-      setActiveTab(availableTabs[0])
-      setPage(1);
-    }
-  }, [availableTabs, activeTab])
+  // Derived during render, not synced in an effect. The old version called
+  // setActiveTab + setPage from an effect body (react-hooks/set-state-in-effect),
+  // which cost a cascading re-render on every mount where the stored tab was not
+  // available. It is safe to derive because `availableTabs` is a useMemo over
+  // `searchParams` props and SearchContent is remounted on every submit via
+  // `key={location.search}` — so it is constant for this component's lifetime.
+  // `availableTabs` can legitimately be empty (advanced=on with all three
+  // unchecked), and Tabs accepts value={null}.
+  const activeTab = selectedTab ?? availableTabs[0] ?? null;
 
   return (
     <ScrollArea h="100%" w="100%" scrollbarSize={10}>
@@ -152,22 +177,33 @@ function SearchContent({ searchResult, searchParams }: { searchResult: ResultTyp
         }
         <input type="hidden" name="advanced" value="on" />
 
-        <Flex w="90%" h="100%" p="md" justify="center">
-          <Stack w='80%'>
-            <Flex w={'100%'} justify="center" align="center">
+        {/* Was `w="90%"` containing an 80% and a 25% column — 105%, so the filter
+            sidebar was pushed past the right edge at every width. */}
+        <Flex
+          w="100%"
+          h="100%"
+          p="md"
+          gap="md"
+          direction={{ base: 'column', md: 'row' }}
+          align={{ base: 'stretch', md: 'flex-start' }}>
+          <Stack w={{ base: '100%', md: '72%' }}>
+            <Flex w={'100%'} gap="xs" justify="center" align="center">
               <TextInput
                 name="keyword"
                 placeholder="검색어를 입력해 주세요."
                 maxLength={20}
                 defaultValue={searchParams.keyword}
+                flex={1}
                 className={`${classes.searchBar}`} />
-              <Space w={10} />
-              <Button type="submit" variant="outline" className={classes.searchButton}>검색</Button>
+              <Button type="submit" variant="outline" style={{ flex: '0 0 auto' }} className={classes.searchButton}>검색</Button>
             </Flex>
 
             <Group gap="md" w={'100%'} justify="center">
-              <Tabs w={'80%'} value={activeTab} onChange={(v) => { if (v) { setActiveTab(v as TabValue); setPage(1); } }} keepMounted={false}>
-                <Tabs.List>
+              {/* was w='80%' nested inside another w='80%' Stack — the triple-nested
+                  percentages are why results rendered so narrow */}
+              <Tabs w={'100%'} value={activeTab} onChange={(v) => { if (v) { setSelectedTab(v as TabValue); setPage(1); } }} keepMounted={false}>
+                {/* 3 Korean tabs overflow below 360px */}
+                <Tabs.List style={{ flexWrap: 'nowrap', overflowX: 'auto' }}>
                   {searchParams.subjectTitle && (
                     <Tabs.Tab value="subjectTitle">과목 제목</Tabs.Tab>
                   )}
@@ -182,6 +218,7 @@ function SearchContent({ searchResult, searchParams }: { searchResult: ResultTyp
                 {searchParams.subjectTitle && (
                   <Tabs.Panel value="subjectTitle">
                     <Stack gap="md">
+                      <Table.ScrollContainer minWidth={340}>
                       <Table highlightOnHover verticalSpacing="sm">
                         <Table.Thead>
                           <Table.Tr>
@@ -194,7 +231,9 @@ function SearchContent({ searchResult, searchParams }: { searchResult: ResultTyp
                             return <Table.Tr key={val._id}>
                               <Table.Td className={classes.resultTitle} onClick={() => navigate(`/subject/${val._id}`)}>
                                 <Group gap="xs" wrap="nowrap">
-                                  {val.teacher_certified && <Pill bg="green" c="white" size="sm">인증</Pill>}
+                                  {/* Badge, not Pill: Pill has no `color` prop and no 'light' variant, so both
+                                      props were silently ignored and this rendered plain grey. */}
+                                  {val.teacher_certified && <Badge color="green" variant="light" size="sm">인증</Badge>}
                                   {texthighlight(val.title, searchParams.keyword)}
                                 </Group>
                               </Table.Td>
@@ -205,6 +244,7 @@ function SearchContent({ searchResult, searchParams }: { searchResult: ResultTyp
                           })}
                         </Table.Tbody>
                       </Table>
+                      </Table.ScrollContainer>
                       {Math.ceil(filteredSubjectTitle.length / ITEMS_PER_PAGE) > 1 && (
                         <Pagination total={Math.ceil(filteredSubjectTitle.length / ITEMS_PER_PAGE)} value={page} onChange={setPage} />
                       )}
@@ -215,6 +255,7 @@ function SearchContent({ searchResult, searchParams }: { searchResult: ResultTyp
                 {searchParams.subjectDescription && (
                   <Tabs.Panel value="subjectDescription">
                     <Stack gap="md">
+                      <Table.ScrollContainer minWidth={340}>
                       <Table highlightOnHover verticalSpacing="sm">
                         <Table.Thead>
                           <Table.Tr>
@@ -227,7 +268,9 @@ function SearchContent({ searchResult, searchParams }: { searchResult: ResultTyp
                             return <Table.Tr key={val._id}>
                               <Table.Td className={classes.resultTitle} onClick={() => navigate(`/subject/${val._id}`)}>
                                 <Group gap="xs" wrap="nowrap">
-                                  {val.teacher_certified && <Pill bg="green" c="white" size="sm">인증</Pill>}
+                                  {/* Badge, not Pill: Pill has no `color` prop and no 'light' variant, so both
+                                      props were silently ignored and this rendered plain grey. */}
+                                  {val.teacher_certified && <Badge color="green" variant="light" size="sm">인증</Badge>}
                                   {texthighlight(val.description, searchParams.keyword)}
                                 </Group>
                               </Table.Td>
@@ -238,6 +281,7 @@ function SearchContent({ searchResult, searchParams }: { searchResult: ResultTyp
                           })}
                         </Table.Tbody>
                       </Table>
+                      </Table.ScrollContainer>
                       {Math.ceil(filteredSubjectDescription.length / ITEMS_PER_PAGE) > 1 && (
                         <Pagination total={Math.ceil(filteredSubjectDescription.length / ITEMS_PER_PAGE)} value={page} onChange={setPage} />
                       )}
@@ -248,6 +292,7 @@ function SearchContent({ searchResult, searchParams }: { searchResult: ResultTyp
                 {searchParams.lessonTitle && (
                   <Tabs.Panel value="lessonTitle">
                     <Stack gap="md">
+                      <Table.ScrollContainer minWidth={340}>
                       <Table highlightOnHover verticalSpacing="sm">
                         <Table.Thead>
                           <Table.Tr>
@@ -266,6 +311,7 @@ function SearchContent({ searchResult, searchParams }: { searchResult: ResultTyp
                           })}
                         </Table.Tbody>
                       </Table>
+                      </Table.ScrollContainer>
 
                       {Math.ceil(searchResult.lessonTitle.length / ITEMS_PER_PAGE) > 1 && (
                         <Group justify="center" w="100%">
@@ -280,20 +326,68 @@ function SearchContent({ searchResult, searchParams }: { searchResult: ResultTyp
             </Group>
           </Stack>
 
-          <Stack w={'25%'} className={classes.GroupBox} align="center" py="xl" mt={120} style={{ alignSelf: 'flex-start' }}>
-            <Flex w={'80%'} direction={'column'} justify={'space-between'} h={'300px'} align={'center'}>
-              <Paper bg={'none'} w={'80%'} h="30%">
-                <Checkbox name="subjectTitle" classNames={{ label: classes.CheckBoxLabel, body: classes.CheckBox }}
-                  label="과목 제목" defaultChecked={searchParams.subjectTitle} color="white" iconColor="black" />
-                <Checkbox name="subjectDescription" classNames={{ label: classes.CheckBoxLabel, body: classes.CheckBox }}
-                  label="과목 내용" defaultChecked={searchParams.subjectDescription} color="white" iconColor="black" />
-                <Checkbox name="lessonTitle" classNames={{ label: classes.CheckBoxLabel, body: classes.CheckBox }}
-                  label="강의 제목" defaultChecked={searchParams.lessonTitle} color="white" iconColor="black" />
-                <Checkbox name="or" classNames={{ label: classes.CheckBoxLabel, body: classes.CheckBox }}
-                  label="태그 or로 검색" defaultChecked={searchParams.or} color="white" iconColor="black" />
-                <Checkbox name="teacherCertified" classNames={{ label: classes.CheckBoxLabel, body: classes.CheckBox }}
-                  label="교사 인증 과목만" defaultChecked={searchParams.teacherCertified} color="white" iconColor="black" />
-              </Paper>
+          {/* ONE sidebar instance, never conditionally unmounted: every control below
+              lives inside <Form method="get">, and an unmounted input is not submitted.
+
+              This deliberately does NOT render two copies behind
+              visibleFrom/hiddenFrom. Those compile to `display: none !important`, and
+              display:none inputs ARE still submitted — so a single instance already
+              satisfies the never-unmount rule, while two copies would submit two
+              values per name. The checkboxes are uncontrolled (defaultChecked, no
+              onChange), so the copies would diverge the moment a user toggled the
+              visible one, and the loader's searchParams.get() takes the FIRST match —
+              which could be the stale hidden copy. Only the disclosure chrome is
+              responsive.
+
+              Three ways to break this:
+              - Do NOT add `keepMounted` to the Collapse. It keeps the closed panel at
+                height 0 but still focusable, putting five invisible checkboxes into
+                the mobile tab order.
+              - Do NOT set `transitionDuration={0}`, and do NOT enable
+                `theme.respectReducedMotion`. Collapse returns null when the resolved
+                duration is 0, which would silently drop all five fields from every
+                search. Mantine defaults respectReducedMotion to false and root.tsx
+                does not override it, so this is safe only by default.
+              - Do NOT swap Collapse for Accordion. AccordionPanel has no keepMounted
+                escape hatch and renders a Collapse internally, hitting the same branch.
+
+              `filtersOpen` resets to closed after each search because SearchContent is
+              remounted via key={location.search}. That is intended. */}
+          <Stack w={{ base: '100%', md: '28%' }} className={classes.GroupBox} p="md" gap="sm">
+            <UnstyledButton
+              hiddenFrom="md"
+              onClick={() => setFiltersOpen((o) => !o)}
+              aria-expanded={filtersExpanded}
+              aria-controls="search-filters"
+              py="xs">
+              <Group justify="space-between" wrap="nowrap">
+                <Text fw={500}>검색 옵션</Text>
+                <IconChevronDown
+                  size={18}
+                  style={{
+                    transform: filtersExpanded ? 'rotate(180deg)' : undefined,
+                    transition: 'transform 150ms ease',
+                  }} />
+              </Group>
+            </UnstyledButton>
+
+            <Collapse in={filtersExpanded} id="search-filters">
+              <Stack w="100%" gap="md">
+                <Stack gap="xs" w="100%">
+                  {/* color="white" iconColor="black" removed from all five: already low
+                      contrast on a light card, and in dark mode a white blob with an
+                      invisible black check. The theme primary handles both schemes. */}
+                  <Checkbox name="subjectTitle" classNames={{ label: classes.CheckBoxLabel, body: classes.CheckBox }}
+                    label="과목 제목" defaultChecked={searchParams.subjectTitle} />
+                  <Checkbox name="subjectDescription" classNames={{ label: classes.CheckBoxLabel, body: classes.CheckBox }}
+                    label="과목 내용" defaultChecked={searchParams.subjectDescription} />
+                  <Checkbox name="lessonTitle" classNames={{ label: classes.CheckBoxLabel, body: classes.CheckBox }}
+                    label="강의 제목" defaultChecked={searchParams.lessonTitle} />
+                  <Checkbox name="or" classNames={{ label: classes.CheckBoxLabel, body: classes.CheckBox }}
+                    label="태그 or로 검색" defaultChecked={searchParams.or} />
+                  <Checkbox name="teacherCertified" classNames={{ label: classes.CheckBoxLabel, body: classes.CheckBox }}
+                    label="교사 인증 과목만" defaultChecked={searchParams.teacherCertified} />
+                </Stack>
 
               <Flex w="100%" justify="center">
                 <Combobox store={combobox} onOptionSubmit={handleValueSelect}>
@@ -323,7 +417,8 @@ function SearchContent({ searchResult, searchParams }: { searchResult: ResultTyp
                   </Combobox.Dropdown>
                 </Combobox>
               </Flex>
-            </Flex>
+              </Stack>
+            </Collapse>
           </Stack>
 
 
