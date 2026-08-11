@@ -5,7 +5,7 @@ import { Link } from "react-router";
 import { FROM_SM_QUERY, HEADER_HEIGHT, linkStyle } from "../../libs/styles";
 import classes from "./lessonViewer.module.css"
 import { type RecentView, type Subject, type Lesson } from "../../libs/types";
-import logo from '../../assets/app-logo.png'
+import { useAppLogo } from './useAppLogo'
 import { useUserContext } from "../../root";
 import { ColorSchemeToggle, ColorSchemeToggleFull } from "./ColorSchemeToggle";
 
@@ -48,6 +48,9 @@ export default function LessonViewerAppshell({ children, subject, lesson, progre
    * portrait, so this is a real width, not a theoretical one.
    */
   const isDesktopNav = useMediaQuery(FROM_SM_QUERY, false, { getInitialValueInEffect: false });
+
+  // Scheme-aware logo; see useAppLogo.
+  const logo = useAppLogo();
 
   /*
    * DO NOT DELETE AS "TIDINESS" — this effect is load-bearing for the boundary

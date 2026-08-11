@@ -4,7 +4,7 @@ import { IconSearch } from '@tabler/icons-react';
 import { Form, Link, useFetcher } from "react-router";
 import { FROM_LG_QUERY, HEADER_HEIGHT, linkStyle } from "../../libs/styles";
 import classes from "./Appshell.module.css";
-import logo from '@/assets/app-logo.png';
+import { useAppLogo } from './useAppLogo';
 import { isUser } from "../../libs/utils";
 import { useUserContext } from "../../root";
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
@@ -110,6 +110,9 @@ function MainPageAppshell({ children, showSearch = true }: MainPageAppshellProps
    * header's, and closing does not submit either.
    */
   const isDesktopNav = useMediaQuery(FROM_LG_QUERY, false, { getInitialValueInEffect: false });
+
+  // Scheme-aware logo; see useAppLogo. Used by both the header and the Drawer title.
+  const logo = useAppLogo();
 
   useEffect(() => {
     if (isDesktopNav) {

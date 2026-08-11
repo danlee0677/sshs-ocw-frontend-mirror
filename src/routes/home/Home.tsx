@@ -144,22 +144,30 @@ function Home() {
                       `mih` replaces the height these cards used to inherit from
                       h='100%' inside h='50%' inside h='65vh'. A fixed minimum, not a
                       viewport-relative one — the dvh coupling is what caused the 768px
-                      overlap this migration removed. */}
+                      overlap this migration removed.
+
+                      The `sm` step is TALLER than the `md` one on purpose. Below `md` the
+                      grid stacks, so these cards span the full page width; holding the
+                      same height there would let them flatten out as they widen. The
+                      breakpoint that matters is `md` — where the layout changes — not the
+                      card's own content. */}
                   <SimpleGrid cols={2} spacing="md" w="100%">
-                    <Paper className={classes.Box1} withBorder p="md" mih={{ base: 120, sm: 180 }}>
-                      <Stack h="100%" justify="space-between">
+                    <Paper className={classes.Box1} withBorder p="md" mih={{ base: 140, sm: 220, md: 180 }}>
+                      {/* The number is centred in the space the heading leaves, rather than
+                          pushed to the bottom by `justify="space-between"`. */}
+                      <Stack h="100%" gap="xs">
                         <Title order={3}>최장 스트릭</Title>
-                        <Title order={2} ta="center">
-                          {calculateMaxStreak(streak)}일
-                        </Title>
+                        <Flex flex={1} align="center" justify="center">
+                          <Title order={2}>{calculateMaxStreak(streak)}일</Title>
+                        </Flex>
                       </Stack>
                     </Paper>
-                    <Paper className={classes.Box1} withBorder p="md" mih={{ base: 120, sm: 180 }}>
-                      <Stack h="100%" justify="space-between">
+                    <Paper className={classes.Box1} withBorder p="md" mih={{ base: 140, sm: 220, md: 180 }}>
+                      <Stack h="100%" gap="xs">
                         <Title order={3}>현재 스트릭</Title>
-                        <Title order={2} ta="center">
-                          {calculateCurrentStreak(streak)}일
-                        </Title>
+                        <Flex flex={1} align="center" justify="center">
+                          <Title order={2}>{calculateCurrentStreak(streak)}일</Title>
+                        </Flex>
                       </Stack>
                     </Paper>
                   </SimpleGrid>
@@ -209,7 +217,18 @@ function Home() {
                         <Box w="100%" mih={72} miw={0} key={i} />
                       )
                   ))}
-                  <Link to={`/profile/${user._id}`} style={linkStyle}>
+                  {/* `mt="auto"` pins this to the bottom of the column no matter how many
+                      rows exist: the Stack is a flex column filling Grid.Col (which
+                      stretches to the row height), so an auto top margin on the last
+                      child absorbs the leftover space. The rows above keep their natural
+                      top alignment — this is why it is mt:auto here rather than
+                      `justify="space-between"` on the Stack, which would also spread the
+                      rows apart. */}
+                  {/* Style object, not `mt`/`pt` props: this is react-router's Link, not a
+                      Mantine component, so style props would land as bogus DOM attributes. */}
+                  <Link
+                    to={`/profile/${user._id}`}
+                    style={{ ...linkStyle, marginTop: 'auto', paddingTop: 'var(--mantine-spacing-sm)' }}>
                     <Text>더보기</Text>
                   </Link>
                 </Stack>
