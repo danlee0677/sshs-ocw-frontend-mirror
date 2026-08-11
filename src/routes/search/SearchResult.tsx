@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Form, useLoaderData, useLocation, useNavigate, type LoaderFunctionArgs } from "react-router";
-import { Badge, Button, Checkbox, CheckIcon, Collapse, Combobox, Flex, Group, Pagination, Pill, PillsInput, ScrollArea, Stack, Table, Tabs, Text, TextInput, UnstyledButton, useCombobox } from "@mantine/core";
+import { Badge, Button, Checkbox, CheckIcon, Collapse, Combobox, Container, Flex, Group, Pagination, Pill, PillsInput, ScrollArea, Stack, Table, Tabs, Text, TextInput, UnstyledButton, useCombobox } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { IconChevronDown } from "@tabler/icons-react";
 import { useableTags } from "../../libs/utils";
@@ -177,15 +177,22 @@ function SearchContent({ searchResult, searchParams }: { searchResult: ResultTyp
         }
         <input type="hidden" name="advanced" value="on" />
 
-        {/* Was `w="90%"` containing an 80% and a 25% column — 105%, so the filter
-            sidebar was pushed past the right edge at every width. */}
-        <Flex
-          w="100%"
-          h="100%"
-          p="md"
-          gap="md"
-          direction={{ base: 'column', md: 'row' }}
-          align={{ base: 'stretch', md: 'flex-start' }}>
+        {/* Bare Container, no `size`: root.tsx defaults it to CONTENT_MAX_WIDTH
+            (1200) plus px='md', matching Home and Profile. `size="lg"` would
+            silently mean 1140. It sits INSIDE the Form and AFTER the hidden
+            inputs, so it wraps the layout without touching what gets submitted.
+            The Flex below uses `py`, not `p` — the horizontal half would
+            otherwise double up with the Container's own px. */}
+        <Container w="100%">
+          {/* Was `w="90%"` containing an 80% and a 25% column — 105%, so the filter
+              sidebar was pushed past the right edge at every width. */}
+          <Flex
+            w="100%"
+            h="100%"
+            py="md"
+            gap="md"
+            direction={{ base: 'column', md: 'row' }}
+            align={{ base: 'stretch', md: 'flex-start' }}>
           <Stack w={{ base: '100%', md: '72%' }}>
             <Flex w={'100%'} gap="xs" justify="center" align="center">
               <TextInput
@@ -422,7 +429,8 @@ function SearchContent({ searchResult, searchParams }: { searchResult: ResultTyp
           </Stack>
 
 
-        </Flex>
+          </Flex>
+        </Container>
       </Form>
     </ScrollArea>
   )

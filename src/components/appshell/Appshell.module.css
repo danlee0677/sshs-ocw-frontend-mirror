@@ -10,7 +10,9 @@
  */
 
 .LogOutButton {
-    transition: all 0.4s ease;
+    /* Named rather than `all`: the hover changes only these three, and `all`
+       would also tween the flex sizing below whenever the header reflows. */
+    transition: border-color 0.4s ease, transform 0.4s ease, box-shadow 0.4s ease;
     /* Was `width: 100px; height: 35px`. Fixed dimensions clipped longer Korean
      * labels and fell short of the 44px tap target. Flex centring replaces the
      * old `text-align: center`, which only centred horizontally. */

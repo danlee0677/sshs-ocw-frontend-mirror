@@ -10,7 +10,11 @@
 }
 
 .LoginButton {
-    transition: 0.3s;
+    /* Unlike the other transitions in this codebase, `all` was doing real work
+       here — `.LoginButton:hover` deliberately grows the button (width 104%,
+       height 53px, larger font) and lifts it. Those properties are kept, just
+       named explicitly so nothing ELSE silently joins the animation later. */
+    transition: width 0.3s, height 0.3s, font-size 0.3s, transform 0.3s, color 0.3s;
     cursor: pointer;
     width: 100%;
     height: 50px;

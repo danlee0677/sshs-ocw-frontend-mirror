@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useFetcher, useLoaderData, useNavigate, type ActionFunctionArgs, type LoaderFunctionArgs } from "react-router";
-import { Badge, Stack, Title, UnstyledButton, Flex, Text, Image, Pagination, Space, Pill, Group, ScrollArea } from "@mantine/core";
+import { Badge, Container, Stack, Title, UnstyledButton, Flex, Text, Image, Pagination, Space, Pill, Group, ScrollArea } from "@mantine/core";
 import { IconHeart, IconPencilPlus } from "@tabler/icons-react";
 import { http } from "../../libs/http";
 import { permissionCheckSchema, subjectSchema, type Subject, type User } from "../../libs/types";
@@ -113,12 +113,18 @@ function SubjectContent({ subject, user, canEdit }: { subject: Subject; user: Us
   const paddedLessons = padArray(subject.contents);
 
   return (
-    <Flex
-      w={'100%'}
-      direction={{ base: 'column', md: 'row' }}
-      align={{ base: 'stretch', md: 'flex-start' }}
-      justify={'center'}
-      gap={'md'}>
+    /* Bare Container, no `size`: root.tsx defaults it to CONTENT_MAX_WIDTH (1200)
+       plus px='md'. Without it the 30% + 50% columns were percentages of the
+       VIEWPORT with no cap — 1536px of content on a 1920 screen, visibly wider
+       than Home and Profile. The column split is left as-is on purpose, so the
+       page keeps its current proportions and merely stops growing past 1200. */
+    <Container w="100%">
+      <Flex
+        w={'100%'}
+        direction={{ base: 'column', md: 'row' }}
+        align={{ base: 'stretch', md: 'flex-start' }}
+        justify={'center'}
+        gap={'md'}>
       <Flex w={{ base: '100%', md: '30%' }} justify={'center'}> {/* Subject Details */}
         <Stack w={{ base: '100%', md: '80%' }} px="md" align="center" gap={'xs'} className={classes.Border} mt={'30px'}>
           <Image mt={'lg'} w={{ base: 120, md: 160 }} src={subject.image_url} className={classes.SubjectImage}></Image>
@@ -194,7 +200,8 @@ function SubjectContent({ subject, user, canEdit }: { subject: Subject; user: Us
         <Space h="sm" />
         {/* siblings/boundaries keep the control from overflowing below 400px */}
         <Pagination value={page} onChange={setPage} siblings={1} boundaries={1} total={Math.max(1, Math.ceil(paddedLessons.length / pageNum))} />
-      </Stack>
-    </Flex>
+        </Stack>
+      </Flex>
+    </Container>
   )
 }

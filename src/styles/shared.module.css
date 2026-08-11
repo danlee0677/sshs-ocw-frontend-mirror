@@ -147,7 +147,14 @@
 /* ------------------------------------------------------------ hover surfaces */
 
 .Box1 {
-    transition: 0.2s ease-in-out;
+    /* Properties are NAMED on purpose. `transition: 0.2s ease-in-out` looks
+       equivalent but is not: a shorthand resets every longhand it omits, and
+       `transition-property`'s initial value is `all` — so min-height, height,
+       width and padding animated too. Consumers of this class (Home's profile
+       card, both streak cards, the recent-lessons column) carry responsive
+       `mih`, so every breakpoint crossing visibly tweened its height.
+       Only what `.Box1:hover` actually changes belongs here. */
+    transition: box-shadow 0.2s ease-in-out, border-radius 0.2s ease-in-out;
 }
 
 /* `.Box2` is a hover target and never had base styling of its own, so there is
@@ -180,7 +187,9 @@
     pointer-events: none;
     z-index: 1;
     opacity: 0;
-    transition: 0.3s ease;
+    /* Named: opacity is the only thing the reveal animates. Unscoped, this also
+       tweened the label's layout box. */
+    transition: opacity 0.3s ease;
     font-family: 'JalnanGothic';
     -webkit-user-select: none; /* 크롬, 사파리 */
     -moz-user-select: none;    /* 파이어폭스 */
@@ -238,7 +247,9 @@
    sticks after a tap and reads as a stuck selection. */
 @media (hover: hover) and (pointer: fine) {
     .Box1:hover {
-        transition: 0.2s ease-in-out;
+        /* No `transition` here: the base rule governs both directions, and a
+           duplicate shorthand would re-assert `transition-property: all` for as
+           long as the pointer is over the card. */
         border-radius: 10px;
         cursor: pointer;
         /* was: box-shadow: 0px 3px 3px 3px gainsboro — an opaque light-gray
