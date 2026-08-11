@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useMediaQuery } from '@mantine/hooks'
 import NewUser from "./NewUser";
 import Join from "./Join"
 import { redirect, useLoaderData, type LoaderFunctionArgs } from 'react-router';
@@ -28,13 +27,19 @@ export default function StartPage() {
   const { errorMessage, initialStep } = useLoaderData<typeof clientLoader>();
   const [step, setStep] = useState(initialStep);
 
-  const isMobile = useMediaQuery('(max-width: 60em)')  
+  /* `const isMobile = useMediaQuery('(max-width: 60em)')` lived here and is gone.
+     Three things were wrong with it: 60em matches no Mantine breakpoint (sm is
+     48em, md is 62em), so the pivot was arbitrary; it passed no fallback and no
+     `{ getInitialValueInEffect: false }`, so it painted the desktop layout and
+     snapped; and it was branching on width in JS to pick a component, which is
+     what CSS is for. NewUser.tsx now expresses the same pivot as a responsive
+     `direction` prop, so no media query survives on this route. */
 
   return (
     <>
       {
         step === 0 ? (
-          <NewUser setStep={setStep} isMobile={isMobile} />
+          <NewUser setStep={setStep} />
         ) : step === 1 ? (
           <Join setStep={setStep} errorMessage={errorMessage}/>
         ) : (

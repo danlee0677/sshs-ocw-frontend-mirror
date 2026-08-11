@@ -7,7 +7,30 @@
 
 .item {
   background-color: var(--mantine-color-body);
-  border-bottom: 2px dashed black;
+  /* was: 2px dashed black — a row divider, so the Color contract's default-border
+     row applies. Black is invisible against a dark surface. */
+  border-bottom: 2px dashed var(--mantine-color-default-border);
+}
+
+/* Zebra striping for the lesson rows.
+
+   Was `tbody tr:nth-of-type(odd) { background: #f1f3f5 }`, which was wrong twice:
+
+   1. A hardcoded light gray. In dark mode even rows resolved to
+      var(--mantine-color-body) from `.item` above and odd rows to #f1f3f5, so the
+      table alternated dark/light. These are the same two tokens SubjectViewer's
+      `.rowEven` / `.rowOdd` use, deliberately — the editor and the viewer show the
+      same lesson list and had visibly drifted apart.
+   2. It was GLOBAL. CSS Modules scope class and id selectors; a bare type selector
+      like `tbody tr` passes through untransformed, so that rule applied to every
+      table on any route this stylesheet reached, not just this one.
+
+   Specificity, since it is what made the symptom odd-rows-only: the old selector was
+   (0,1,2) and out-ranked `.item`'s (0,1,0), so `.item`'s background lost on odd rows
+   and won on even ones. `.item:nth-of-type(odd)` is (0,2,0) — still winning, without
+   a type selector. */
+.item:nth-of-type(odd) {
+  background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
 }
 
 .JalnanGothic {
@@ -21,8 +44,4 @@
   justify-content: center;
   height: 100%;
   color: light-dark(var(--mantine-color-gray-6), var(--mantine-color-dark-1));
-}
-
-tbody tr:nth-of-type(odd) {
-  background: #f1f3f5; /* 원하는 회색 */
 }

@@ -1,49 +1,36 @@
-@font-face {
-    font-family: 'JalnanGothic';
-    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_231029@1.1/JalnanGothic.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-}
+/* This file is down to one rule.
 
-.longSelectBox {
-    position: relative;
-    text-align: center;
-    transition: transform 0.2s ease, background-color 0.5s ease, border-bottom 0.5s ease;
-    border: 3px black solid;
-    border-bottom: 9px rgb(42, 141, 222) solid;
-    background-color: lightskyblue;
-    border-radius: 5px;
-    width: 100%;
-    font-family: 'JalnanGothic';
-    font-size: large;
-    height: 70px;
-    -webkit-user-drag: none !important;
-    -khtml-user-drag: none !important;
-    -moz-user-drag: none !important;
-    -o-user-drag: none !important;
-}
+   REMOVED — the @font-face for JalnanGothic. It was a third copy of the block
+   src/styles/shared.module.css declares, and @font-face is global regardless of
+   CSS Modules, so the copies were not scoped to anything. Worse, two @font-face
+   rules for the same family/weight/style BOTH apply and the later one in source
+   order wins — and this copy lacked `font-display: swap`, so which behaviour was
+   in effect on `/` was decided by chunk ordering rather than by intent. Join.tsx
+   now imports shared.module.css and uses `shared.JalnanGothic`; that used binding
+   is what keeps the module (and therefore the face) from being tree-shaken.
 
-.longSelectBox:hover {
-    background-color: rgb(74, 118, 176);
-    border-bottom: 9px rgb(40, 40, 105) solid;
-}
+   REMOVED — `.Title` (font-family + text-align: center). shared.module.css has no
+   `.Title`; its equivalent is `.JalnanGothic`, which carries the family only, so
+   the centring moved to a `ta="center"` prop on the Title in Join.tsx.
 
-.selected {
-    background-color: rgb(69, 135, 220);
-    border-bottom: 6px navy solid;
-    transform: translateY(2px);
-}
+   REMOVED — `.longSelectBox`, `.longSelectBox:hover`, `.selected`,
+   `.selected:hover`. Four rules, ~30 of the file's 51 lines, referenced by
+   nothing: this module has exactly one importer (Join.tsx) and Join.tsx used
+   `classes` twice, for `.IconContainer` and `.Title`. They were NOT duplicates of
+   shared's `.selectBox` — different class name, different geometry (100% x 70px
+   at radius 5px, vs a 100x100 tile at radius 10%) — so they were deleted rather
+   than swapped for an import, which would have silently reshaped the control had
+   anything rendered it. Deleting them removed the last lightskyblue / navy /
+   rgb(42,141,222) literals from this file.
 
-.selected:hover {
-    background-color: rgb(74, 118, 176);
-    border-bottom: 6px rgb(40, 40, 105) solid;
-}
+   OPEN QUESTION recorded here rather than lost: shared.module.css's own
+   `.selectBox` / `.selected` / `.ButtonText` section has no consumers either, so
+   the same blue-tile UI is missing from both pages that were meant to render it.
+   If those tiles were supposed to exist, that is a lost feature, not dead CSS. */
 
-.Title {
-    font-family: 'JalnanGothic';
-    text-align: center;
-}
-
+/* Used by Join.tsx's back ActionIcon. `position: fixed` means it does not
+   participate in the centred flex layout, so the Flex in Join.tsx carries a
+   responsive top padding to keep the form clear of it on short viewports. */
 .IconContainer {
     position: fixed;
     left: 20px;

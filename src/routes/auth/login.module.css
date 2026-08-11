@@ -1,65 +1,138 @@
-@font-face {
-    font-family: 'JalnanGothic';
-    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_231029@1.1/JalnanGothic.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-}
+/* The one place the Color contract's BRAND EXCEPTION applies.
+   .Google / .Kakao / .Naver backgrounds do NOT invert — Google's guidelines
+   require the white/neutral button, and Kakao yellow and Naver green are
+   trademarked marks. Everything AROUND them has to adapt instead, and the
+   important consequence is that "adapt" here means "stay put", not "flip":
+   a fill that is bright in both schemes needs a foreground that is dark in
+   both schemes. Every scheme-independent value below is deliberate, and each
+   one carries the measurement that justifies it.
 
-.Title {
-    font-family: 'JalnanGothic';
-}
+   REMOVED — the @font-face for JalnanGothic and `.Title`. The face was a third
+   copy of shared.module.css's block (and, like join's, lacked font-display:
+   swap, so which behaviour applied on /login depended on chunk order). `.Title`
+   was character-for-character shared's `.JalnanGothic`. Login.tsx now imports
+   the shared module and uses that export — which is also what keeps the face
+   reachable for `.LoginButton`'s font-family below, since a CSS module import
+   with no used bindings is tree-shaken.
+
+   REMOVED — `.IconContainer`. It was dead: this module has exactly one importer
+   and Login.tsx has no back button. The live copy is join.module.css's. */
 
 .LoginButton {
-    /* Unlike the other transitions in this codebase, `all` was doing real work
-       here — `.LoginButton:hover` deliberately grows the button (width 104%,
-       height 53px, larger font) and lifts it. Those properties are kept, just
-       named explicitly so nothing ELSE silently joins the animation later. */
-    transition: width 0.3s, height 0.3s, font-size 0.3s, transform 0.3s, color 0.3s;
+    /* Named properties, and now a shorter list than before. The hover used to
+       animate width/height/font-size because it GREW the button; that growth is
+       gone (see .LoginButton:hover), so only the transform survives.
+
+       background-color is here on purpose. It is the only property the three
+       brand :hover rules change, and the earlier transition sweep's named list
+       omitted it, so those three snapped where they used to fade. It belongs on
+       this BASE rule — adding a second `transition` to each brand rule would
+       re-assert `transition-property: all` for as long as the pointer is over
+       the button, which is the bug the sweep existed to kill. background-color
+       is paint-only, so it cannot tween the layout box. */
+    transition: transform 0.3s, background-color 0.3s;
     cursor: pointer;
     width: 100%;
     height: 50px;
     border-radius: 5px;
-    border: 4px rgb(182, 182, 182) solid;
-    color: black;
+
+    /* Was `4px rgb(182,182,182) solid` — a light gray that vanished against a
+       light page AND against .Google's white fill, which is the bug.
+
+       This is deliberately var(--mantine-color-black) and NOT
+       var(--mantine-color-text), even though .selectBox's high-contrast outline
+       uses the latter. The precedent does not transfer, and the reason is
+       structural: .selectBox's fill is light-dark(blue-2, blue-9), so it inverts
+       and a text-colored outline stays opposed to it in both schemes. These
+       fills deliberately do not invert, so --mantine-color-text (#000 light,
+       #c9c9c9 dark) would go near-invisible in dark mode on all three:
+
+         border vs fill        light (#000)    dark (#c9c9c9)
+         .Google  white          21.0 : 1        1.66 : 1   FAIL
+         .Kakao   #FFDD00        15.6 : 1        1.23 : 1   FAIL
+         .Naver   rgb(44,223,44) 11.7 : 1        1.08 : 1   FAIL
+
+       A fixed black border clears 11.7:1 against every fill in both schemes.
+       It is low-contrast against the dark page itself, which is correct — the
+       bright fill is what separates the button from the page; this outline's
+       job is to edge the fill. */
+    border: 4px solid var(--mantine-color-black);
+
+    /* Same reasoning as the border, and this one the original prompt already
+       had right: intentionally NOT var(--mantine-color-text), which would
+       invert to near-white on a white Google button. Measured against the three
+       fills, identical in both schemes: 21.0 : 1, 15.6 : 1, 11.7 : 1. */
+    color: var(--mantine-color-black);
+
     text-align: center;
     font-family: 'JalnanGothic';
     font-size: 15px;
-}
-
-.LoginButton:hover {
-    color: white;
-    font-size: 17px;
-    width: 104%;
-    height: 53px;
-    transform: translate(0px, -5px);
 }
 
 .Google {
     background-color: white;
 }
 
-.Google:hover {
-    background-color: lightgray;
-}
-
 .Kakao {
     background-color: rgb(255, 221, 0);
 }
 
-.Kakao:hover {
-    background-color: rgb(167, 147, 0);
-}
-
+/* NOTE, reported not changed: this is not Naver's brand green, which is #03C75A.
+   Correcting a brand color is a product decision, not a migration one. */
 .Naver {
     background-color: rgb(44, 223, 44);
 }
 
-.Naver:hover {
-    background-color: rgb(11, 169, 11);
-}
+/* Every hover gated on a real hover-capable pointer — on touch, :hover sticks
+   after a tap and reads as a stuck selection.
 
-.IconContainer {
-    position: fixed;
-    left: 20px;
-    top: 20px;
+   HOVER CONTRACT CLASSIFICATION: all four rules below are SURFACE-ONLY (a
+   background tint plus a scale/lift). Nothing here is the sole reveal of a
+   label, and nothing is the sole signal that the element is clickable — the
+   labels are permanent text and `cursor: pointer` sits on the BASE rule above,
+   not in here. So these need gating and NO `@media (hover: none)` counterpart.
+   Stated explicitly rather than left implied, per the contract. */
+@media (hover: hover) and (pointer: fine) {
+    .LoginButton:hover {
+        /* No `transition` here: the base rule governs both directions, and a
+           duplicate would re-assert transition-property: all.
+
+           REMOVED `color: white`. It was an existing bug in LIGHT mode too, and
+           worse than reported — it failed on all three hover fills, not just
+           Google's, and Google's hover fill is lightgray rather than white:
+
+             hover fill                white      black
+             .Google  #D3D3D3          1.50:1     14.0:1
+             .Kakao   rgb(167,147,0)   3.12:1      6.74:1
+             .Naver   rgb(11,169,11)   3.14:1      6.69:1
+
+           The text is 17px here, so 4.5:1 applies and white misses on all
+           three. Black is the only value that clears them, which is what the
+           base rule already sets — so per-brand hover colors would have been
+           the same color written three times. Deleting the override is the fix.
+
+           REMOVED width: 104% / height: 53px / font-size: 17px. The button is
+           width: 100% inside a centred Stack, so 104% pushed 2% past each edge —
+           overflow currently swallowed by index.css's `overflow-x: clip`
+           backstop, which is scheduled for removal. scale() is composed INTO the
+           existing translate rather than added beside it: `transform` is a
+           single property, so a second declaration would replace the lift
+           instead of combining with it. */
+        transform: translate(0px, -5px) scale(1.02);
+    }
+
+    /* Was `lightgray`. Kept as a slight darkening, per the brand exception —
+       and deliberately NOT wrapped in light-dark(), which would make the hover
+       invert on a button whose base fill does not. */
+    .Google:hover {
+        background-color: var(--mantine-color-gray-3);
+    }
+
+    .Kakao:hover {
+        background-color: rgb(167, 147, 0);
+    }
+
+    .Naver:hover {
+        background-color: rgb(11, 169, 11);
+    }
 }

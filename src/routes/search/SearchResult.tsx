@@ -101,6 +101,31 @@ function SearchContent({ searchResult, searchParams }: { searchResult: ResultTyp
   // a SPA and SearchContent never appears in the prerendered shell.
   const isDesktopFilters = useMediaQuery(FROM_MD_QUERY, false, { getInitialValueInEffect: false })
   const [filtersOpen, setFiltersOpen] = useState(false)
+
+  // Carry the expanded state DOWN across the breakpoint, so that shrinking past
+  // 992px leaves the panel open instead of closing it.
+  //
+  // This is what removes the collapse animation on the way down, and it removes it
+  // at the source: `in` simply never changes at the boundary, so there is nothing to
+  // animate and nothing to suppress. The earlier attempt — zeroing the duration on
+  // the way down too — cannot work, because Collapse treats a zero duration on a
+  // CLOSED panel as an unmount and would discard any ticks the user had not yet
+  // submitted. Keeping the panel open is the same outcome without that cost, and it
+  // is arguably better behaviour anyway: nothing the user was looking at disappears
+  // because they resized a window.
+  //
+  // Adjusted during render, NOT in an effect. An effect would trip
+  // react-hooks/set-state-in-effect, and — worse — would also fire on a fresh mobile
+  // mount, opening the panel for every phone visitor. Comparing against the previous
+  // value is what confines this to an actual desktop -> mobile CROSSING. React
+  // discards this render and re-runs before committing, so `filtersExpanded` below is
+  // never observed in the intermediate state.
+  const [wasDesktopFilters, setWasDesktopFilters] = useState(isDesktopFilters)
+  if (wasDesktopFilters !== isDesktopFilters) {
+    setWasDesktopFilters(isDesktopFilters)
+    if (!isDesktopFilters) setFiltersOpen(true)
+  }
+
   const filtersExpanded = isDesktopFilters || filtersOpen
 
   const ITEMS_PER_PAGE = 10;
@@ -350,11 +375,14 @@ function SearchContent({ searchResult, searchParams }: { searchResult: ResultTyp
               - Do NOT add `keepMounted` to the Collapse. It keeps the closed panel at
                 height 0 but still focusable, putting five invisible checkboxes into
                 the mobile tab order.
-              - Do NOT set `transitionDuration={0}`, and do NOT enable
-                `theme.respectReducedMotion`. Collapse returns null when the resolved
-                duration is 0, which would silently drop all five fields from every
-                search. Mantine defaults respectReducedMotion to false and root.tsx
-                does not override it, so this is safe only by default.
+              - Do NOT set a BLANKET `transitionDuration={0}`, and do NOT enable
+                `theme.respectReducedMotion`. Collapse.mjs reads
+                  `if (duration === 0) return opened ? <Box>{children}</Box> : null`
+                so a zero duration on a CLOSED panel is a real unmount, silently
+                dropping all five fields from every search. Mantine defaults
+                respectReducedMotion to false and root.tsx does not override it, so
+                this is safe only by default. The conditional zero below is a
+                different thing — see the comment on the Collapse itself.
               - Do NOT swap Collapse for Accordion. AccordionPanel has no keepMounted
                 escape hatch and renders a Collapse internally, hitting the same branch.
 
@@ -378,7 +406,31 @@ function SearchContent({ searchResult, searchParams }: { searchResult: ResultTyp
               </Group>
             </UnstyledButton>
 
-            <Collapse in={filtersExpanded} id="search-filters">
+            {/* `in` carries two different meanings — a user tapping the disclosure, and
+                the viewport crossing 992px — and only the first should animate. Resizing
+                past the breakpoint used to spring the whole panel open.
+
+                Zero duration here does NOT contradict the rule above. Collapse returns
+                `null` only when the duration is 0 AND the panel is closed; `filtersExpanded &&`
+                makes that pair unreachable BY CONSTRUCTION rather than by relying on
+                `isDesktopFilters` implying `filtersExpanded` further up the file. Keep
+                both terms even though the second is currently redundant — the redundancy
+                is what survives an edit to `filtersExpanded`, and the failure it guards
+                against is invisible (the fields simply stop being submitted).
+
+                Verified: the checkboxes are NOT remounted when the duration flips. Both
+                Collapse branches render a Box at the same position, so React reuses the
+                DOM node and the uncontrolled inputs keep their values across a resize.
+
+                This handles the mobile -> desktop direction only. The other direction is
+                handled at the source, by the state carry-over next to `filtersOpen`
+                above: `in` never changes on the way down, so there is no animation to
+                suppress. BOTH mechanisms are load-bearing — remove either and the
+                animation returns in that one direction. */}
+            <Collapse
+              in={filtersExpanded}
+              transitionDuration={filtersExpanded && isDesktopFilters ? 0 : 200}
+              id="search-filters">
               <Stack w="100%" gap="md">
                 <Stack gap="xs" w="100%">
                   {/* color="white" iconColor="black" removed from all five: already low

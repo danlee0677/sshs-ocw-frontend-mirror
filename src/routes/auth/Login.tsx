@@ -1,5 +1,12 @@
 import { Flex, Stack, Title, UnstyledButton } from '@mantine/core'
 import { redirect, useLoaderData, type LoaderFunctionArgs } from 'react-router';
+/* Separate bindings, not a merged `classes` object — only one rule is needed
+   from the shared module. The import is also what keeps shared.module.css alive
+   on this route: a CSS module import with no used bindings is tree-shaken, and
+   `shared.JalnanGothic` below is what delivers the @font-face that both these
+   Titles and `.LoginButton`'s font-family depend on now that login.module.css
+   no longer declares its own copy. */
+import shared from '../../styles/shared.module.css'
 import classes from './login.module.css'
 import { z } from 'zod'
 import { http } from '../../libs/http';
@@ -35,15 +42,29 @@ function Login() {
 
   return (
     <>
-      <Flex h='100vh' w='100vw' justify={"center"} align={"center"}>
-        <Stack w='30vw' justify={"center"} align={"center"}>
-          <Title className={classes.Title}>SSHS TIPS</Title>
+      {/* mih, not h: a fixed height plus align/justify center pushes any overflow
+          above the container's top edge, where body scroll cannot reach it — and
+          the isNew branch below adds a long Korean title that wraps to several
+          lines on a phone. 100vw also included the desktop scrollbar width. */}
+      <Flex mih='100dvh' w='100%' justify={"center"} align={"center"} py="xl" px="md">
+        {/* Was w='30vw' — 96px at 320px, narrower than every one of the three
+            Korean button labels, and the single worst number in this file.
+            maw is not inert here: it binds across the 768–992px band, where
+            60% exceeds 480. No mx="auto" — the parent Flex already centres. */}
+        <Stack w={{ base: '100%', sm: '60%', md: 400 }} maw={480} justify={"center"} align={"center"}>
+          {/* shared.JalnanGothic replaces the local `.Title`, which was the same
+              single font-family declaration. */}
+          <Title className={shared.JalnanGothic} ta="center">SSHS TIPS</Title>
           {isNew ?
-            <Title order={4} className={classes.Title}>{username} 님, 연동하여 사용할 계정을 선택해 주세요</Title>
+            <Title order={4} className={shared.JalnanGothic} ta="center">{username} 님, 연동하여 사용할 계정을 선택해 주세요</Title>
             :
             <></>}
           <UnstyledButton className={`${classes.LoginButton} ${classes.Google}`} onClick={() => handleLogin("google")}>구글 계정으로 로그인</UnstyledButton>
-          <button className={`${classes.LoginButton} ${classes.Kakao}`} onClick={() => handleLogin("kakao")}>카카오 계정으로 로그인</button>
+          {/* Was a raw <button> between two UnstyledButtons carrying the same
+              three classes, so it missed Mantine's button reset and could render
+              subtly differently from its neighbours. No <Form> wraps these, so
+              there was never a submit hazard — this is consistency only. */}
+          <UnstyledButton className={`${classes.LoginButton} ${classes.Kakao}`} onClick={() => handleLogin("kakao")}>카카오 계정으로 로그인</UnstyledButton>
           <UnstyledButton className={`${classes.LoginButton} ${classes.Naver}`} onClick={() => handleLogin("naver")}>네이버 계정으로 로그인</UnstyledButton>
         </Stack>
       </Flex>

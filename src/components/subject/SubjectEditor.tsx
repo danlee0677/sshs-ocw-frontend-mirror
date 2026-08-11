@@ -157,7 +157,11 @@ function SubjectEditor({ mode, initialContent, userRole }: SubjectEditorProps) {
   const renderVerifyStep = () => (
     <Stack>
       <Text size="sm" ta="center">업로드하려는 이미지가 맞는지 확인하세요</Text>
-      <div style={{ position: 'relative', height: 250, width: '100%', background: '#f8f9fa', borderRadius: 8 }}>
+      {/* was `background: '#f8f9fa'` — gray-0, so a light slab behind the preview in
+          dark mode. A CSS variable, not light-dark(): light-dark() is a PostCSS
+          transform and never runs on an inline style, but `--mantine-color-default-hover`
+          is already resolved per scheme (gray-0 light / dark-5 dark) and is legal here. */}
+      <div style={{ position: 'relative', height: 250, width: '100%', background: 'var(--mantine-color-default-hover)', borderRadius: 8 }}>
         <Image
           src={previewURL}
           h={250} fit="contain"
