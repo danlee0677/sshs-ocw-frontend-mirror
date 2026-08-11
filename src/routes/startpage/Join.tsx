@@ -14,6 +14,8 @@ import { ActionIcon, Button, Flex, Loader, Stack, Text, TextInput, Title } from 
 import { IconArrowBack } from '@tabler/icons-react'
 import { useState } from 'react';
 import { useFetcher } from 'react-router';
+import { useMediaQuery } from '@mantine/hooks';
+import { TAP_TARGET, TOUCH_QUERY } from '../../libs/styles';
 
 interface JoinProps {
   setStep: React.Dispatch<React.SetStateAction<number>>;
@@ -27,6 +29,12 @@ export default function Join({ setStep, errorMessage }: JoinProps) {
   const isChecking = fetcher.state !== "idle";
   const isTaken = fetcher.data?.available === false && fetcher.data?.username === username;
   const localError = (isTaken ? fetcher.data.message : "");
+
+  // `undefined` on a mouse, 44 on a finger — see TOUCH_QUERY. The width fix in
+  // the comment below still stands; only the unconditional HEIGHT is gated.
+  const tapMin = useMediaQuery(TOUCH_QUERY, false, { getInitialValueInEffect: false })
+    ? TAP_TARGET
+    : undefined;
 
   const handleCheckAndSubmit = () => {
     if (username.length > 0) {
@@ -81,7 +89,7 @@ export default function Join({ setStep, errorMessage }: JoinProps) {
 
         {/* Was w='20%' — ~58px inside the 100%-wide mobile stack at 320px, under
             the 44px tap minimum and far narrower than its own label. */}
-        <Button w={{ base: '100%', sm: '40%' }} mih={44}
+        <Button w={{ base: '100%', sm: '40%' }} mih={tapMin}
           disabled={username.length === 0 || isTaken || isChecking}
           onClick={handleCheckAndSubmit}
         >다음</Button>

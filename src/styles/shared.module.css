@@ -114,14 +114,8 @@
     width: 60%;
 }
 
-.UndraggableImage {
-    -webkit-user-drag: none !important;
-    -khtml-user-drag: none !important;
-    -moz-user-drag: none !important;
-    -o-user-drag: none !important;
-    user-select: none !important;
-    pointer-events: none; /* 클릭까지 막고 싶으면 */
-}
+/* REMOVED — `.UndraggableImage`. It was the tile image's class and had no other
+   consumer; it goes with the selectable-tile block below. */
 
 /* ------------------------------------------------------------ raised surfaces */
 
@@ -165,83 +159,29 @@
    or renamed, `classes.Box2` becomes undefined SILENTLY — no build error, no
    lint error, just an unstyled element. */
 
-/* -------------------------------------------------------- selectable tiles */
+/* REMOVED — the selectable-tile block (`.selectBox`, `.selected`, `.ButtonText`,
+   their three hover rules and the `@media (hover: none)` label counterpart).
 
-/* Label color is set per CONTEXT, not per state, because the two contexts never
-   coexist on one device:
-     - hover-capable pointer: the label is only ever visible while hovering, so
-       it only needs to contrast with the HOVER fill (white on blue-8, 5.0:1).
-     - coarse pointer: there is no hover, so the label is always visible over the
-       BASE or SELECTED fill — which is what this base rule below covers.
-   Do not use var(--mantine-color-text) here. It resolves to #c9c9c9 in dark,
-   which lands at 3.7:1 on blue-9 and fails AA. Black/white is the only pair that
-   clears 4.5:1 against every fill these tiles use. */
-.ButtonText {
-    /* was: color: black */
-    color: light-dark(var(--mantine-color-black), var(--mantine-color-white));
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    font-size: 20px;
-    transform: translate(-50%, -40%);
-    pointer-events: none;
-    z-index: 1;
-    opacity: 0;
-    /* Named: opacity is the only thing the reveal animates. Unscoped, this also
-       tweened the label's layout box. */
-    transition: opacity 0.3s ease;
-    font-family: 'JalnanGothic';
-    -webkit-user-select: none; /* 크롬, 사파리 */
-    -moz-user-select: none;    /* 파이어폭스 */
-    -ms-user-select: none;     /* 구버전 IE/Edge */
-    user-select: none;
-}
+   These styled the onboarding interest picker: a 3x3 grid of six subject tiles
+   ("관심 있는 분야가 무엇인가요?") in NewUser.tsx, plus a course-level variant
+   (`.longSelectBox`, in join.module.css) on the next step. That feature was cut
+   deliberately in 8964474 "added username input & remove prefs" — the step was
+   REPLACED by a username TextInput, and 866d9f0 "remove images" deleted the six
+   PNGs nine minutes later. So this was dead code, not a lost edit: the rules
+   survived the feature by way of Prompt 4's extraction, which converted them for
+   dark mode without checking whether anything rendered them.
 
-/* The blue "toy button" tiles. Converted from lightskyblue / navy /
-   rgb(42,141,222) to the Mantine blue scale, preserving the 3D bottom-border
-   effect and the translateY press.
+   Two of them had already misled this migration — see the plan's AS SHIPPED
+   block for Prompt 18, where `.selectBox`'s outline was cited as a precedent for
+   the login buttons and did not transfer. The reasoning they carried (why a
+   touch counterpart must be re-derived against the base fill rather than copied
+   from the hover rule) is preserved in RESPONSIVE_PLAN.md's Hover contract,
+   which no longer points at this file. `.resultTitle` in search.module.css is
+   now the only live example of that pattern.
 
-   The 3px outline uses --mantine-color-text, NOT --mantine-color-default-border
-   as the color contract's generic "any border" row would suggest. That row is
-   about dividers and card edges; this is a deliberate high-contrast cartoon
-   outline, and default-border (a subtle gray) erases the effect entirely against
-   the blue fill. --mantine-color-text keeps the intent in both schemes: near
-   black on light, near white on dark. */
-.selectBox {
-    position: relative;
-    transition: transform 0.2s ease, background-color 0.5s ease, border-bottom 0.5s ease;
-    border: 3px solid var(--mantine-color-text);
-    border-bottom: 9px solid light-dark(var(--mantine-color-blue-6), var(--mantine-color-blue-4));
-    background-color: light-dark(var(--mantine-color-blue-2), var(--mantine-color-blue-9));
-    border-radius: 10%;
-    width: 100px;
-    height: 100px;
-    -webkit-user-drag: none !important;
-    -khtml-user-drag: none !important;
-    -moz-user-drag: none !important;
-    -o-user-drag: none !important;
-}
-
-.selected {
-    background-color: light-dark(var(--mantine-color-blue-5), var(--mantine-color-blue-8));
-    border-bottom: 6px solid light-dark(var(--mantine-color-blue-9), var(--mantine-color-blue-3));
-    transform: translateY(2px);
-}
-
-/* On a coarse pointer there is no hover, so the tile label would never appear at
-   all if it were only revealed on :hover. Reveal it unconditionally instead —
-   otherwise every one of these controls ships unlabelled on a phone, which the
-   plan's own definition of done forbids.
-
-   ONLY opacity is set here. Do NOT re-add a color override: without hover the
-   fill stays at its BASE value, and white on blue-2 is 1.5:1 — invisible, the
-   exact failure this block exists to prevent. The base rule's
-   light-dark(black, white) is already correct for both base and selected fills. */
-@media (hover: none) {
-    .ButtonText {
-        opacity: 1;
-    }
-}
+   Reviving the feature means new images, a User field to store the answer, and
+   new markup — at which point these rules come back from git history, not from
+   here. */
 
 /* All hover styling is gated on a real hover-capable pointer. On touch, :hover
    sticks after a tap and reads as a stuck selection. */
@@ -268,30 +208,9 @@
         display: inline-block;
     }
 
-    /* blue-8 in BOTH schemes, deliberately. The label that appears on hover is
-       white, and across Mantine's blue scale only blue-8 (5.0:1) and blue-9
-       (6.1:1) clear 4.5:1 against white — blue-7 is 4.2:1 and fails. blue-8 is
-       also the faithful mapping of the original hover fill rgb(74,118,176),
-       whose luminance (0.176) sits right next to blue-8's (0.159); the earlier
-       blue-4 mapping was far too light and had dropped this to 2.5:1.
-       Light darkens on hover (blue-2 → blue-8), dark lightens (blue-9 → blue-8):
-       both directions read as a state change, which is the point. */
-    .selectBox:hover {
-        background-color: var(--mantine-color-blue-8);
-        border-bottom: 9px solid light-dark(var(--mantine-color-blue-9), var(--mantine-color-blue-2));
-    }
-
-    /* In dark, `.selected` is already blue-8, so the fill cannot carry the hover
-       feedback here — the lightened bottom border does it instead. */
-    .selected:hover {
-        background-color: var(--mantine-color-blue-8);
-        border-bottom: 6px solid light-dark(var(--mantine-color-blue-9), var(--mantine-color-blue-2));
-    }
-
-    .selectBox:hover .ButtonText {
-        opacity: 1;
-        color: var(--mantine-color-white);
-    }
+    /* `.selectBox:hover`, `.selected:hover` and `.selectBox:hover .ButtonText`
+       were removed from here along with their base rules — see the note above
+       the selectable-tile block. */
 }
 
 /* ------------------------------------------------------------ speech bubble */

@@ -9,9 +9,17 @@
 import classes from '../../styles/shared.module.css'
 import { Button, Flex, Group, Image, Stack, Space, Text, Title } from "@mantine/core";
 import { Link } from 'react-router';
+import { useMediaQuery } from '@mantine/hooks';
+import { TAP_TARGET, TOUCH_QUERY } from '../../libs/styles';
 import logo from "@/assets/sshs.png"
 
 export default function NewUser({ setStep }: { setStep: React.Dispatch<React.SetStateAction<number>> }) {
+  // `undefined` on a mouse, 44 on a finger — see TOUCH_QUERY. This button is a
+  // full-width child of a Stack, so an unconditional 44 made it a slab.
+  const tapMin = useMediaQuery(TOUCH_QUERY, false, { getInitialValueInEffect: false })
+    ? TAP_TARGET
+    : undefined;
+
   return (
     /* mih, NOT h: four long Korean paragraphs overflow 100dvh well before 320px,
        and a fixed height plus align/justify center puts that overflow above the
@@ -69,7 +77,7 @@ export default function NewUser({ setStep }: { setStep: React.Dispatch<React.Set
               <Text component="span" fw={700} c="blue">지구과학: </Text>
               지구와 우주의 환경 및 변화 과정을 탐구하는 학문으로서, 고체 지구(지각 변동, 판구조론, 지구의 역사)와 유체 지구(대기와 해양의 순환, 일기와 기후 변화)를 중심으로 다룬다. 지구 시스템의 상호작용을 거쳐 태양계, 별의 진화, 은하 및 우주의 팽창을 탐구하는 천문학 영역까지 이어진다.
             </Text>
-            <Button variant="outline" mih={44} onClick={() => setStep((st) => (st + 1))}>시작하기</Button>
+            <Button variant="outline" mih={tapMin} onClick={() => setStep((st) => (st + 1))}>시작하기</Button>
             <Text className={classes.Text2}>이미 계정이 있으신가요? <Link to="/login" className={classes.Link}>로그인 하러 가기</Link></Text>
           </Stack>
         </Flex>

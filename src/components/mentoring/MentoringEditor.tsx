@@ -2,12 +2,12 @@ import { Form, useActionData, useNavigation } from "react-router";
 import MainPageAppshell from "../appshell/MainPageAppshell";
 import { useUserContext } from "../../root";
 
-import React, { useMemo, useCallback, type SetStateAction, useEffect, useState, useRef } from "react";
+import React, { useCallback, type SetStateAction, useEffect, useState, useRef } from "react";
 import {
   Button, Group, Stack, Textarea, Text, Paper, Modal,
   Image as ImageComponent, Loader, ThemeIcon, TextInput, Box, Anchor, ActionIcon, Divider,
   Combobox, PillsInput, Pill, CheckIcon, useCombobox,
-  ScrollArea,
+  ScrollArea, Flex,
 } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import { useEditor } from '@tiptap/react';
@@ -30,7 +30,8 @@ import '../../styles/proseMirror.css';
 import { type Mentoring, type MentoringFile } from "../../libs/types";
 
 import { uploadImage, PLACEHOLDER_MENTORING_MARKDOWN, PLACEHOLDER_MENTORING, useableTags } from "../../libs/utils";
-import { useDisclosure } from "@mantine/hooks";
+import { MOBILE_QUERY, TAP_TARGET, TOUCH_QUERY } from "../../libs/styles";
+import { useDisclosure, useElementSize, useMediaQuery } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone';
 import { IconCheck, IconPhoto, IconUpload, IconX } from "@tabler/icons-react";
@@ -38,12 +39,37 @@ import { IconCheck, IconPhoto, IconUpload, IconX } from "@tabler/icons-react";
 
 const lowlight = createLowlight(all);
 
+/**
+ * Debounce that cannot resurrect a draft the submit action just deleted.
+ * Twin of the hook in LessonEditor.tsx — read the full write-up there.
+ *
+ * Short version: `fn` is an inline arrow, so with `fn` in the useCallback deps
+ * the debouncer was a new function every render, which made the useEffect that
+ * depends on `debounceMetaSave` re-arm an 800ms timer on every render — and the
+ * pending timer was never cleared on unmount. So the timer armed by the renders
+ * that submitting itself causes fired after `clientAction` had already removed
+ * the keys, writing the draft back from a dead component. `hasCached` needs
+ * only one of the three keys to survive.
+ *
+ * Stable deps `[delay]`, newest `fn` in a ref (assigned in an effect, not
+ * during render), pending timer cleared on unmount.
+ */
 function useDebounce<T extends (...args: any[]) => void>(fn: T, delay: number) {
-  const timeout = useMemo<{ id: number | null }>(() => ({ id: null }), [])
+  const timeout = useRef<number | null>(null);
+  const latest = useRef(fn);
+
+  useEffect(() => {
+    latest.current = fn;
+  });
+
+  useEffect(() => () => {
+    if (timeout.current !== null) window.clearTimeout(timeout.current);
+  }, []);
+
   return useCallback((...args: Parameters<T>) => {
-    if (timeout.id) clearTimeout(timeout.id);
-    timeout.id = window.setTimeout(() => fn(...args), delay)
-  }, [fn, delay, timeout])
+    if (timeout.current !== null) window.clearTimeout(timeout.current);
+    timeout.current = window.setTimeout(() => latest.current(...args), delay);
+  }, [delay]);
 }
 
 function handleMarkdownChange(
@@ -70,9 +96,24 @@ function handleMarkdownChange(
   });
 }
 
-function EditorToolbar() {
+/**
+ * `stickyOffset` is MEASURED, not a constant. See the fuller note on the twin of
+ * this function in src/components/lesson/LessonEditor.tsx.
+ *
+ * This was `stickyOffset={60}`, and 60 was NOT a bug — it is the action bar's
+ * real one-row height to within the 1px border (a 36px default Button inside
+ * `<Box p="sm">`). The plan's instruction to "use HEADER_HEIGHT (56)" would have
+ * moved the toolbar 5px up, back underneath the bar: HEADER_HEIGHT is irrelevant
+ * here because AppShell.Header is `position: fixed` and AppShell.Main already
+ * carries the header offset as padding, so this scroll container starts below it.
+ *
+ * What 60 could not handle is that the bar WRAPS on a narrow viewport, and
+ * `stickyOffset` takes no responsive object. useElementSize reports the border
+ * box, so padding and border are already counted.
+ */
+function EditorToolbar({ stickyOffset }: { stickyOffset: number }) {
   return (
-    <RichTextEditor.Toolbar sticky stickyOffset={60}>
+    <RichTextEditor.Toolbar sticky stickyOffset={stickyOffset}>
       <RichTextEditor.ControlsGroup>
         <RichTextEditor.Bold />
         <RichTextEditor.Italic />
@@ -155,11 +196,40 @@ export default function MentoringEditor({
   const [createdByModalOpened, { open: openCreatedByModal, close: closeCreatedByModal }] = useDisclosure(false);
   const combobox = useCombobox();
 
+  // Measures the sticky action bar so the editor toolbar pins directly beneath
+  // it at every width — see EditorToolbar. `|| 60` covers the frame before the
+  // ResizeObserver first fires, and 60 is the one-row desktop height.
+  const { ref: barRef, height: barHeight } = useElementSize();
+
+  // Modal `fullScreen` is a plain boolean and `size` is not responsive, so a
+  // phone-only full-screen modal cannot be expressed in CSS. Sanctioned use of
+  // the hook: it computes a size, not whether a control exists.
+  const isPhone = useMediaQuery(MOBILE_QUERY, false, { getInitialValueInEffect: false });
+
+  // `undefined` on a mouse, 44 on a finger — see TOUCH_QUERY. A bare `mih={tapMin}`
+  // added 8px to every button over Mantine's 36px default on every device, and
+  // in a wrapping bar that is 8px per ROW. Pointer type, not width: a narrow
+  // desktop window is still a mouse; a wide tablet is not.
+  const tapMin = useMediaQuery(TOUCH_QUERY, false, { getInitialValueInEffect: false })
+    ? TAP_TARGET
+    : undefined;
+
   const actionData = useActionData<{ error?: string }>();
   const navigation = useNavigation();
   const isSubmitting = navigation.state !== "idle";
 
+  /*
+   * `isSubmitting` guards every write. Unmount cleanup alone does not close the
+   * race: the action clears the keys only after its `await http.post` resolves,
+   * so a timer armed shortly before the click can come due AFTER the delete but
+   * BEFORE the redirect unmounts anything.
+   *
+   * Not a one-way latch, deliberately — a rejected submit returns `{ error }`
+   * rather than redirecting, the author keeps editing, and autosave has to come
+   * back when `navigation.state` returns to idle.
+   */
   const debounceSave = useDebounce((json: any) => {
+    if (isSubmitting) return;
     try {
       localStorage.setItem(storageKey, JSON.stringify(json));
     } catch (err) {
@@ -168,6 +238,7 @@ export default function MentoringEditor({
   }, 800);
 
   const debounceMarkdownSave = useDebounce((md: string) => {
+    if (isSubmitting) return;
     try {
       localStorage.setItem(markdownStorageKey, md);
     } catch (err) {
@@ -176,6 +247,7 @@ export default function MentoringEditor({
   }, 800);
 
   const debounceMetaSave = useDebounce((meta: MentoringMetaCache) => {
+    if (isSubmitting) return;
     try {
       localStorage.setItem(metaStorageKey, JSON.stringify(meta));
     } catch (err) {
@@ -382,16 +454,25 @@ export default function MentoringEditor({
 
   const renderSelectStep = () => (
     <Stack>
+      {/* `mih`, not the previous `h={200}`: a hard height plus the caption and
+          the 취소 button overflows the modal on a landscape phone. */}
       <Dropzone
         onDrop={handleDrop}
         onReject={(f) => console.log('rejected files', f)}
         maxSize={3 * 1024 * 1024}
         accept={IMAGE_MIME_TYPE}
-        h={200}
+        mih={{ base: 120, sm: 200 }}
       >
-        <Group justify="center" gap="xl" style={{ minHeight: 200 }}>
-          <Dropzone.Accept><IconUpload size={50} stroke={1.5} color="var(--mantine-color-blue-6)" /></Dropzone.Accept>
-          <Dropzone.Reject><IconX size={50} stroke={1.5} color="var(--mantine-color-red-6)" /></Dropzone.Reject>
+        <Group justify="center" gap="xl" mih={{ base: 120, sm: 200 }}>
+          {/* No `color` on either icon: Mantine's Dropzone already sets
+              `--dropzone-accept-color` / `--dropzone-reject-color` on its own
+              root per state and per scheme, and Tabler icons stroke in
+              `currentColor`. The old blue-6 / red-6 were tokens (so the Color
+              contract's grep passed them) but numbered shades do not step with
+              primaryShade { light: 6, dark: 4 } the way every other accent does
+              — and they were overriding a value Mantine had already got right. */}
+          <Dropzone.Accept><IconUpload size={50} stroke={1.5} /></Dropzone.Accept>
+          <Dropzone.Reject><IconX size={50} stroke={1.5} /></Dropzone.Reject>
           <Dropzone.Idle><IconPhoto size={50} stroke={1.5} /></Dropzone.Idle>
           <div style={{ textAlign: 'center' }}>
             <Text size="xl" inline>이미지를 드래그하거나 클릭해서 선택하세요!</Text>
@@ -406,7 +487,11 @@ export default function MentoringEditor({
   const renderVerifyStep = () => (
     <Stack>
       <Text size="sm" ta="center">업로드하려는 이미지가 맞는지 확인하세요</Text>
-      <div style={{ position: 'relative', height: 250, width: '100%', background: '#f8f9fa', borderRadius: 8 }}>
+      {/* was `background: '#f8f9fa'` — gray-0, so a light slab behind the preview in
+          dark mode. A CSS variable, not light-dark(): light-dark() is a PostCSS
+          transform and never runs on an inline style, but `--mantine-color-default-hover`
+          is already resolved per scheme (gray-0 light / dark-5 dark) and is legal here. */}
+      <div style={{ position: 'relative', height: 250, width: '100%', background: 'var(--mantine-color-default-hover)', borderRadius: 8 }}>
         <ImageComponent src={previewURL} h={250} fit="contain" style={{ borderRadius: 8 }} />
       </div>
       <Group grow mt="md">
@@ -444,6 +529,12 @@ export default function MentoringEditor({
   if (!user) return null;
 
   return (
+    /* No <Container> cap, deliberately — an exception to Definition of done item
+       5 rather than an oversight, matching LessonEditor and SubjectEditor. The
+       sticky action bar spans the full width, so capping only the content
+       detaches the bar from what it acts on, and the markdown/preview split is
+       the one place where extra width is functional. Recorded so Prompt 24 does
+       not "fix" it. */
     <MainPageAppshell>
       <ScrollArea w="100%" h="100%">
         <Modal
@@ -453,6 +544,7 @@ export default function MentoringEditor({
           withCloseButton={false}
           closeOnClickOutside={false}
           centered
+          fullScreen={isPhone}
         >
           <Text>이전에 작성하던 초안을 불러오시겠습니까?</Text>
           <Group mt="md" justify="flex-end">
@@ -492,6 +584,7 @@ export default function MentoringEditor({
           title="Upload Image"
           centered
           size="lg"
+          fullScreen={isPhone}
           closeOnClickOutside={activeStep !== 'uploading'}
           withCloseButton={activeStep !== 'uploading'}
         >
@@ -501,10 +594,15 @@ export default function MentoringEditor({
           {activeStep === 'success' && renderSuccessStep()}
         </Modal>
 
-        <Modal opened={youtubeOpened} onClose={handleYoutubeClose} title="Upload Youtube" centered size="lg">
+        <Modal opened={youtubeOpened} onClose={handleYoutubeClose} title="Upload Youtube" centered size="lg" fullScreen={isPhone}>
           {renderYoutubeInsertion()}
         </Modal>
 
+        {/* These last two are deliberately NOT `fullScreen={isPhone}`, unlike the
+            three above. They hold one or two text fields and a button; a
+            full-screen sheet for that is mostly empty space. The image, youtube
+            and draft modals get it because they carry a 200px Dropzone, a 250px
+            preview or a body of prose that genuinely does not fit windowed. */}
         <Modal opened={createdByModalOpened} onClose={closeCreatedByModal} title="멘토 추가" centered>
           <Stack>
             <TextInput
@@ -547,7 +645,12 @@ export default function MentoringEditor({
         />
 
         <Form method={mode === "create" ? "post" : "patch"} action="/action/mentoring/submit" style={{ width: '100%' }}>
+          {/* The action bar is deliberately allowed to WRAP rather than scroll
+              horizontally or hide controls behind a Menu. Its height is measured
+              (barRef) so the editor toolbar below pins beneath it whatever the
+              width; see EditorToolbar. */}
           <Box
+            ref={barRef}
             style={{
               position: 'sticky',
               top: 0,
@@ -557,19 +660,21 @@ export default function MentoringEditor({
             }}
             p="sm"
           >
-            <Group justify="space-between">
-              <Group gap="sm">
-                <Button type="button" onClick={() => handleMarkdownChange(isMarkdown, setIsMarkdown, setMarkdown, getEditorAsMarkdown)}>
+            <Group justify="space-between" w="100%" wrap="wrap" gap="sm">
+              {/* Full width below `sm` so the submit button drops onto its own
+                  row instead of being squeezed against the right edge. */}
+              <Group gap="sm" wrap="wrap" w={{ base: '100%', sm: 'auto' }}>
+                <Button type="button" mih={tapMin} onClick={() => handleMarkdownChange(isMarkdown, setIsMarkdown, setMarkdown, getEditorAsMarkdown)}>
                   {isMarkdown ? "에디터 모드로" : "마크다운 모드로"}
                 </Button>
-                {isMarkdown && <Button type="button" onClick={parseMarkdown}>마크다운 컴파일</Button>}
+                {isMarkdown && <Button type="button" mih={tapMin} onClick={parseMarkdown}>마크다운 컴파일</Button>}
                 {isMarkdown && (
-                  <Button type="button" onClick={() => setMarkdown(getEditorAsMarkdown())}>에디터를 마크다운으로</Button>
+                  <Button type="button" mih={tapMin} onClick={() => setMarkdown(getEditorAsMarkdown())}>에디터를 마크다운으로</Button>
                 )}
-                <Button type="button" onClick={handleYoutubeOpen}>유튜브 영상 추가</Button>
-                <Button type="button" onClick={handleOpenModal}>이미지 추가</Button>
+                <Button type="button" mih={tapMin} onClick={handleYoutubeOpen}>유튜브 영상 추가</Button>
+                <Button type="button" mih={tapMin} onClick={handleOpenModal}>이미지 추가</Button>
               </Group>
-              <Button type="submit" loading={isSubmitting}>
+              <Button type="submit" mih={tapMin} w={{ base: '100%', sm: 'auto' }} loading={isSubmitting}>
                 {mode === "create" ? "멘토링 생성" : "멘토링 수정"}
               </Button>
             </Group>
@@ -657,8 +762,11 @@ export default function MentoringEditor({
             </Combobox>
 
             {isMarkdown ? (
-              <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-                <Paper withBorder style={{ flex: 1 }}>
+              /* Was a raw `display: flex` div that never stacked: at 360px the two
+                 `flex: 1` panes got ~172px each. Stacks below `md`, side by side
+                 from `md` up. */
+              <Flex direction={{ base: 'column', md: 'row' }} gap="md" align="flex-start" w="100%">
+                <Paper withBorder style={{ flex: 1 }} w="100%">
                   <Textarea
                     ref={markdownRef}
                     value={markdown}
@@ -672,18 +780,21 @@ export default function MentoringEditor({
                     variant="unstyled"
                   />
                 </Paper>
-                <Divider orientation="vertical" style={{ alignSelf: 'stretch' }} />
-                <Paper withBorder style={{ flex: 1 }}>
+                {/* `orientation` is not a responsive prop, and a vertical rule inside
+                    a column flex collapses to zero width. Both panes are
+                    `Paper withBorder`, so stacked they are already separated. */}
+                <Divider orientation="vertical" visibleFrom="md" style={{ alignSelf: 'stretch' }} />
+                <Paper withBorder style={{ flex: 1 }} w="100%">
                   <RichTextEditor editor={editor} style={{ minHeight: 400 }}>
-                    <EditorToolbar />
+                    <EditorToolbar stickyOffset={barHeight || 60} />
                     <RichTextEditor.Content />
                   </RichTextEditor>
                 </Paper>
-              </div>
+              </Flex>
             ) : (
               <Paper withBorder>
                 <RichTextEditor editor={editor} style={{ minHeight: 400 }}>
-                  <EditorToolbar />
+                  <EditorToolbar stickyOffset={barHeight || 60} />
                   <RichTextEditor.Content />
                 </RichTextEditor>
               </Paper>
@@ -696,12 +807,22 @@ export default function MentoringEditor({
               </Group>
               {createdBy.length === 0 && <Text c="dimmed" size="sm">등록된 멘토가 없습니다.</Text>}
               {createdBy.map((id, i) => (
-                <Group key={i} justify="space-between" gap="xs">
-                  <Text size="sm">{id}</Text>
+                <Group key={i} justify="space-between" gap="xs" wrap="nowrap">
+                  {/* `flex: 1; minWidth: 0` + truncate: a flex item's min-width is
+                      `auto` by default, so without this a long user id refuses to
+                      shrink and pushes the delete button off the right edge. The
+                      첨부 파일 Anchor below already had the equivalent. */}
+                  <Text size="sm" truncate style={{ flex: 1, minWidth: 0 }}>{id}</Text>
+                  {/* size 44 for the tap-target rule — this deletes data, and the
+                      `subtle` default is 28px. `flexShrink: 0` because index.css's
+                      fluid-media rule deliberately excludes `svg`, so nothing else
+                      holds the icon at size. */}
                   <ActionIcon
                     variant="subtle"
                     color="red"
                     type="button"
+                    size={tapMin}
+                    style={{ flexShrink: 0 }}
                     onClick={() => removeCreatedBy(i)}
                   >
                     <IconX size={14} />
@@ -718,17 +839,20 @@ export default function MentoringEditor({
               {files.length === 0 && (
                 <Text c="dimmed" size="sm">첨부된 파일이 없습니다.</Text>
               )}
-              {files.map((file, i) => (
-                <Group key={i} justify="space-between" gap="xs">
+              {/* `attachment`, not `file`: the parameter used to shadow the
+                  `const [file, setFile] = useState<File | null>` above, so two
+                  unrelated types shared one name in one scope. Nothing warned. */}
+              {files.map((attachment, i) => (
+                <Group key={i} justify="space-between" gap="xs" wrap="nowrap">
                   <Anchor
-                    href={file.url}
+                    href={attachment.url}
                     target="_blank"
                     size="sm"
-                    style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                    style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                   >
-                    {file.name}
+                    {attachment.name}
                   </Anchor>
-                  <ActionIcon variant="subtle" color="red" type="button" onClick={() => removeFile(i)}>
+                  <ActionIcon variant="subtle" color="red" type="button" size={tapMin} style={{ flexShrink: 0 }} onClick={() => removeFile(i)}>
                     <IconX size={14} />
                   </ActionIcon>
                 </Group>

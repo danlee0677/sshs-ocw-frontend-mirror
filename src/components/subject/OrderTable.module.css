@@ -1,9 +1,15 @@
-@font-face {
-    font-family: 'JalnanGothic';
-    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_231029@1.1/JalnanGothic.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-}
+/* The JalnanGothic @font-face block that used to head this file is DELETED.
+
+   src/styles/shared.module.css declares the identical face WITH
+   `font-display: swap`, and @font-face is global. Two declarations for one
+   family both apply and the later in source order wins, so whether this page
+   got `swap` depended on chunk ordering — a difference no build check reports.
+
+   Safe to delete rather than defer to Prompt 23's font sweep: the only route
+   that renders `.JalnanGothic` from this module is /subject/:id/edit, and
+   SubjectEditor.tsx already imports shared.module.css directly, so the face is
+   always defined wherever this class is used. The `.JalnanGothic` rule below
+   stays — only the declaration went. */
 
 .item {
   background-color: var(--mantine-color-body);
@@ -38,10 +44,28 @@
 }
 
 .dragHandle {
-  width: 40px;
+  /* 44px, not the previous 40px width: this is the drag activator and it has to
+     clear the tap-target rule. */
+  min-width: 44px;
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   height: 100%;
   color: light-dark(var(--mantine-color-gray-6), var(--mantine-color-dark-1));
+
+  /* LOAD-BEARING for touch, and the reason reordering does not work on a phone
+     today. dnd-kit's `useSortable` attributes carry only role / tabIndex /
+     aria-*; they do NOT set touch-action, and the docs require the activator to
+     set it. Without it the browser claims a vertical touch-drag as a scroll
+     gesture and fires `pointercancel`, which PointerSensor treats as an abort —
+     so the drag never starts.
+
+     This is why NO TouchSensor was added. PointerSensor activates on
+     `onPointerDown`, which fires for touch too, so registering a TouchSensor
+     alongside it would lose the race every time and its activation delay would
+     never apply. One CSS declaration on the handle fixes the real cause; the
+     listeners are already handle-scoped, so nothing outside these 44px is
+     affected and the rest of the row still scrolls normally. */
+  touch-action: none;
 }

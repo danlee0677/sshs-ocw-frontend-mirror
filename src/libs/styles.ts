@@ -97,6 +97,30 @@ export const TABLET_QUERY = `(max-width: ${BREAKPOINTS.md})` as const;
  * persisting at >= 768px; that effect is load-bearing for correctness, not just
  * for tidiness.
  */
+/**
+ * Is the PRIMARY pointing device coarse (a finger) rather than fine (a mouse or
+ * trackpad)? The only query here that is not about width.
+ *
+ * WHAT IT IS FOR. The 44px tap-target floor is an ergonomic rule about
+ * fingertips, not a layout rule. Applying it unconditionally inflates every
+ * button by 8px (Mantine's default Button is 36px) on machines that never
+ * needed it, and the cost is not paid once: in a wrapping toolbar it is 8px per
+ * ROW, so a bar that wraps to four rows on a narrow window grows by 32px of
+ * dead space and pushes the editor down with it. Gate the floor on this instead.
+ *
+ * `pointer`, NOT `any-pointer`. `pointer` describes the primary input; a laptop
+ * with a touchscreen reports `fine` because its trackpad is what is normally
+ * used, and that is the answer we want — `any-pointer: coarse` matches there too
+ * and would re-inflate the toolbar for the majority of that machine's use.
+ *
+ * Sizing only. This must never decide whether a control is RENDERED — same rule
+ * as the width queries above, and for the same reason.
+ */
+export const TOUCH_QUERY = `(pointer: coarse)` as const;
+
+/** The tap-target floor in px, for use with TOUCH_QUERY. */
+export const TAP_TARGET = 44;
+
 export const FROM_SM_QUERY = `(min-width: ${BREAKPOINTS.sm})` as const;
 export const FROM_MD_QUERY = `(min-width: ${BREAKPOINTS.md})` as const;
 export const FROM_LG_QUERY = `(min-width: ${BREAKPOINTS.lg})` as const;

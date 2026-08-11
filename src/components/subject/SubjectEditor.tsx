@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button, Stack, TextInput, Flex, Title, Image, Group, Text, Loader, ThemeIcon, Modal, ScrollArea, Space, Box, PillsInput, Pill, Combobox, useCombobox, CheckIcon, Switch } from "@mantine/core";
-import { useDisclosure, useListState } from "@mantine/hooks";
+import { useDisclosure, useListState, useMediaQuery } from "@mantine/hooks";
+import { MOBILE_QUERY, TAP_TARGET, TOUCH_QUERY } from "../../libs/styles";
 import { type Subject } from "../../libs/types";
 import { isUser, PLACEHOLDER_SUBJECT, uploadImage, useableTags } from "../../libs/utils";
 import OrderTable from "./OrderTable";
@@ -41,6 +42,29 @@ function SubjectEditor({ mode, initialContent, userRole }: SubjectEditorProps) {
   // for modal for uploading files
   const [activeStep, setActiveStep] = useState<'select' | 'verify' | 'uploading' | 'success'>('select');
   const [previewURL, setPreviewURL] = useState<string | null>(null);
+
+  /*
+   * `fullScreen` on Modal is a plain boolean — NOT a responsive prop object,
+   * and `size` is not responsive either, so a phone-only full-screen modal
+   * cannot be expressed in CSS from here. This is the "JS must compute a value
+   * from width" row of the decision rule in src/libs/styles.ts: it computes a
+   * size, it does not decide whether a control exists.
+   *
+   * `getInitialValueInEffect: false` reads matchMedia synchronously on first
+   * render, so the modal does not open windowed and snap to full-screen. Safe
+   * below root.tsx — this is a SPA and nothing here is in the prerendered shell.
+   */
+  const isPhone = useMediaQuery(MOBILE_QUERY, false, { getInitialValueInEffect: false });
+
+  /*
+   * `undefined` on a mouse, 44 on a finger — see TOUCH_QUERY. A bare `mih={tapMin}`
+   * forced every button 8px past Mantine's 36px default on every device, which
+   * reads as a heavy, oversized button with a mouse. The floor is about
+   * fingertips, so gate it on the pointer rather than applying it always.
+   */
+  const tapMin = useMediaQuery(TOUCH_QUERY, false, { getInitialValueInEffect: false })
+    ? TAP_TARGET
+    : undefined;
 
   // for tag selection
   const combobox = useCombobox({
@@ -121,19 +145,39 @@ function SubjectEditor({ mode, initialContent, userRole }: SubjectEditorProps) {
 
   const renderSelectStep = () => (
     <Stack>
+      {/* `mih`, not the previous `h={200}`: a hard height plus the caption and
+          the 취소 button overflows the modal on a landscape phone. */}
       <Dropzone
         onDrop={handleDrop}
         onReject={(files) => console.log('rejected files', files)}
         maxSize={3 * 1024 * 1024}
         accept={IMAGE_MIME_TYPE}
-        h={200}
+        mih={{ base: 120, sm: 200 }}
       >
-        <Group justify="center" gap="xl" style={{ minHeight: 200 }} >
+        <Group justify="center" gap="xl" mih={{ base: 120, sm: 200 }} >
+          {/*
+            * No `color` prop on either icon — deliberately.
+            *
+            * Mantine's Dropzone already sets `color` on its own root in the
+            * accept and reject states (`--dropzone-accept-color` /
+            * `--dropzone-reject-color`, resolved through variantColorResolver
+            * at the default `variant="light"`), and those follow the color
+            * scheme. Tabler icons stroke in `currentColor`, so inheriting is
+            * both correct per scheme and correct if `acceptColor`/`variant`
+            * ever change.
+            *
+            * The old `var(--mantine-color-blue-6)` / `red-6` were tokens, so
+            * the Color contract's literal grep passed them — but a numbered
+            * shade does not step with the scheme the way primaryShade
+            * { light: 6, dark: 4 } makes every other accent step. Same defect
+            * Prompt 16 found on IconFile, except here the props were also
+            * overriding a value Mantine had already got right.
+            */}
           <Dropzone.Accept>
-            <IconUpload size={50} stroke={1.5} color="var(--mantine-color-blue-6)" />
+            <IconUpload size={50} stroke={1.5} />
           </Dropzone.Accept>
           <Dropzone.Reject>
-            <IconX size={50} stroke={1.5} color="var(--mantine-color-red-6)" />
+            <IconX size={50} stroke={1.5} />
           </Dropzone.Reject>
           <Dropzone.Idle>
             <IconPhoto size={50} stroke={1.5} />
@@ -204,9 +248,33 @@ function SubjectEditor({ mode, initialContent, userRole }: SubjectEditorProps) {
   if (!isUser(user)) return null;
 
   return (
-    <ScrollArea h="100%" w="100%">
-      <MainPageAppshell>
+    /*
+     * The ScrollArea goes INSIDE MainPageAppshell. It used to wrap it, and that
+     * was a real defect, not a style preference: AppShell.Main is
+     * `height: 100dvh; overflow: hidden`, so with the only scroller outside the
+     * shell nothing inside Main could scroll — a subject with more lessons than
+     * fit the viewport had its list simply unreachable. The outer ScrollArea did
+     * not save it either: this app renders straight into <body> (Layout emits
+     * <html><body>, there is no #root), and body carries only
+     * `min-height: 100dvh`, so that ScrollArea's own `h="100%"` resolved to
+     * `auto` and it never scrolled.
+     *
+     * This is the scroll-container invariant under Definition of done: exactly
+     * one page-level ScrollArea, directly wrapping the page content, inside
+     * Main. Counting <ScrollArea> tokens per file cannot catch the inverted
+     * case — which is why this page was recorded as compliant.
+     *
+     * No <Container>: see the comment on the Box below.
+     */
+    <MainPageAppshell>
+      <ScrollArea h="100%" w="100%">
         <Form action="/action/subject/submit" method={mode === "edit" ? "patch" : "post"}>
+          {/* No <Container> cap here, deliberately, and this is an exception to
+              Definition of done item 5 rather than an oversight. The editors are
+              authoring surfaces: the create/edit forms sit beside a lesson table
+              that already has its own ScrollContainer, and capping the content at
+              1200 while the page chrome runs full width reads as a detached
+              column. Recorded so Prompt 24's sweep does not "fix" it. */}
           <Box w="100%" h="100%" p="md">
             {/* hidden inputs */}
             <input type="hidden" name="subjectId" value={initialContent?._id || ""} />
@@ -216,22 +284,40 @@ function SubjectEditor({ mode, initialContent, userRole }: SubjectEditorProps) {
 
             {
               mode === "edit" && initialContent ? // edit
-                <Flex w={'100%'} justify={'center'} gap={'md'}>
+                /* The error moved OUT of the Flex. As a direct child of a row
+                   flex container it rendered as a third COLUMN beside the two
+                   content columns rather than as a message above them, stealing
+                   horizontal space from both exactly when the submit had
+                   failed. */
+                <Stack w="100%" gap="md">
                   {actionData?.error && (
-                    <Text c="red" ta="center" fw="bold" mb="sm">{actionData.error}</Text>
+                    <Text c="red" ta="center" fw="bold">{actionData.error}</Text>
                   )}
-                  <Stack w="30%" gap="xs" align="center">
-                    <Image w={'160px'} src={imageUrl || PLACEHOLDER_SUBJECT.image_url}></Image>
+                  {/* `direction` responsive rather than a fixed row: at 320px the
+                      30/50 split gave the left column 96px. `justify="center"` is
+                      gone — on a column axis it centres the wrong thing, and the
+                      columns now sum to the full width on their own.
+                      `align` must be flex-start on the row axis or Flex stretches
+                      both columns to the taller one, dragging the image column's
+                      controls down; the same fix Defect A needed on SubjectViewer. */}
+                  <Flex
+                    w="100%"
+                    direction={{ base: 'column', md: 'row' }}
+                    align={{ base: 'stretch', md: 'flex-start' }}
+                    gap="md"
+                  >
+                  <Stack w={{ base: '100%', md: '30%' }} gap="xs" align="center">
+                    <Image w={{ base: 120, sm: 160 }} src={imageUrl || PLACEHOLDER_SUBJECT.image_url}></Image>
                     { user.roles.includes('admin') && <Group>
                         <Switch defaultChecked={initialContent?.teacher_certified || false} name="teacher_certified" />
                         <Text>Teacher Certified</Text>
                       </Group>}
                     {(userRole === 'admin' || userRole === 'owner') && (
-                      <Button type="button" component={Link} variant="outline" to={`/subject/${initialContent._id}/access`}>
+                      <Button type="button" component={Link} variant="outline" mih={tapMin} to={`/subject/${initialContent._id}/access`}>
                         권한 관리
                       </Button>
                     )}
-                    <Button type="button" variant="outline" onClick={handleOpenModal}>대표 이미지 변경</Button>
+                    <Button type="button" variant="outline" mih={tapMin} onClick={handleOpenModal}>대표 이미지 변경</Button>
 
                     <Modal
                       opened={opened}
@@ -239,6 +325,7 @@ function SubjectEditor({ mode, initialContent, userRole }: SubjectEditorProps) {
                       title="Upload Image"
                       centered
                       size="lg"
+                      fullScreen={isPhone}
                       closeOnClickOutside={activeStep !== 'uploading'}
                       withCloseButton={activeStep !== 'uploading'}
                     >
@@ -280,24 +367,31 @@ function SubjectEditor({ mode, initialContent, userRole }: SubjectEditorProps) {
                       </Combobox.Dropdown>
                     </Combobox>
                   </Stack>
-                  <Stack w={'50%'} h={'100%'} gap={0} align="center">
+                  {/* `h="100%"` dropped: the parent no longer has a definite
+                      height, so a percentage height resolved to `auto` anyway —
+                      it read as a constraint that did not exist. */}
+                  <Stack w={{ base: '100%', md: '50%' }} gap={0} align="center">
                     <Title order={2} className={classes.JalnanGothic} m={"xl"}>목록</Title>
 
                     <OrderTable state={state} handlers={handlers} navigate={navigate} subjectId={initialContent._id} />
 
-                    <Group>
-                      <Button type="button" component={Link} variant="outline" to={`/lesson/create?subjectId=${initialContent._id}`} >새 강의 생성</Button>
-                      <Button loading={isSubmitting} type="submit" variant="outline" >과목 수정</Button>
+                    <Group w="100%" justify="center" wrap="wrap">
+                      <Button type="button" component={Link} variant="outline" mih={tapMin} w={{ base: '100%', xs: 'auto' }} to={`/lesson/create?subjectId=${initialContent._id}`} >새 강의 생성</Button>
+                      <Button loading={isSubmitting} type="submit" variant="outline" mih={tapMin} w={{ base: '100%', xs: 'auto' }} >과목 수정</Button>
                     </Group>
                     <Space h="sm" />
                   </Stack>
-                </Flex>
+                  </Flex>
+                </Stack>
                 : // create
-                <Flex w="100%" h="100%" justify="center">
+                /* Create mode was not addressed by any prompt. Same error-as-a-
+                   flex-column bug, and `w="50%"` of an uncapped viewport meant
+                   160px of title field at 320px and 960px at 1920. */
+                <Stack w="100%" gap="md" align="center">
                   {actionData?.error && (
-                    <Text c="red" ta="center" fw="bold" mb="sm">{actionData.error}</Text>
+                    <Text c="red" ta="center" fw="bold">{actionData.error}</Text>
                   )}
-                  <Stack gap="md" w="50%">
+                  <Stack gap="md" w={{ base: '100%', sm: '80%', md: '50%' }} maw={600}>
                     <input type="hidden" value="false" name="teacher_certified" readOnly/>
                     <Title order={3}>과목 이름 입력</Title>
                     <TextInput placeholder="과목 이름을 입력하세요(예: 일반물리학)"
@@ -335,15 +429,15 @@ function SubjectEditor({ mode, initialContent, userRole }: SubjectEditorProps) {
                       </Combobox.Dropdown>
                     </Combobox>
 
-                    <Button type="submit" loading={isSubmitting} >과목 생성</Button>
+                    <Button type="submit" loading={isSubmitting} mih={tapMin} >과목 생성</Button>
                     <Space h="sm" />
                   </Stack>
-                </Flex>
+                </Stack>
             }
           </Box>
         </Form>
-      </MainPageAppshell>
-    </ScrollArea>
+      </ScrollArea>
+    </MainPageAppshell>
   )
 }
 

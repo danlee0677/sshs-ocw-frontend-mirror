@@ -23,10 +23,13 @@
    anything rendered it. Deleting them removed the last lightskyblue / navy /
    rgb(42,141,222) literals from this file.
 
-   OPEN QUESTION recorded here rather than lost: shared.module.css's own
-   `.selectBox` / `.selected` / `.ButtonText` section has no consumers either, so
-   the same blue-tile UI is missing from both pages that were meant to render it.
-   If those tiles were supposed to exist, that is a lost feature, not dead CSS. */
+   RESOLVED — the open question this comment used to raise. Both halves of the
+   blue-tile UI were dead because the FEATURE was cut deliberately, not lost:
+   8964474 "added username input & remove prefs" replaced the picker with a
+   username TextInput, and 866d9f0 "remove images" deleted the six subject PNGs.
+   `.longSelectBox` here was the course-level step; shared.module.css's
+   `.selectBox` section was the subject-tile step, and it has since been deleted
+   too. Nothing is missing from either page. */
 
 /* Used by Join.tsx's back ActionIcon. `position: fixed` means it does not
    participate in the centred flex layout, so the Flex in Join.tsx carries a

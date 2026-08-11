@@ -2,8 +2,8 @@ import { Form, useActionData, useNavigation } from "react-router";
 import MainPageAppshell from "../appshell/MainPageAppshell";
 import { useUserContext } from "../../root";
 
-import React, { useMemo, useCallback, type SetStateAction, useEffect, useState, useRef } from "react";
-import { Button, Group, ScrollArea, Stack, Textarea, Text, Divider, Paper, Modal, Image as ImageComponent, Loader, ThemeIcon, TextInput, Switch, Box } from "@mantine/core";
+import React, { useCallback, type SetStateAction, useEffect, useState, useRef } from "react";
+import { Button, Group, ScrollArea, Stack, Textarea, Text, Divider, Paper, Modal, Image as ImageComponent, Loader, ThemeIcon, TextInput, Switch, Box, Flex } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import { useEditor } from '@tiptap/react'
 import { RichTextEditor, Link } from '@mantine/tiptap'
@@ -30,19 +30,64 @@ import '../../styles/proseMirror.css'
 import { type Lesson } from "../../libs/types";
 
 import { uploadImage, PLACEHOLDER_MARKDOWN, PLACEHOLDER_LESSON } from "../../libs/utils";
-import { useDisclosure } from "@mantine/hooks";
+import { MOBILE_QUERY, TAP_TARGET, TOUCH_QUERY } from "../../libs/styles";
+import { useDisclosure, useElementSize, useMediaQuery } from "@mantine/hooks";
 import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone';
 import { IconCheck, IconPhoto, IconUpload, IconX } from "@tabler/icons-react";
 
 
 const lowlight = createLowlight(all);
 
+/**
+ * Debounce that cannot resurrect a draft the submit action just deleted.
+ *
+ * THE BUG THIS FIXES. `clientAction` removes the three localStorage keys on a
+ * successful create/edit and then redirects — but the draft came back anyway,
+ * so `/lesson/create` reopened the "저장된 초안이 있습니다" modal on the next
+ * visit. Two defects in the old four-line version combined to guarantee it:
+ *
+ *  1. NO IDENTITY STABILITY. `fn` is an inline arrow at every call site, so it
+ *     is a new function on every render; with `fn` in the useCallback deps the
+ *     returned debouncer was new on every render too. `debounceMetaSave` is a
+ *     dependency of a useEffect, so that effect re-ran after EVERY render and
+ *     re-armed an 800ms timer each time — including the extra renders that
+ *     submitting itself causes as `navigation.state` moves idle → submitting →
+ *     loading. The last of those lands after the action has already cleared the
+ *     keys.
+ *  2. NO CLEANUP. The pending `setTimeout` was never cleared on unmount, so it
+ *     survived the redirect and wrote to localStorage from a dead component.
+ *
+ * Net effect: every successful create re-created the meta key ~800ms after the
+ * action deleted it, and `hasCached` in the route loader only needs ONE of the
+ * three keys to be non-null.
+ *
+ * The fix keeps the deps to `[delay]` so the debouncer is referentially stable,
+ * holds the newest `fn` in a ref so a stable identity does not mean a stale
+ * closure, and clears any pending timer on unmount. The ref is assigned in an
+ * effect, never during render, because assigning during render is the thing
+ * `react-hooks/immutability` is actually there to catch.
+ *
+ * The "latest ref" split matters for the guard in the save bodies below: ARGS
+ * are captured when the debounced call was made (the payload the user typed),
+ * but the CLOSURE is the current one, so the timer sees today's `isSubmitting`
+ * rather than its value 800ms ago.
+ */
 function useDebounce<T extends (...args: any[]) => void>(fn: T, delay: number) {
-  const timeout = useMemo<{ id: number | null }>(() => ({ id: null }), [])
+  const timeout = useRef<number | null>(null);
+  const latest = useRef(fn);
+
+  useEffect(() => {
+    latest.current = fn;
+  });
+
+  useEffect(() => () => {
+    if (timeout.current !== null) window.clearTimeout(timeout.current);
+  }, []);
+
   return useCallback((...args: Parameters<T>) => {
-    if (timeout.id) clearTimeout(timeout.id);
-    timeout.id = window.setTimeout(() => fn(...args), delay)
-  }, [fn, delay, timeout])
+    if (timeout.current !== null) window.clearTimeout(timeout.current);
+    timeout.current = window.setTimeout(() => latest.current(...args), delay);
+  }, [delay]);
 }
 
 function handleMarkdownChange(isMarkdown: boolean, setIsMarkdown: React.Dispatch<SetStateAction<boolean>>, setMarkdown: React.Dispatch<SetStateAction<string>>, getEditorAsMarkdown: () => (string)) {
@@ -67,9 +112,38 @@ function handleMarkdownChange(isMarkdown: boolean, setIsMarkdown: React.Dispatch
   })
 }
 
-function EditorToolbar() {
+/**
+ * `stickyOffset` is MEASURED, not a constant. Read this before changing it.
+ *
+ * Two sticky elements share one scroll container (the page ScrollArea viewport
+ * inside AppShell.Main): the editor's own action bar at `top: 0; z-index: 100`,
+ * and this toolbar at `top: var(--rte-sticky-offset, 0px); z-index: 1`. For the
+ * toolbar to pin below the bar, the offset must equal the bar's rendered height.
+ *
+ * It was `stickyOffset="var(--docs-header-height)"` — a variable copied from
+ * Mantine's own docs site that is defined nowhere in this app. An undefined
+ * var() makes the custom property guaranteed-invalid, so `top:` fell through to
+ * its `0px` fallback, and at z-index 1 against the bar's 100 the toolbar did not
+ * merely sit wrong: it slid completely UNDERNEATH the bar and disappeared while
+ * scrolling.
+ *
+ * HEADER_HEIGHT is NOT the fix, even though it looks like one. AppShell.Header
+ * is `position: fixed` and Mantine already gives AppShell.Main
+ * `padding-top: var(--app-shell-header-offset)`, so the scroll container's top
+ * edge is already clear of the app header. 56px would push the toolbar 56px
+ * below where it belongs. (MentoringEditor shipped a hand-measured `60`, which
+ * is right to within the 1px border — do not "correct" that one to 56 either.)
+ *
+ * A constant cannot be right at every width regardless: the action bar holds a
+ * Group of six-plus controls that WRAPS, so its height is 61px on a desktop and
+ * ~240px on a 360px phone. `stickyOffset` takes a number or a string, never a
+ * responsive object. Hence useElementSize on the bar — it reports
+ * `borderBoxSize[0].blockSize`, so the `p="sm"` padding and the 1px
+ * `borderBottom` are already included and no arithmetic is needed.
+ */
+function EditorToolbar({ stickyOffset }: { stickyOffset: number }) {
   return (
-    <RichTextEditor.Toolbar sticky stickyOffset="var(--docs-header-height)">
+    <RichTextEditor.Toolbar sticky stickyOffset={stickyOffset}>
       <RichTextEditor.ControlsGroup>
         <RichTextEditor.Bold />
         <RichTextEditor.Italic />
@@ -135,12 +209,58 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
   const [title, setTitle] = useState<string>(initialContent?.title ?? "");
   const [studentOnly, setStudentOnly] = useState<boolean>(initialContent?.student_only ?? false);
 
+  /*
+   * Measures the sticky action bar so the editor toolbar can pin directly
+   * beneath it at every width — see the comment on EditorToolbar. The `|| 60`
+   * covers the single frame before the ResizeObserver first fires; 60 is the
+   * one-row desktop height, so the pre-measurement state is the correct
+   * desktop state rather than 0.
+   */
+  const { ref: barRef, height: barHeight } = useElementSize();
+
+  /*
+   * Modal `fullScreen` is a plain boolean and `size` is not responsive either,
+   * so a phone-only full-screen modal cannot be expressed in CSS from here.
+   * This is the "JS must compute a value from width" row of the decision rule
+   * in src/libs/styles.ts — a size, not a control's existence.
+   */
+  const isPhone = useMediaQuery(MOBILE_QUERY, false, { getInitialValueInEffect: false });
+
+  /*
+   * `undefined` on a mouse, 44 on a finger — see TOUCH_QUERY. The action bar
+   * below applies this instead of a bare `mih={tapMin}`, which made every button
+   * 8px taller than Mantine's 36px default on every device. In a bar that wraps
+   * that is 8px PER ROW of pure padding, which is what made it look heavy.
+   *
+   * Not a width query: a 360px-wide desktop window is still a mouse and does
+   * not want the floor, while a 1024px tablet does. `pointer` is the property
+   * that actually describes the thing the rule is about.
+   */
+  const tapMin = useMediaQuery(TOUCH_QUERY, false, { getInitialValueInEffect: false })
+    ? TAP_TARGET
+    : undefined;
+
   const actionData = useActionData<{ error?: string }>();
   const navigation = useNavigation();
   const isSubmitting = navigation.state !== "idle";
 
-  // persist through refresh: save 
+  /*
+   * persist through refresh: save
+   *
+   * `isSubmitting` guards every write. Unmount cleanup alone does not close the
+   * race: the action clears the keys only after its `await http.post` resolves,
+   * so a timer armed by a keystroke shortly before the click can come due AFTER
+   * the delete but BEFORE the redirect unmounts anything. Blocking writes for
+   * the whole in-flight window closes that.
+   *
+   * Deliberately not a one-way latch. A rejected submit returns `{ error }`
+   * instead of redirecting, and the author stays on the page with their work
+   * intact — `navigation.state` goes back to idle and autosave has to resume,
+   * or the recovery draft silently stops tracking exactly when it is most
+   * likely to be needed.
+   */
   const debounceSave = useDebounce((json: any) => {
+    if (isSubmitting) return;
     try {
       localStorage.setItem(storageKey, JSON.stringify(json));
     } catch (err) {
@@ -149,6 +269,7 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
   }, 800);
 
   const debounceMarkdownSave = useDebounce((markdown: string) => {
+    if (isSubmitting) return;
     try {
       localStorage.setItem(markdownStorageKey, markdown)
     } catch (err) {
@@ -157,6 +278,7 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
   }, 800)
 
   const debounceMetaSave = useDebounce((meta: LessonMetaCache) => {
+    if (isSubmitting) return;
     try {
       localStorage.setItem(metaStorageKey, JSON.stringify(meta));
     } catch (err) {
@@ -368,19 +490,36 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
 
   const renderSelectStep = () => (
     <Stack>
+      {/* `mih`, not the previous `h={200}`: a hard height plus the caption and
+          the 취소 button overflows the modal on a landscape phone. */}
       <Dropzone
         onDrop={handleDrop}
         onReject={(files) => console.log('rejected files', files)}
         maxSize={3 * 1024 * 1024}
         accept={IMAGE_MIME_TYPE}
-        h={200}
+        mih={{ base: 120, sm: 200 }}
       >
-        <Group justify="center" gap="xl" style={{ minHeight: 200 }} >
+        <Group justify="center" gap="xl" mih={{ base: 120, sm: 200 }} >
+          {/*
+            * No `color` prop on either icon — deliberately. Mantine's Dropzone
+            * already sets `color` on its own root in the accept and reject
+            * states (`--dropzone-accept-color` / `--dropzone-reject-color`,
+            * resolved through variantColorResolver at the default
+            * `variant="light"`), and those follow the color scheme. Tabler
+            * icons stroke in `currentColor`, so inheriting is correct per
+            * scheme AND stays correct if `acceptColor`/`variant` ever change.
+            *
+            * The old `var(--mantine-color-blue-6)` / `red-6` were tokens, so the
+            * Color contract's literal grep passed them — but a numbered shade
+            * does not step with the scheme the way primaryShade
+            * { light: 6, dark: 4 } makes every other accent step, and these two
+            * were overriding a value Mantine had already got right.
+            */}
           <Dropzone.Accept>
-            <IconUpload size={50} stroke={1.5} color="var(--mantine-color-blue-6)" />
+            <IconUpload size={50} stroke={1.5} />
           </Dropzone.Accept>
           <Dropzone.Reject>
-            <IconX size={50} stroke={1.5} color="var(--mantine-color-red-6)" />
+            <IconX size={50} stroke={1.5} />
           </Dropzone.Reject>
           <Dropzone.Idle>
             <IconPhoto size={50} stroke={1.5} />
@@ -404,7 +543,11 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
   const renderVerifyStep = () => (
     <Stack>
       <Text size="sm" ta="center">업로드하려는 이미지가 맞는지 확인하세요</Text>
-      <div style={{ position: 'relative', height: 250, width: '100%', background: '#f8f9fa', borderRadius: 8 }}>
+      {/* was `background: '#f8f9fa'` — gray-0, so a light slab behind the preview in
+          dark mode. A CSS variable, not light-dark(): light-dark() is a PostCSS
+          transform and never runs on an inline style, but `--mantine-color-default-hover`
+          is already resolved per scheme (gray-0 light / dark-5 dark) and is legal here. */}
+      <div style={{ position: 'relative', height: 250, width: '100%', background: 'var(--mantine-color-default-hover)', borderRadius: 8 }}>
         <ImageComponent
           src={previewURL}
           h={250}
@@ -455,6 +598,12 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
   if (!user) return null;
 
   return (
+    /* No <Container> cap, deliberately — an exception to Definition of done item
+       5 rather than an oversight. This is an authoring surface: the sticky action
+       bar spans the full width, so capping only the content detaches the bar from
+       what it acts on, and the markdown/preview split is the one place in the app
+       where extra width is functional rather than decorative (1200 would leave
+       each pane ~590px on a 1920 screen). Recorded so Prompt 24 does not "fix" it. */
     <MainPageAppshell>
       <ScrollArea w="100%" h="100%">
         <Modal
@@ -464,6 +613,7 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
           withCloseButton={false}
           closeOnClickOutside={false}
           centered
+          fullScreen={isPhone}
         >
           <Text>이전에 작성하던 초안을 불러오시겠습니까?</Text>
           <Group mt="md" justify="flex-end">
@@ -493,6 +643,7 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
           title="Upload Image"
           centered
           size="lg"
+          fullScreen={isPhone}
           closeOnClickOutside={activeStep !== 'uploading'}
           withCloseButton={activeStep !== 'uploading'}
         >
@@ -508,13 +659,25 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
           title="Upload Youtube"
           centered
           size="lg"
+          fullScreen={isPhone}
         >
           {renderYoutubeInsertion()}
         </Modal>
 
-        <Form method={mode === "create" ? "post" : "patch"} style={{ width: '100%', height: '100%' }}
+        {/* `height: '100%'` dropped from the Form: its parent is the ScrollArea's
+            content wrapper, which is `display: table; min-width: 100%` and has no
+            definite height, so a percentage height resolved to `auto` anyway.
+            MentoringEditor's Form already omitted it. */}
+        <Form method={mode === "create" ? "post" : "patch"} style={{ width: '100%' }}
           action="/action/lesson/submit">
+          {/* The action bar is deliberately allowed to WRAP rather than scroll
+              horizontally or hide controls behind a Menu — Prompt 19's own rule
+              is "do NOT hide controls; a tablet author needs them." On a 360px
+              phone that means roughly four rows, which is scrolled past once.
+              Its height is measured (barRef) so the editor toolbar below can pin
+              beneath it whatever the width; see EditorToolbar. */}
           <Box
+            ref={barRef}
             style={{
               position: 'sticky',
               top: 0,
@@ -524,26 +687,28 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
             }}
             p="sm"
           >
-            <Group justify="space-between" w="100%">
-              <Group gap="md">
-                <Button type="button" onClick={() => handleMarkdownChange(isMarkdown, setIsMarkdown, setMarkdown, getEditorAsMarkdown)}>
+            <Group justify="space-between" w="100%" wrap="wrap" gap="sm">
+              {/* Full width below `sm` so the submit button drops onto its own
+                  row instead of being squeezed against the right edge. */}
+              <Group gap="md" wrap="wrap" w={{ base: '100%', sm: 'auto' }}>
+                <Button type="button" mih={tapMin} onClick={() => handleMarkdownChange(isMarkdown, setIsMarkdown, setMarkdown, getEditorAsMarkdown)}>
                   {isMarkdown ? "에디터 모드로" : "마크다운 모드로"}
                 </Button>
 
-                {isMarkdown ? <Button type="button" onClick={parseMarkdown}>마크다운 컴파일</Button> : <></>}
+                {isMarkdown ? <Button type="button" mih={tapMin} onClick={parseMarkdown}>마크다운 컴파일</Button> : <></>}
                 {isMarkdown ?
-                  <Button type="button" onClick={() => {
+                  <Button type="button" mih={tapMin} onClick={() => {
                     setMarkdown(getEditorAsMarkdown());
                   }}>에디터를 마크다운으로</Button> : <></>}
 
-                <Button type="button" onClick={handleYoutubeOpen} >유튜브 영상 추가</Button>
-                <Button type="button" onClick={handleOpenModal}>이미지 추가</Button>
-                <Group>
+                <Button type="button" mih={tapMin} onClick={handleYoutubeOpen} >유튜브 영상 추가</Button>
+                <Button type="button" mih={tapMin} onClick={handleOpenModal}>이미지 추가</Button>
+                <Group mih={tapMin} wrap="nowrap">
                   <Switch name="studentOnly" checked={studentOnly} onChange={(e) => setStudentOnly(e.currentTarget.checked)} />
                   <Text>설곽 학생만 열람 제한</Text>
                 </Group>
               </Group>
-              <Button type="submit" loading={isSubmitting}>
+              <Button type="submit" mih={tapMin} w={{ base: '100%', sm: 'auto' }} loading={isSubmitting}>
                 {mode === "create" ? "강의 생성" : "강의 수정"}
               </Button>
             </Group>
@@ -561,8 +726,11 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
               placeholder="강좌 제목을 입력하세요" required />
 
             {isMarkdown ? (
-              <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-                <Paper withBorder style={{ flex: 1 }}>
+              /* Was a raw `display: flex` div that never stacked: at 360px the two
+                 `flex: 1` panes got ~172px each, which is unusable for both writing
+                 and previewing. Stacks below `md`, side by side from `md` up. */
+              <Flex direction={{ base: 'column', md: 'row' }} gap="md" align="flex-start" w="100%">
+                <Paper withBorder style={{ flex: 1 }} w="100%">
                   <Textarea
                     ref={markdownRef}
                     value={markdown}
@@ -576,18 +744,21 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
                     variant="unstyled"
                   />
                 </Paper>
-                <Divider orientation="vertical" style={{ alignSelf: 'stretch' }} />
-                <Paper withBorder style={{ flex: 1 }}>
+                {/* `orientation` is not a responsive prop, and a vertical rule inside
+                    a column flex collapses to zero width. Both panes are
+                    `Paper withBorder`, so stacked they are already separated. */}
+                <Divider orientation="vertical" visibleFrom="md" style={{ alignSelf: 'stretch' }} />
+                <Paper withBorder style={{ flex: 1 }} w="100%">
                   <RichTextEditor editor={editor} style={{ minHeight: 400 }}>
-                    <EditorToolbar />
+                    <EditorToolbar stickyOffset={barHeight || 60} />
                     <RichTextEditor.Content />
                   </RichTextEditor>
                 </Paper>
-              </div>
+              </Flex>
             ) : (
               <Paper withBorder>
                 <RichTextEditor editor={editor} style={{ minHeight: 400 }}>
-                  <EditorToolbar />
+                  <EditorToolbar stickyOffset={barHeight || 60} />
                   <RichTextEditor.Content />
                 </RichTextEditor>
               </Paper>)

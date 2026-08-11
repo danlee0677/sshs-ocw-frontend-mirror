@@ -40,12 +40,19 @@
        light page AND against .Google's white fill, which is the bug.
 
        This is deliberately var(--mantine-color-black) and NOT
-       var(--mantine-color-text), even though .selectBox's high-contrast outline
-       uses the latter. The precedent does not transfer, and the reason is
-       structural: .selectBox's fill is light-dark(blue-2, blue-9), so it inverts
-       and a text-colored outline stays opposed to it in both schemes. These
-       fills deliberately do not invert, so --mantine-color-text (#000 light,
-       #c9c9c9 dark) would go near-invisible in dark mode on all three:
+       var(--mantine-color-text). The plan told us to follow the precedent set by
+       shared.module.css's `.selectBox` outline, which used the latter. That
+       precedent does not transfer, and the reason is structural: `.selectBox`'s
+       fill was light-dark(blue-2, blue-9), so it INVERTED, and a text-colored
+       outline stays opposed to an inverting fill in both schemes. These fills
+       deliberately do not invert, so --mantine-color-text (#000 light, #c9c9c9
+       dark) would go near-invisible in dark mode on all three:
+
+       (`.selectBox` itself no longer exists — it styled an onboarding tile
+       picker that was cut in 8964474, and was deleted once that was confirmed.
+       The rule is restated here because the REASONING is what matters and this
+       is now the only place in the codebase that depends on it: a fill that does
+       not invert needs a foreground that does not invert.)
 
          border vs fill        light (#000)    dark (#c9c9c9)
          .Google  white          21.0 : 1        1.66 : 1   FAIL
