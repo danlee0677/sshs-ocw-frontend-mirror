@@ -5,30 +5,28 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
-// LINT BASELINE — see RESPONSIVE_PLAN.md, Prompt 0.
+// LINT BASELINE: 0 errors, 0 warnings (measured — `npx eslint src --ext .ts,.tsx`).
 //
-// Before this config: 88 errors. 48 of those came from React Router's generated
-// route types under .react-router/, and 22 from react-refresh not understanding
-// that a route module legitimately exports both a component and a clientLoader.
-// Neither was a real defect; together they made "the build is green" useless as
-// a quality gate.
+// `npm run lint` had never been green on this branch. It started at 88 errors,
+// of which 48 came from React Router's generated route types under
+// .react-router/ and 22 from react-refresh not understanding that a route module
+// legitimately exports both a component and a clientLoader. Neither was a real
+// defect; together they made "the build is green" useless as a quality gate.
+// Ignoring the generated code and allow-listing the framework's export names
+// (both below) brought it to 19, and the responsive migration's five phases
+// worked that down to 8. Those last 8 were then fixed rather than suppressed:
+// `useDebounce`'s `any` constraint became an inferred parameter tuple, the
+// TipTap draft payloads became `JSONContent`, root.tsx dropped an unused catch
+// binding, and `useUserContext` moved to src/libs/useUserContext.ts.
 //
-// Baseline after this config: 19 errors, 0 warnings (measured, not estimated).
-//   6  @typescript-eslint/no-explicit-any          both editors      (Prompts 19, 21)
-//   5  @typescript-eslint/no-unused-vars
-//   4  react-hooks/immutability                    both editors      (Prompts 19, 21)
-//   2  react-hooks/set-state-in-effect             SearchResult.tsx  (Prompt 15)
-//   1  @typescript-eslint/no-unsafe-function-type  NewUser.tsx:6     (Prompt 17)
-//   1  react-refresh/only-export-components        root.tsx:81
+// There are no deliberately-unfixed errors left and no blanket disables, so the
+// criterion is simply zero. If this number ever moves, something regressed.
 //
-// That last one is `useUserContext` — a hook exported from a route module, so
-// it is a real Fast Refresh flag rather than a framework convention, and it is
-// deliberately NOT in the allow-list below. Moving it to its own file would
-// silence it; that is not worth doing mid-migration since every route imports it.
-//
-// These are genuine and are left deliberately unfixed here — each is scheduled
-// in a later prompt. Prompt 24 compares against this number, so the criterion is
-// "no NEW errors" rather than an unreachable green build.
+// One standing gotcha, learned the hard way: `tsc --noEmit` exits 0 on some
+// syntax errors that only ESLint catches (a JSX comment placed directly inside
+// `return (` parses as an empty object literal). Run lint BEFORE trusting a
+// green build — "npm run build passed" is not on its own evidence that a file is
+// well-formed.
 export default defineConfig([
   // .react-router/ holds generated route types; build/ and dist/ hold output.
   // Linting generated code is pure noise.

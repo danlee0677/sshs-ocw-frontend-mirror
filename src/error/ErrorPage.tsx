@@ -1,9 +1,9 @@
-import { Box, Button, Container, Group, Stack, Text, Title, useMantineColorScheme } from "@mantine/core";
+import { Box, Button, Container, Group, Stack, Text, Title, useComputedColorScheme } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { useNavigate, useRouteError, isRouteErrorResponse } from "react-router";
 import classes from './Errorpage.module.css'
 
-const particles = Array.from({ length: 18 }, (_) => ({
+const particles = Array.from({ length: 18 }, () => ({
   top: `${Math.random() * 100}%`,
   left: `${Math.random() * 100}%`,
   animationDelay: `${Math.random() * 6}s`,
@@ -19,9 +19,22 @@ function ErrorPage() {
   console.log(error)
   
   const [visible, setVisible] = useState(false);
-  const { colorScheme } = useMantineColorScheme();
+  // `useComputedColorScheme`, NEVER `useMantineColorScheme().colorScheme`. The
+  // latter returns the LITERAL STRING 'auto' when the user picks 자동 — so
+  // `colorScheme === "light"` was false and this page rendered its DARK palette
+  // on a light OS. Only the computed hook resolves 'auto' to light | dark.
+  //
+  // This is load-bearing for the defaultColorScheme='auto' flip: with 'auto' as
+  // the default, EVERY user has colorScheme === 'auto' until they touch the
+  // toggle, so the bug would have gone from an edge case to the common path.
+  //
+  // Same trap as ColorSchemeToggle, getStreakColors and useAppLogo.
+  // `getInitialValueInEffect: false` is safe: this is a SPA and ErrorPage is
+  // not in the prerendered shell, so a synchronous first read has nothing to
+  // mismatch against and avoids a one-frame palette flip.
+  const computed = useComputedColorScheme('light', { getInitialValueInEffect: false });
 
-  const isLight = colorScheme === "light";
+  const isLight = computed === "light";
   const pageClass = `${classes.page} ${isLight ? classes.light : ""}`
 
   useEffect(() => {
@@ -69,6 +82,12 @@ function ErrorPage() {
       ))}
 
       {/* Main content */}
+      {/* `size="sm"` (640) is DELIBERATE and is the one sanctioned exception to
+          the never-pass-a-Container-size rule. That rule exists because
+          `size="lg"` is 1140 and silently disagrees with CONTENT_MAX_WIDTH's
+          1200 — it polices values that are TRYING to be the content cap. This
+          one is not: it is a narrow measure for a centred error message, and
+          removing it would run the copy to 1200px. Do not "fix" it. */}
       <Container size="sm" className={classes.content}>
         <Stack gap={0} align="center">
 

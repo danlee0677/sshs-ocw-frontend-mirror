@@ -2,7 +2,7 @@ import { useLoaderData, type LoaderFunctionArgs } from "react-router";
 import LessonEditor from "../../components/lesson/LessonEditor"
 import { http } from "../../libs/http";
 import { lessonSchema, permissionCheckSchema, tiptapDocSchema, userSchema } from "../../libs/types";
-import { lessonTiptapEditStorageKey, lessonMarkdownEditStorageKey, lessonMetaEditStorageKey, PLACEHOLDER_LESSON, PLACEHOLDER_MARKDOWN, tryParseJSON } from "../../libs/utils";
+import { lessonTiptapEditStorageKey, lessonMarkdownEditStorageKey, lessonMetaEditStorageKey, PLACEHOLDER_LESSON, PLACEHOLDER_TIPTAP_DOC, PLACEHOLDER_MARKDOWN, tryParseJSON, readTiptapDraft } from "../../libs/utils";
 // import your Zod schemas here!
 
 export async function clientLoader({ params }: LoaderFunctionArgs) {
@@ -30,11 +30,11 @@ export async function clientLoader({ params }: LoaderFunctionArgs) {
     const markdownStorageKey = lessonMarkdownEditStorageKey(parsed.data._id);
     const metaStorageKey = lessonMetaEditStorageKey(parsed.data._id);
 
-    const parsedTiptap = tryParseJSON(localStorage.getItem(storageKey));
+    const parsedTiptap = readTiptapDraft(localStorage.getItem(storageKey));
     const rawMarkdown = localStorage.getItem(markdownStorageKey);
     const parsedMeta = tryParseJSON<{ title?: string; studentOnly?: boolean }>(localStorage.getItem(metaStorageKey));
 
-    const tiptapCached = parsedTiptap ?? PLACEHOLDER_LESSON.content;
+    const tiptapCached = parsedTiptap ?? PLACEHOLDER_TIPTAP_DOC;
     const markdownCached = rawMarkdown ?? PLACEHOLDER_MARKDOWN;
     const metaCached = parsedMeta;
     const hasCached = parsedTiptap !== null || rawMarkdown !== null || parsedMeta !== null;

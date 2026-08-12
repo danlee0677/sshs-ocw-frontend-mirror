@@ -1,11 +1,42 @@
 import z from 'zod';
 import { http } from './http';
-import type { User, Lesson, Subject, Mentoring, Streak } from './types'
+import { tiptapDocSchema, type User, type Lesson, type Subject, type Mentoring, type Streak } from './types'
+import type { JSONContent } from '@tiptap/core';
 import axios from 'axios';
 
 export function tryParseJSON<T = unknown>(raw: string | null): T | null {
   if (!raw) return null;
   try { return JSON.parse(raw); } catch { return null; }
+}
+
+/**
+ * Reads a cached TipTap draft out of localStorage. Returns `null` when there is
+ * no draft OR when what is there is not a document.
+ *
+ * This is the trust boundary that was missing. Every API response in this app is
+ * Zod-validated, but localStorage is equally unchecked and is user-writable, and
+ * a corrupted or hand-edited draft key flowed straight into
+ * `editor.commands.setContent()`. `tiptapDocSchema` is the same schema the edit
+ * loaders already apply to the SERVER's copy of the content a few lines away —
+ * this just stops the local copy from being the one input nobody checks.
+ *
+ * `tryParseJSON` is an unchecked assertion, not a parse, so the `as JSONContent`
+ * below is doing the work the generic only pretended to. It is deliberately
+ * placed directly under the `safeParse` that earns it.
+ *
+ * A malformed draft is DISCARDED, which makes it indistinguishable from a
+ * missing key: the caller falls back to the placeholder and `hasCached` is left
+ * to the markdown/meta keys. The warning is the only trace, because surfacing it
+ * would mean new UI copy and a different recovery-modal contract.
+ */
+export function readTiptapDraft(raw: string | null): JSONContent | null {
+  const parsed = tryParseJSON(raw);
+  if (parsed === null) return null;
+  if (!tiptapDocSchema.safeParse(parsed).success) {
+    console.warn('Discarding a malformed TipTap draft from localStorage');
+    return null;
+  }
+  return parsed as JSONContent;
 }
 
 export const useableTags = ['Math', 'Physics', 'Informatics', 'Chemistry', 'Biology', 'Earth Science', 'Eccentra']
@@ -97,14 +128,24 @@ export const PLACEHOLDER_SUBJECT: Subject = {
   image_url: "https://res.cloudinary.com/dpcig7o5t/image/upload/v1767019358/base_study_o0o20v.png",
 }
 
+/**
+ * The same document `PLACEHOLDER_LESSON.content` has always held, hoisted out
+ * and typed. `Lesson.content` is declared `object`, and `object` has no implicit
+ * index signature, so it will not assign to TipTap's `JSONContent` — which the
+ * editors' `tiptapCached` prop now is. Naming the value here gives the loaders a
+ * correctly typed fallback without widening `Lesson.content` and reaching the
+ * viewers. Same object, same behaviour.
+ */
+export const PLACEHOLDER_TIPTAP_DOC: JSONContent = {
+  type: "doc",
+  content: [
+    { type: "paragraph", content: [{ type: "text", text: "Fetching your lesson..." }] }
+  ]
+}
+
 export const PLACEHOLDER_LESSON: Lesson = {
   title: "Fetching Your Lesson",
-  content: {
-    type: "doc",
-    content: [
-      { type: "paragraph", content: [{ type: "text", text: "Fetching your lesson..." }] }
-    ]
-  },
+  content: PLACEHOLDER_TIPTAP_DOC,
   createdBy: "anon",
   _id: "",
   subject: "",

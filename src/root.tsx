@@ -4,10 +4,11 @@ import '@mantine/dropzone/styles.css';
 import '@mantine/notifications/styles.css'
 import { ColorSchemeScript, createTheme, localStorageColorSchemeManager, MantineProvider } from "@mantine/core";
 import { ModalsProvider } from "@mantine/modals";
-import { Links, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData, useOutletContext } from "react-router";
+import { Links, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData } from "react-router";
 import { http } from "./libs/http";
 import { Notifications } from '@mantine/notifications'
-import { userSchema, type User } from "./libs/types";
+import { userSchema } from "./libs/types";
+import type { RootContext } from "./libs/useUserContext";
 import ErrorPage from './error/ErrorPage';
 import LoadingPage from './loading/LoadingPage';
 import { BREAKPOINTS, COLOR_SCHEME_STORAGE_KEY, CONTENT_MAX_WIDTH } from './libs/styles';
@@ -86,15 +87,17 @@ export function Layout({ children }: { children: React.ReactNode; }) {
   );
 }
 
-type RootContext = { user: User | null };
-
 export async function clientLoader() {
   try {
     const res = await http.get(`${import.meta.env.VITE_API_URL}/api/auth/verify`)
     const parsed = userSchema.safeParse(res.data)
     if (!parsed.success) throw new Error();
     return { user: parsed.data }
-  } catch (err) {
+  } catch {
+    // Deliberately swallows everything — network error, malformed response,
+    // schema mismatch — and reports "logged out". Not logged: an anonymous
+    // visitor 401s here on EVERY page load, and http.ts already logs the failed
+    // refresh, so a console.error would be duplicated noise on the normal path.
     return { user: null }
   }
 }
@@ -109,10 +112,6 @@ export default function Root() {
   return (
     <Outlet context={{ user } satisfies RootContext} />
   );
-}
-
-export function useUserContext() {
-  return useOutletContext<RootContext>();
 }
 
 export function ErrorBoundary() {

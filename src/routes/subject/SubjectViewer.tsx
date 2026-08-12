@@ -10,7 +10,7 @@ import page from "./subjectViewer.module.css"
 
 // Shared page chrome plus this page's own rules. Page keys win on collision.
 const classes = { ...shared, ...page }
-import { useUserContext } from "../../root";
+import { useUserContext } from "../../libs/useUserContext";
 import { isUser } from "../../libs/utils";
 import { notifications } from "@mantine/notifications";
 

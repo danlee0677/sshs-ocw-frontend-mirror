@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLoaderData, useNavigate, redirect, type LoaderFunctionArgs } from "react-router";
 import { Avatar, Button, Group, Image, Loader, Modal, Paper, ScrollArea, Stack, Text, Textarea, ThemeIcon } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
+import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { Dropzone, IMAGE_MIME_TYPE } from "@mantine/dropzone";
 import { IconCheck, IconPhoto, IconUpload, IconX } from "@tabler/icons-react";
@@ -9,6 +9,7 @@ import { http } from "../../libs/http";
 import { userSchema } from "../../libs/types";
 import { uploadImage } from "../../libs/utils";
 import MainPageAppshell from "../../components/appshell/MainPageAppshell";
+import { MOBILE_QUERY } from "../../libs/styles";
 
 export async function clientLoader({ params }: LoaderFunctionArgs) {
   const pageUserId = params.pageUserId;
@@ -36,6 +37,15 @@ export default function ProfileEdit() {
   const [pfpUrl, setPfpUrl] = useState<string>(pageUser.pfp_url);
   const [description, setDescription] = useState<string>(pageUser.description ?? "");
   const [submitting, setSubmitting] = useState(false);
+
+  // Sanctioned useMediaQuery per the decision rule in src/libs/styles.ts: it
+  // computes a SIZE, it does not decide whether a control is rendered.
+  // `fullScreen={{ base: true, sm: false }}` does NOT typecheck —
+  // ModalRoot.d.ts declares `fullScreen?: boolean`, and `size` is not a
+  // responsive prop either. That is Prompt 19's finding; do not re-derive it.
+  // getInitialValueInEffect: false reads matchMedia synchronously — safe below
+  // root.tsx in a SPA, and it avoids the modal opening windowed then snapping.
+  const isPhone = useMediaQuery(MOBILE_QUERY, false, { getInitialValueInEffect: false });
 
   useEffect(() => {
     return () => {
@@ -123,11 +133,20 @@ export default function ProfileEdit() {
         h={200}
       >
         <Group justify="center" gap="xl" style={{ minHeight: 200 }}>
+          {/* The `color` props are DELETED, not re-tokenised. `blue-6` / `red-6`
+              are tokens, so the Color contract's literal grep passed them —
+              they failed the numbered-shade gate instead, being fixed shades
+              that do not follow primaryShade: { light: 6, dark: 4 }. But the
+              fix is not a light-dark() pair: Mantine's Dropzone already sets
+              --dropzone-accept-color / --dropzone-reject-color on its own root
+              per state AND per scheme, and Tabler icons stroke in currentColor.
+              These props were overriding a value Mantine had already got right.
+              Same fix as all three editors — the fourth copy of this block. */}
           <Dropzone.Accept>
-            <IconUpload size={50} stroke={1.5} color="var(--mantine-color-blue-6)" />
+            <IconUpload size={50} stroke={1.5} />
           </Dropzone.Accept>
           <Dropzone.Reject>
-            <IconX size={50} stroke={1.5} color="var(--mantine-color-red-6)" />
+            <IconX size={50} stroke={1.5} />
           </Dropzone.Reject>
           <Dropzone.Idle>
             <IconPhoto size={50} stroke={1.5} />
@@ -145,7 +164,13 @@ export default function ProfileEdit() {
   const renderVerifyStep = () => (
     <Stack>
       <Text size="sm" ta="center">업로드하려는 이미지가 맞는지 확인하세요</Text>
-      <div style={{ position: 'relative', height: 250, width: '100%', background: '#f8f9fa', borderRadius: 8 }}>
+      {/* was `background: '#f8f9fa'` — gray-0, a light slab behind the preview
+          in dark mode, and the LAST live copy of that literal in the app (the
+          three editors were fixed in Phase 4). `var()`, NOT `light-dark()`:
+          light-dark() is a PostCSS transform and never runs on an inline style
+          object, where it would ship as raw native CSS with no fallback. This
+          variable is already resolved per scheme. */}
+      <div style={{ position: 'relative', height: 250, width: '100%', background: 'var(--mantine-color-default-hover)', borderRadius: 8 }}>
         <Image src={previewURL} h={250} fit="contain" style={{ borderRadius: 8 }} />
       </div>
       <Group grow mt="md">
@@ -183,12 +208,17 @@ export default function ProfileEdit() {
                 프로필 사진 변경
               </Button>
 
+              {/* fullScreen below `sm`: this modal carries a 200px Dropzone
+                  and a 250px cropper preview, which do not fit a windowed
+                  `size="lg"` sheet on a phone. Same treatment all three Phase 4
+                  editors got for the same block; this is the fourth copy. */}
               <Modal
                 opened={opened}
                 onClose={handleClose}
                 title="프로필 사진 업로드"
                 centered
                 size="lg"
+                fullScreen={isPhone}
                 closeOnClickOutside={activeStep !== 'uploading'}
                 withCloseButton={activeStep !== 'uploading'}
               >

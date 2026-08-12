@@ -6,8 +6,10 @@ import {
   mentoringMarkdownEditStorageKey,
   mentoringMetaEditStorageKey,
   PLACEHOLDER_LESSON,
+  PLACEHOLDER_TIPTAP_DOC,
   PLACEHOLDER_MARKDOWN,
   tryParseJSON,
+  readTiptapDraft,
 } from "../../libs/utils";
 
 type MentoringMetaCache = {
@@ -51,13 +53,13 @@ export async function clientLoader({ params }: LoaderFunctionArgs) {
     const storageKey = mentoringTiptapEditStorageKey(mentoringId);
     const markdownStorageKey = mentoringMarkdownEditStorageKey(mentoringId);
     const metaStorageKey = mentoringMetaEditStorageKey(mentoringId);
-    const parsedTiptap = tryParseJSON(localStorage.getItem(storageKey));
+    const parsedTiptap = readTiptapDraft(localStorage.getItem(storageKey));
     const rawMarkdown = localStorage.getItem(markdownStorageKey);
     const parsedMeta = tryParseJSON<MentoringMetaCache>(localStorage.getItem(metaStorageKey));
 
     return {
       initialContent,
-      tiptapCached: parsedTiptap ?? PLACEHOLDER_LESSON.content,
+      tiptapCached: parsedTiptap ?? PLACEHOLDER_TIPTAP_DOC,
       markdownCached: rawMarkdown ?? PLACEHOLDER_MARKDOWN,
       metaCached: parsedMeta,
       hasCached: parsedTiptap !== null || rawMarkdown !== null || parsedMeta !== null,

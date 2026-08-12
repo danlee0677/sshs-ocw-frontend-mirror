@@ -19,9 +19,19 @@
 .d3 { animation-delay: 0.35s; }
 
 /* ── Page ───────────────────────────────────────────────── */
+/* HIGHEST BLAST RADIUS IN THE APP. This is root.tsx's HydrateFallback, so it is
+   the only route component present in the prerendered index.html, and this rule
+   ships inside root-*.css — the stylesheet <link>ed in that shell.
+
+   `background: #fafbfd` here defeated <ColorSchemeScript /> two files away: a
+   near-white slab painted before every dark page. The token resolves from
+   @mantine/core/styles.css under [data-mantine-color-scheme], which
+   ColorSchemeScript stamps onto <html> BEFORE first paint — so this works with
+   no dependency on React or MantineProvider having mounted. It removes the
+   pre-paint flash rather than moving it. */
 .page {
-  min-height: 100vh;
-  background: #fafbfd;
+  min-height: 100dvh;
+  background: var(--mantine-color-body);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -35,7 +45,12 @@
   width: 500px;
   height: 500px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(42, 141, 222, 0.10) 0%, transparent 70%);
+  /* Was `rgba(42, 141, 222, 0.10)` — a literal, and at 10% it all but vanished
+     on a dark surface. `--mantine-color-blue-light` is rgba(34,139,230,.1) in
+     light (a visual no-op against what it replaces) and rgba(34,139,230,.15) in
+     dark, so the token carries the scheme step a hand-written pair would have
+     had to hardcode. */
+  background: radial-gradient(circle, var(--mantine-color-blue-light) 0%, transparent 70%);
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -43,16 +58,37 @@
 }
 
 /* ── Logo ───────────────────────────────────────────────── */
+/* `sshs.png` is the school crest: a deep navy mark (avg opaque rgb(37,36,115))
+   on a TRANSPARENT field — 23% of its pixels are fully transparent. Against the
+   old #fafbfd that measured 12.8:1; against var(--mantine-color-body) in dark
+   (#242424) it is 1.17:1, i.e. invisible. Switching the page background above
+   without this would have traded a white flash for a blank screen.
+
+   The plate is the Color contract's brand-exception treatment for images:
+   "never filtered or inverted — but adapt the FRAME around them." Do not reach
+   for a CSS filter/invert on the crest itself.
+
+   Light mode is deliberately unchanged (`transparent`). box-sizing: border-box
+   is global (index.css), so the padding comes out of the 120px box rather than
+   growing it, and the background shows through the crest's transparent field
+   because it is painted on the <img> itself.
+
+   The better fix is an asset, not CSS: a light-ink `sshs-dark.png` selected the
+   way useAppLogo() selects the wordmark. There is no such file today. */
 .logo {
   height: 120px;
   width: 120px;
   object-fit: contain;
+  background: light-dark(transparent, var(--mantine-color-white));
+  border-radius: 50%;
+  padding: 8px;
   animation: pulse 2.4s ease-in-out infinite;
 }
 
 /* ── Title ──────────────────────────────────────────────── */
 .title {
-  color: #1a1a2e;
+  /* was: #1a1a2e — near-black, unreadable on the dark body above. */
+  color: var(--mantine-color-text);
   font-size: 1.8rem;
   font-weight: 600;
   letter-spacing: 0.08em;

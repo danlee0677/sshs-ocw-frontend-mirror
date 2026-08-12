@@ -33,9 +33,15 @@
 html,
 body {
   max-width: 100%;
-  /* TEMPORARY responsive-migration backstop — REMOVE in Prompt 22.
+  /* TEMPORARY responsive-migration backstop — REMOVE in Prompt 24 step 6,
+     AFTER the browser sweep, then re-run the sweep to see what it was hiding.
+     (This used to say "Prompt 22", which was wrong and actively dangerous: 22
+     is the small-pages sweep, so following the comment would have pulled the
+     backstop two prompts early.)
      `clip`, not `hidden`: `hidden` would make body a scroll container and
-     break `position: sticky` in the TipTap editor toolbars. */
+     break `position: sticky` in the TipTap editor toolbars. If removing it
+     reveals overflow, fix the cause; if it must come back, it comes back as
+     `clip`. */
   overflow-x: clip;
 }
 

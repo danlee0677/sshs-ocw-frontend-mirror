@@ -35,9 +35,18 @@
    CSS Modules, so those four copies were overriding one another for no reason.
    It now lives exactly once, in src/index.css.
 
-   The @font-face blocks are declared HERE ONLY. They were also duplicated four
-   times; @font-face is global, so the duplicates were redundant downloads-by-
-   declaration at best. */
+   The @font-face blocks are declared here and in ONE other file. They were
+   duplicated four times originally; @font-face is global, so two faces for the
+   same family/weight/style both apply and the later in SOURCE ORDER wins —
+   which makes chunk ordering, not intent, decide which `font-display` is live.
+   Prompt 17 removed the join/login/newuser copies, Prompt 20 removed
+   OrderTable's, and Prompt 23 removed CustomBadge's.
+
+   STILL DUPLICATED: src/routes/search/search.module.css, which declares
+   JalnanGothic (without `font-display: swap`) and Paperozi, PLUS a
+   `Paperozi_light` face that exists nowhere else and so cannot simply be
+   deleted along with them. Consolidating that one means moving a third face in
+   here; it is a real change, not a deletion, and is deliberately left open. */
 
 @font-face {
     font-family: 'JalnanGothic';

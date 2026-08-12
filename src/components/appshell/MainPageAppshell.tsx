@@ -6,7 +6,7 @@ import { FROM_LG_QUERY, HEADER_HEIGHT, linkStyle } from "../../libs/styles";
 import classes from "./Appshell.module.css";
 import { useAppLogo } from './useAppLogo';
 import { isUser } from "../../libs/utils";
-import { useUserContext } from "../../root";
+import { useUserContext } from "../../libs/useUserContext";
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import { ColorSchemeToggle, ColorSchemeToggleFull } from "./ColorSchemeToggle";
 

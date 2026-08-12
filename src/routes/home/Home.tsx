@@ -7,7 +7,7 @@ import { recentViewSchema, streakSchema, userSchema, type RecentView } from "../
 import { Link, redirect, useLoaderData } from "react-router";
 import { http } from "../../libs/http";
 import z from "zod";
-import { useUserContext } from "../../root";
+import { useUserContext } from "../../libs/useUserContext";
 import { isAxiosError } from "axios";
 import { FloatingActionButton } from "../../components/home/FloatingActionButton";
 import { calculateCurrentStreak, calculateMaxStreak } from "../../libs/utils";
@@ -174,64 +174,86 @@ function Home() {
                 </Stack>
               </Grid.Col>
               <Grid.Col span={{ base: 12, md: 5 }}>
-                <Stack className={`${classes.Box1}`} h="100%" w="100%" gap={0} align="center" p="md">
-                  <Text className={`${classes.JalnanGothic}`}>최근 이용한 강좌</Text>
-                  {/* The `useElementSize` + `isNarrow = width < 150` gate that used to
-                      wrap the titles is gone. It measured a width to decide whether to
-                      RENDER content, so the first paint was always wrong and then
-                      corrected — and its `ref` was attached to three different elements
-                      in one render, so it was measuring whichever mounted last. The
-                      `truncate` + `miw={0}` below already does the job in pure CSS. */}
-                  {paddedProgress.map((v, i) => (
-                    v.subject._id ?
-                      <Box className={`${classes.Box2} ${classes.Vertical_align}`} w={'100%'} mih={72} miw={0} key={v.lesson._id}>
-                        <Group wrap='nowrap' w={'80%'} h={'100%'} miw={0}>
-                          <Link to={`/subject/${v.subject._id}`} className="block"
-                            style={{
-                              display: 'flex',       // Makes the <a> tag a flex container
-                              alignItems: 'center',  // Centers the image vertically
-                              height: '100%',        // Forces <a> to fill the Group's height
-                            }}>
-                            <Image fit="cover" w='75' h={'75'} src={v.subject.image_url} className={classes.Image1} />
-                          </Link>
-                          {/* `style={linkStyle}` replaces an inline `color: "black"` on the
-                              inner Text. Deleting that color alone was not enough: nothing
-                              in index.css or Mantine's baseline resets anchors, so these
-                              would have fallen back to UA link blue + underline.
-                              linkStyle's `color: 'inherit'` is scheme-safe. */}
-                          <Stack gap={0} miw={0}>
-                            <Link to={`/subject/${v.subject._id}`} style={linkStyle}>
-                              <Text truncate fw={'bold'}>{v.subject.title}</Text>
+                {/* Paper WRAPS the Stack rather than replacing it, and the pairing of
+                    `withBorder` + `.Box1` on the SAME element mirrors the two streak
+                    cards above — that is what makes the border identical rather than
+                    merely similar. Hand-rolling `1px solid var(--mantine-color-default-border)`
+                    on the Stack would NOT have matched: Paper's border is
+                    `--paper-border-color` (gray-3 light / dark-4 dark) while
+                    `--mantine-color-default-border` is gray-4 light, so the two would
+                    diverge in light mode. `--paper-border-color` is not reachable from
+                    here either — it is declared only under Paper's own class, so a Stack
+                    referencing it would get an invalid declaration and NO border at all.
+
+                    `.Box1` must sit on the bordered box, not the inner Stack: its hover
+                    rule animates border-radius and adds a shadow, and on the inner
+                    element the shadow would be drawn inside a border that stayed square.
+
+                    Paper is `display: block`, so the Stack below is still what provides
+                    the flex column — see the `mt: auto` note further down, which depends
+                    on it. Hence `h="100%"` on BOTH: Paper fills the stretched Grid.Col,
+                    the Stack fills the Paper. Dropping either breaks the pin silently.
+                    Padding stays on the Stack; duplicating it here would double it. */}
+                <Paper className={`${classes.Box1}`} withBorder h="100%" w="100%">
+                  <Stack h="100%" w="100%" gap={0} align="center" py="md">
+                    <Text className={`${classes.JalnanGothic}`}>최근 이용한 강좌</Text>
+                    {/* The `useElementSize` + `isNarrow = width < 150` gate that used to
+                        wrap the titles is gone. It measured a width to decide whether to
+                        RENDER content, so the first paint was always wrong and then
+                        corrected — and its `ref` was attached to three different elements
+                        in one render, so it was measuring whichever mounted last. The
+                        `truncate` + `miw={0}` below already does the job in pure CSS. */}
+                    {paddedProgress.map((v, i) => (
+                      v.subject._id ?
+                        <Box className={`${classes.Box2} ${classes.Vertical_align}`} w={'100%'} mih={72} miw={0} key={v.lesson._id}>
+                          <Group wrap='nowrap' w={'80%'} h={'100%'} miw={0}>
+                            <Link to={`/subject/${v.subject._id}`} className="block"
+                              style={{
+                                display: 'flex',       // Makes the <a> tag a flex container
+                                alignItems: 'center',  // Centers the image vertically
+                                height: '100%',        // Forces <a> to fill the Group's height
+                              }}>
+                              <Image fit="cover" w='75' h={'75'} src={v.subject.image_url} className={classes.Image1} />
                             </Link>
-                            <Link to={`/lesson/${v.lesson._id}`} style={linkStyle}>
-                              <Text truncate>{v.lesson.title}</Text>
-                            </Link>
-                          </Stack>
-                        </Group>
-                      </Box>
-                      : (i == 0 ?
-                        <Box w="100%" mih={72} className={`${classes.Vertical_align}`} key={i}>
-                          <Text>다양한 강의를 수강해보세요!</Text>
+                            {/* `style={linkStyle}` replaces an inline `color: "black"` on the
+                                inner Text. Deleting that color alone was not enough: nothing
+                                in index.css or Mantine's baseline resets anchors, so these
+                                would have fallen back to UA link blue + underline.
+                                linkStyle's `color: 'inherit'` is scheme-safe. */}
+                            <Stack gap={0} miw={0}>
+                              <Link to={`/subject/${v.subject._id}`} style={linkStyle}>
+                                <Text truncate fw={'bold'}>{v.subject.title}</Text>
+                              </Link>
+                              <Link to={`/lesson/${v.lesson._id}`} style={linkStyle}>
+                                <Text truncate>{v.lesson.title}</Text>
+                              </Link>
+                            </Stack>
+                          </Group>
                         </Box>
-                        :
-                        <Box w="100%" mih={72} miw={0} key={i} />
-                      )
-                  ))}
-                  {/* `mt="auto"` pins this to the bottom of the column no matter how many
-                      rows exist: the Stack is a flex column filling Grid.Col (which
-                      stretches to the row height), so an auto top margin on the last
-                      child absorbs the leftover space. The rows above keep their natural
-                      top alignment — this is why it is mt:auto here rather than
-                      `justify="space-between"` on the Stack, which would also spread the
-                      rows apart. */}
-                  {/* Style object, not `mt`/`pt` props: this is react-router's Link, not a
-                      Mantine component, so style props would land as bogus DOM attributes. */}
-                  <Link
-                    to={`/profile/${user._id}`}
-                    style={{ ...linkStyle, marginTop: 'auto', paddingTop: 'var(--mantine-spacing-sm)' }}>
-                    <Text>더보기</Text>
-                  </Link>
-                </Stack>
+                        : (i == 0 ?
+                          <Box w="100%" mih={72} className={`${classes.Vertical_align}`} key={i}>
+                            <Text>다양한 강의를 수강해보세요!</Text>
+                          </Box>
+                          :
+                          <Box w="100%" mih={72} miw={0} key={i} />
+                        )
+                    ))}
+                    {/* `mt="auto"` pins this to the bottom of the column no matter how many
+                        rows exist: the Stack is a flex column filling the Paper, which fills
+                        Grid.Col (which stretches to the row height), so an auto top margin on
+                        the last child absorbs the leftover space. The rows above keep their
+                        natural top alignment — this is why it is mt:auto here rather than
+                        `justify="space-between"` on the Stack, which would also spread the
+                        rows apart. Both `h="100%"` in that chain are load-bearing. */}
+                    {/* Style object, not `mt`/`pt` props: this is react-router's Link, not a
+                        Mantine component, so style props would land as bogus DOM attributes. */}
+                    <Link
+                      to={`/profile/${user._id}`}
+                      style={{ ...linkStyle, marginTop: 'auto', paddingTop: 'var(--mantine-spacing-sm)' }}>
+                      <Text>더보기</Text>
+                    </Link>
+                  </Stack>
+                </Paper>
               </Grid.Col>
             </Grid>
           </Stack>

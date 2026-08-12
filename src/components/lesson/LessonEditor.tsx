@@ -1,8 +1,8 @@
 import { Form, useActionData, useNavigation } from "react-router";
 import MainPageAppshell from "../appshell/MainPageAppshell";
-import { useUserContext } from "../../root";
+import { useUserContext } from "../../libs/useUserContext";
 
-import React, { useCallback, type SetStateAction, useEffect, useState, useRef } from "react";
+import React, { type SetStateAction, useEffect, useState, useRef } from "react";
 import { Button, Group, ScrollArea, Stack, Textarea, Text, Divider, Paper, Modal, Image as ImageComponent, Loader, ThemeIcon, TextInput, Switch, Box, Flex } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import { useEditor } from '@tiptap/react'
@@ -30,6 +30,8 @@ import '../../styles/proseMirror.css'
 import { type Lesson } from "../../libs/types";
 
 import { uploadImage, PLACEHOLDER_MARKDOWN, PLACEHOLDER_LESSON } from "../../libs/utils";
+import { useDebounce } from "../../libs/useDebounce";
+import type { JSONContent } from "@tiptap/core";
 import { MOBILE_QUERY, TAP_TARGET, TOUCH_QUERY } from "../../libs/styles";
 import { useDisclosure, useElementSize, useMediaQuery } from "@mantine/hooks";
 import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone';
@@ -37,58 +39,6 @@ import { IconCheck, IconPhoto, IconUpload, IconX } from "@tabler/icons-react";
 
 
 const lowlight = createLowlight(all);
-
-/**
- * Debounce that cannot resurrect a draft the submit action just deleted.
- *
- * THE BUG THIS FIXES. `clientAction` removes the three localStorage keys on a
- * successful create/edit and then redirects — but the draft came back anyway,
- * so `/lesson/create` reopened the "저장된 초안이 있습니다" modal on the next
- * visit. Two defects in the old four-line version combined to guarantee it:
- *
- *  1. NO IDENTITY STABILITY. `fn` is an inline arrow at every call site, so it
- *     is a new function on every render; with `fn` in the useCallback deps the
- *     returned debouncer was new on every render too. `debounceMetaSave` is a
- *     dependency of a useEffect, so that effect re-ran after EVERY render and
- *     re-armed an 800ms timer each time — including the extra renders that
- *     submitting itself causes as `navigation.state` moves idle → submitting →
- *     loading. The last of those lands after the action has already cleared the
- *     keys.
- *  2. NO CLEANUP. The pending `setTimeout` was never cleared on unmount, so it
- *     survived the redirect and wrote to localStorage from a dead component.
- *
- * Net effect: every successful create re-created the meta key ~800ms after the
- * action deleted it, and `hasCached` in the route loader only needs ONE of the
- * three keys to be non-null.
- *
- * The fix keeps the deps to `[delay]` so the debouncer is referentially stable,
- * holds the newest `fn` in a ref so a stable identity does not mean a stale
- * closure, and clears any pending timer on unmount. The ref is assigned in an
- * effect, never during render, because assigning during render is the thing
- * `react-hooks/immutability` is actually there to catch.
- *
- * The "latest ref" split matters for the guard in the save bodies below: ARGS
- * are captured when the debounced call was made (the payload the user typed),
- * but the CLOSURE is the current one, so the timer sees today's `isSubmitting`
- * rather than its value 800ms ago.
- */
-function useDebounce<T extends (...args: any[]) => void>(fn: T, delay: number) {
-  const timeout = useRef<number | null>(null);
-  const latest = useRef(fn);
-
-  useEffect(() => {
-    latest.current = fn;
-  });
-
-  useEffect(() => () => {
-    if (timeout.current !== null) window.clearTimeout(timeout.current);
-  }, []);
-
-  return useCallback((...args: Parameters<T>) => {
-    if (timeout.current !== null) window.clearTimeout(timeout.current);
-    timeout.current = window.setTimeout(() => latest.current(...args), delay);
-  }, [delay]);
-}
 
 function handleMarkdownChange(isMarkdown: boolean, setIsMarkdown: React.Dispatch<SetStateAction<boolean>>, setMarkdown: React.Dispatch<SetStateAction<string>>, getEditorAsMarkdown: () => (string)) {
   modals.openConfirmModal({
@@ -175,7 +125,7 @@ type LessonMetaCache = { title?: string; studentOnly?: boolean };
 interface LessonEditorProps {
   mode: "edit" | "create";
   initialContent: Lesson | null;
-  tiptapCached: object;
+  tiptapCached: JSONContent;
   markdownCached: string;
   metaCached: LessonMetaCache | null;
   subjectId: string;
@@ -259,7 +209,7 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
    * or the recovery draft silently stops tracking exactly when it is most
    * likely to be needed.
    */
-  const debounceSave = useDebounce((json: any) => {
+  const debounceSave = useDebounce((json: JSONContent) => {
     if (isSubmitting) return;
     try {
       localStorage.setItem(storageKey, JSON.stringify(json));
@@ -626,7 +576,7 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
               setCacheDecision('done');
             }}>새로 시작</Button>
             <Button disabled={!editor} onClick={() => {
-              editor?.commands.setContent(tiptapCached as any, { emitUpdate: false });
+              editor?.commands.setContent(tiptapCached, { emitUpdate: false });
               setMarkdown(markdownCached);
               if (metaCached) {
                 if (metaCached.title !== undefined) setTitle(metaCached.title);

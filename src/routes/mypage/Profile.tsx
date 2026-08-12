@@ -2,7 +2,7 @@ import { Box, Button, Container, Flex, Grid, Group, Image, Pagination, ScrollAre
 import { recentViewSchema, streakSchema, type Streak, type User } from "../../libs/types";
 import MainPageAppshell from "../../components/appshell/MainPageAppshell";
 import { Link, useLoaderData, type LoaderFunctionArgs } from "react-router";
-import { useUserContext } from "../../root";
+import { useUserContext } from "../../libs/useUserContext";
 import { http } from "../../libs/http";
 // Page rules plus the shared chrome. Page keys win on collision — the same
 // merge SubjectViewer uses. Without `shared`, `classes.Vertical_align` and

@@ -43,7 +43,12 @@
   --btn-home-color: rgba(200, 185, 180, 0.6);
   --footer-color:   rgba(200, 185, 180, 0.25);
 
-  min-height: 100vh;
+  /* `min-height`, not `height`, and `dvh`, not `vh`. `vh` includes the mobile
+     URL-bar strip and yields a spurious vertical scroll; `min-` is what keeps a
+     long server-supplied description from overflowing a centred flex parent
+     into unreachable negative coordinates (the Prompt 17 trap). Both matter —
+     do not collapse this to `height: 100dvh`. */
+  min-height: 100dvh;
   background: var(--bg);
   display: flex;
   align-items: center;
@@ -140,7 +145,14 @@
 }
 
 .code {
-  font-size: clamp(100px, 18vw, 160px);
+  /* Floor lowered 100px → 72px. At 320px the 18vw term is 57.6px so the floor
+     governs, and the content box is 320 − 2×16 (Container px:'md') = 288px.
+     Three glyphs ("500"/"404") fit at 100px; ErrorPage.tsx's `code = "Oops!"`
+     branch is five glyphs ≈ 280px and clips. It cannot cause a horizontal page
+     scroll — `.page` is overflow:hidden — but a clipped word still fails
+     Definition of done item 4. Unchanged at every width >= 400px, where 18vw
+     already exceeds 72px. */
+  font-size: clamp(72px, 18vw, 160px);
   font-weight: 900;
   font-family: Georgia, serif;
   line-height: 1;
@@ -198,9 +210,20 @@
   /* Named, not `all`: .btnRetry:hover changes only these two. */
   transition: background 0.25s ease, border-color 0.25s ease !important;
 }
-.btnRetry:hover {
-  background: var(--btn-hover-bg) !important;
-  border-color: var(--btn-hover-border) !important;
+/* Hover contract, first row: this rule changes a SURFACE only (background and
+   border-color) and reveals no label or affordance, so it is gated with NO
+   `@media (hover: none)` counterpart — nothing is lost on touch. Stated
+   explicitly because the contract requires the classification to be recorded
+   rather than left implied.
+
+   No `transition` in here: the base rule already governs both directions, and
+   repeating the shorthand would re-assert `transition-property: all` for as
+   long as the pointer is over the button. */
+@media (hover: hover) and (pointer: fine) {
+  .btnRetry:hover {
+    background: var(--btn-hover-bg) !important;
+    border-color: var(--btn-hover-border) !important;
+  }
 }
 
 .btnHome {
@@ -211,29 +234,36 @@
   font-size: 0.85rem !important;
 }
 
-/* ── Theme toggle button ─────────────────────────────────── */
-.themeToggle {
-  position: absolute;
-  top: 20px;
-  right: 24px;
-  z-index: 10;
-  background: transparent;
-  border: 1px solid var(--ring-border);
-  color: var(--desc-color);
-  font-family: Georgia, serif;
-  font-style: italic;
-  font-size: 0.75rem;
-  letter-spacing: 0.1em;
-  padding: 6px 14px;
-  cursor: pointer;
-  /* Named, not `all`: .themeToggle:hover changes only these two. */
-  transition: border-color 0.25s ease, color 0.25s ease;
-  border-radius: 2px;
-}
-.themeToggle:hover {
-  border-color: var(--btn-border);
-  color: var(--btn-color);
-}
+/* REMOVED — `.themeToggle` and `.themeToggle:hover`.
+
+   They styled a scheme toggle that has never existed. ErrorPage.tsx is this
+   file's only importer and reads no setter, so nothing could render them;
+   `grep -rn "themeToggle" src/` returned hits in this stylesheet and nowhere
+   else. Every other class here IS referenced from the TSX — this was the sole
+   exception.
+
+   Deleted rather than wired up, and the third reason is the decisive one:
+
+   1. After the useComputedColorScheme fix in ErrorPage.tsx there is no scheme
+      PROBLEM here — the page follows the persisted scheme in all three
+      settings. Both buttons on it lead straight back to a surface that has a
+      toggle. (Contrast Prompt 9's lesson viewer, which is a page you STAY on.)
+   2. Dead CSS is not inert, it generates false precedent. This is the third
+      instance in the migration after `.selectBox` — whose outline token was
+      cited as precedent for the login buttons and would have shipped a
+      measurable AA failure — and `classes.Box2`. These rules used
+      --ring-border and --btn-border in a CONTROL context, which is exactly the
+      shape of thing a later prompt reasons from by analogy.
+   3. Even the "add a toggle" future does not use them. The app already has
+      <ColorSchemeToggle /> in src/components/appshell/ColorSchemeToggle.tsx,
+      mounted in both appshells and on Settings; a fourth mount here would use
+      THAT component, a Mantine ActionIcon with its own styling, aria-label and
+      Tooltip. This hand-rolled <button> skin was dead in both branches.
+
+   Adding a toggle to the error page remains available as a separate, additive
+   change; it is not blocked by this deletion and should not be bundled with
+   it. This file ships inside root-*.css, i.e. on the critical path of every
+   page load, so the bytes were not free either. */
 
 /* ── Footer ─────────────────────────────────────────────── */
 .footer {

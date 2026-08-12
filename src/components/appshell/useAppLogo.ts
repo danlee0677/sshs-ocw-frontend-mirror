@@ -19,9 +19,10 @@ import logoDark from '@/assets/app-logo-dark.png';
  * appshells already depend on JS to render at all.
  *
  * Lives in its own module rather than alongside a component: a hook exported from
- * a file that also exports components trips `react-refresh/only-export-components`
- * — see root.tsx's `useUserContext`, which is the one such error in the lint
- * baseline.
+ * a file that also exports components trips `react-refresh/only-export-components`.
+ * `src/libs/useUserContext.ts` exists for the same reason — it used to be exported
+ * from root.tsx and was the last such error in the lint baseline before it was
+ * moved out.
  */
 export function useAppLogo(): string {
   const scheme = useComputedColorScheme('light', { getInitialValueInEffect: false });

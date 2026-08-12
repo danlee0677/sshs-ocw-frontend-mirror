@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLoaderData, useFetcher, type LoaderFunctionArgs } from "react-router";
-import { Title, Table, TextInput, Button, Group, ActionIcon, Text, ScrollArea, Stack, } from "@mantine/core";
+import { Title, Table, TextInput, Button, Group, ActionIcon, Text, ScrollArea, Stack, Container, } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import { IconCopy, IconCopyCheck, IconTrash } from "@tabler/icons-react";
 import { http } from "../../libs/http";
@@ -83,7 +83,7 @@ function CopyButton({ text }: { text: string }) {
         setTimeout(() => {
           setIsCopied(false);
         }, 2000);
-      } catch (error) {
+      } catch {
         notifications.show({
           title: "복사 실패!",
           message: "사용자 식별자 복사를 실패하였습니다.",
@@ -137,15 +137,26 @@ function TransferOwnershipSection({ mentoringId }: { mentoringId: string }) {
   return (
     <Stack mt="xl">
       <Title order={4}>소유권 이전</Title>
-      <Group align="flex-start">
+      {/* `miw` ships with `flex` deliberately: flex={1} is `flex: 1 1 0%`, and
+          a flex-basis of 0 means the line never breaks — the input would shrink
+          to a sliver instead of the button wrapping below it. */}
+      <Group align="flex-start" wrap="wrap">
         <TextInput
           placeholder="이전할 사용자 ID"
           maxLength={64}
           value={toUserId}
           onChange={(e) => setToUserId(e.currentTarget.value)}
           error={fetcher.data?.error}
+          flex={1}
+          miw={200}
         />
-        <Button color="red" loading={isTransferring} disabled={!toUserId.trim()} onClick={handleTransfer}>
+        <Button
+          color="red"
+          loading={isTransferring}
+          disabled={!toUserId.trim()}
+          onClick={handleTransfer}
+          w={{ base: '100%', xs: 'auto' }}
+        >
           소유권 이전
         </Button>
       </Group>
@@ -163,12 +174,22 @@ export default function MentoringAccess() {
   return (
     <MainPageAppshell>
       <ScrollArea w="100%" h="100%">
-        <Stack align="center" p="md">
-          <Stack w="80%">
+        {/* Was `<Stack align="center" p="md"><Stack w="80%">` — 80% of an
+          * UNCAPPED viewport, character-for-character the defect the follow-up
+          * pass fixed on SearchResult and SubjectViewer and Prompt 16 fixed on
+          * both mentoring pages. Bare <Container>, no `size` prop; `py`, not
+          * `p`, because the Container supplies `px` itself. */}
+        <Container w="100%" py="md">
+          <Stack w="100%">
             <Title order={2} mb="lg">
               권한 관리
             </Title>
 
+            {/* minWidth 480, not the 320 the plan suggested: four columns, one
+              * of which holds a 24-character Mongo ObjectId AND a copy button
+              * in the same cell. 320 would still clip. Compare OrderTable's
+              * 420 and SearchResult's 340 — the number tracks the content. */}
+            <Table.ScrollContainer minWidth={480}>
             <Table highlightOnHover verticalSpacing="sm">
               <Table.Thead>
                 <Table.Tr>
@@ -207,6 +228,7 @@ export default function MentoringAccess() {
                 )}
               </Table.Tbody>
             </Table>
+            </Table.ScrollContainer>
 
             {canManage && (
               <addFetcher.Form
@@ -214,15 +236,17 @@ export default function MentoringAccess() {
                 action="/action/mentoring/access"
               >
                 <input type="hidden" name="mentoringId" value={mentoringId} />
-                <Group mt="lg" align="flex-start">
+                <Group mt="lg" align="flex-start" wrap="wrap">
                   <TextInput
                     name="userId"
                     placeholder="추가할 사용자 ID"
                     maxLength={64}
                     defaultValue=""
                     error={addFetcher.data?.error}
+                    flex={1}
+                    miw={200}
                   />
-                  <Button type="submit" loading={isAdding}>
+                  <Button type="submit" loading={isAdding} w={{ base: '100%', xs: 'auto' }}>
                     편집자 추가
                   </Button>
                 </Group>
@@ -231,7 +255,7 @@ export default function MentoringAccess() {
 
             {userRole === "owner" && <TransferOwnershipSection mentoringId={mentoringId} />}
           </Stack>
-        </Stack>
+        </Container>
       </ScrollArea>
     </MainPageAppshell>
   );

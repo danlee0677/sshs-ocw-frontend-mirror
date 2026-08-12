@@ -1,8 +1,8 @@
 import { Form, useActionData, useNavigation } from "react-router";
 import MainPageAppshell from "../appshell/MainPageAppshell";
-import { useUserContext } from "../../root";
+import { useUserContext } from "../../libs/useUserContext";
 
-import React, { useCallback, type SetStateAction, useEffect, useState, useRef } from "react";
+import React, { type SetStateAction, useEffect, useState, useRef } from "react";
 import {
   Button, Group, Stack, Textarea, Text, Paper, Modal,
   Image as ImageComponent, Loader, ThemeIcon, TextInput, Box, Anchor, ActionIcon, Divider,
@@ -30,6 +30,8 @@ import '../../styles/proseMirror.css';
 import { type Mentoring, type MentoringFile } from "../../libs/types";
 
 import { uploadImage, PLACEHOLDER_MENTORING_MARKDOWN, PLACEHOLDER_MENTORING, useableTags } from "../../libs/utils";
+import { useDebounce } from "../../libs/useDebounce";
+import type { JSONContent } from "@tiptap/core";
 import { MOBILE_QUERY, TAP_TARGET, TOUCH_QUERY } from "../../libs/styles";
 import { useDisclosure, useElementSize, useMediaQuery } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
@@ -38,39 +40,6 @@ import { IconCheck, IconPhoto, IconUpload, IconX } from "@tabler/icons-react";
 
 
 const lowlight = createLowlight(all);
-
-/**
- * Debounce that cannot resurrect a draft the submit action just deleted.
- * Twin of the hook in LessonEditor.tsx — read the full write-up there.
- *
- * Short version: `fn` is an inline arrow, so with `fn` in the useCallback deps
- * the debouncer was a new function every render, which made the useEffect that
- * depends on `debounceMetaSave` re-arm an 800ms timer on every render — and the
- * pending timer was never cleared on unmount. So the timer armed by the renders
- * that submitting itself causes fired after `clientAction` had already removed
- * the keys, writing the draft back from a dead component. `hasCached` needs
- * only one of the three keys to survive.
- *
- * Stable deps `[delay]`, newest `fn` in a ref (assigned in an effect, not
- * during render), pending timer cleared on unmount.
- */
-function useDebounce<T extends (...args: any[]) => void>(fn: T, delay: number) {
-  const timeout = useRef<number | null>(null);
-  const latest = useRef(fn);
-
-  useEffect(() => {
-    latest.current = fn;
-  });
-
-  useEffect(() => () => {
-    if (timeout.current !== null) window.clearTimeout(timeout.current);
-  }, []);
-
-  return useCallback((...args: Parameters<T>) => {
-    if (timeout.current !== null) window.clearTimeout(timeout.current);
-    timeout.current = window.setTimeout(() => latest.current(...args), delay);
-  }, [delay]);
-}
 
 function handleMarkdownChange(
   isMarkdown: boolean,
@@ -150,7 +119,7 @@ type MentoringMetaCache = {
 interface MentoringEditorProps {
   mode: "edit" | "create";
   initialContent: Mentoring | null;
-  tiptapCached: object;
+  tiptapCached: JSONContent;
   markdownCached: string;
   metaCached: MentoringMetaCache | null;
   storageKey: string;
@@ -228,7 +197,7 @@ export default function MentoringEditor({
    * rather than redirecting, the author keeps editing, and autosave has to come
    * back when `navigation.state` returns to idle.
    */
-  const debounceSave = useDebounce((json: any) => {
+  const debounceSave = useDebounce((json: JSONContent) => {
     if (isSubmitting) return;
     try {
       localStorage.setItem(storageKey, JSON.stringify(json));
@@ -562,7 +531,7 @@ export default function MentoringEditor({
               setCacheDecision('done');
             }}>새로 시작</Button>
             <Button disabled={!editor} onClick={() => {
-              editor?.commands.setContent(tiptapCached as any, { emitUpdate: false });
+              editor?.commands.setContent(tiptapCached, { emitUpdate: false });
               setMarkdown(markdownCached);
               if (metaCached) {
                 if (metaCached.title !== undefined) setTitle(metaCached.title);

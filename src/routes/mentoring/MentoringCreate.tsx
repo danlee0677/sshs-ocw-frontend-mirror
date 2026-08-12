@@ -5,9 +5,10 @@ import {
   MENTORING_TIPTAP_CREATE_STORAGE_KEY,
   MENTORING_MARKDOWN_CREATE_STORAGE_KEY,
   MENTORING_META_CREATE_STORAGE_KEY,
-  PLACEHOLDER_LESSON,
+  PLACEHOLDER_TIPTAP_DOC,
   PLACEHOLDER_MARKDOWN,
   tryParseJSON,
+  readTiptapDraft,
 } from "../../libs/utils";
 import type { MentoringFile } from "../../libs/types";
 
@@ -31,12 +32,12 @@ export async function clientLoader() {
     if (!parsed.data.roles.includes("admin") && !parsed.data.roles.includes("creator"))
       throw redirect("/home");
 
-    const parsedTiptap = tryParseJSON(localStorage.getItem(MENTORING_TIPTAP_CREATE_STORAGE_KEY));
+    const parsedTiptap = readTiptapDraft(localStorage.getItem(MENTORING_TIPTAP_CREATE_STORAGE_KEY));
     const rawMarkdown = localStorage.getItem(MENTORING_MARKDOWN_CREATE_STORAGE_KEY);
     const parsedMeta = tryParseJSON<MentoringMetaCache>(localStorage.getItem(MENTORING_META_CREATE_STORAGE_KEY));
 
     return {
-      tiptapCached: parsedTiptap ?? PLACEHOLDER_LESSON.content,
+      tiptapCached: parsedTiptap ?? PLACEHOLDER_TIPTAP_DOC,
       markdownCached: rawMarkdown ?? PLACEHOLDER_MARKDOWN,
       metaCached: parsedMeta,
       hasCached: parsedTiptap !== null || rawMarkdown !== null || parsedMeta !== null,

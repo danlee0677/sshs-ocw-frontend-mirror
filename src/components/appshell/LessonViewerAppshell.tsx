@@ -6,7 +6,7 @@ import { FROM_SM_QUERY, HEADER_HEIGHT, linkStyle } from "../../libs/styles";
 import classes from "./lessonViewer.module.css"
 import { type RecentView, type Subject, type Lesson } from "../../libs/types";
 import { useAppLogo } from './useAppLogo'
-import { useUserContext } from "../../root";
+import { useUserContext } from "../../libs/useUserContext";
 import { ColorSchemeToggle, ColorSchemeToggleFull } from "./ColorSchemeToggle";
 
 interface LessonViewerAppshellProps {

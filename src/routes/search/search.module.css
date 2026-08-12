@@ -53,14 +53,36 @@
    the hover rule alone would leave them looking like plain text on every phone,
    so the accent color is permanent and survives the gate; the underline is the
    touch counterpart, re-derived against the base state rather than copied. */
+/* Contrast measured against the surfaces these actually sit on — a Table.Td at
+   Mantine's table font size (sm, 14px), so the 4.5:1 small-text threshold
+   applies, not 3:1.
+
+                            light vs #fff    dark vs #242424
+     base  was blue-7/4       4.20 FAIL          6.27
+     hover was blue-6/6       4.60               4.36 FAIL
+     base  now  blue-8/4      5.02               6.27
+     hover now  blue-9/3      6.09               7.90
+
+   Two separate defects. The DARK HOVER one is the recorded find: a bare
+   numbered shade meant hovering a result made the title DARKER in dark mode,
+   6.27 -> 4.36. It fails only on hover, only in one scheme, which is why the
+   Phase 2 dark-mode pass missed it.
+
+   The LIGHT BASE one was not recorded anywhere: blue-7 on white is 4.20:1,
+   below AA, in the shipped and in-use scheme. It survived four phases because
+   the dark pass looked for dark breaks and light was assumed to be the working
+   baseline. blue-8 clears it at 5.02 and is one perceptual step darker.
+
+   Both hover values now INTENSIFY in their own scheme — darker on light,
+   lighter on dark — which is the direction the bare blue-6 got backwards. */
 .resultTitle {
     cursor: pointer;
-    color: light-dark(var(--mantine-color-blue-7), var(--mantine-color-blue-4));
+    color: light-dark(var(--mantine-color-blue-8), var(--mantine-color-blue-4));
 }
 
 @media (hover: hover) and (pointer: fine) {
     .resultTitle:hover {
-        color: var(--mantine-color-blue-6);
+        color: light-dark(var(--mantine-color-blue-9), var(--mantine-color-blue-3));
         text-decoration: underline;
     }
 }
@@ -71,16 +93,26 @@
     }
 }
 
+/* `color: var(--mantine-color-gray-6)` DELETED rather than re-tokenised. It
+   failed the numbered-shade gate (a fixed shade that does not follow the
+   scheme), but swapping it for --mantine-color-dimmed would have cleared the
+   gate while leaving the real problem: dimmed IS gray-6 in light mode, and
+   gray-6 on white measures 3.32:1 — below AA for this button's 14px 검색
+   label. Dropping the override lets variant="outline" supply
+   --mantine-color-blue-outline, which follows primaryShade and is AA-clean in
+   both schemes.
+
+   `border-color` stays: default-border is the Color contract's divider row and
+   is correct for a chrome edge. */
 .searchButton {
-    color: var(--mantine-color-gray-6);
     border-color: var(--mantine-color-default-border);
 }
 
 /* Surface + accent only, nothing revealed — gated with no counterpart. */
 @media (hover: hover) and (pointer: fine) {
     .searchButton:hover {
-        color: var(--mantine-color-blue-6);
-        border-color: var(--mantine-color-blue-6);
+        color: light-dark(var(--mantine-color-blue-7), var(--mantine-color-blue-4));
+        border-color: light-dark(var(--mantine-color-blue-7), var(--mantine-color-blue-4));
         background-color: var(--mantine-color-blue-light);
     }
 }
