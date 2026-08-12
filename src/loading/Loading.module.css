@@ -58,30 +58,43 @@
 }
 
 /* ── Logo ───────────────────────────────────────────────── */
-/* `sshs.png` is the school crest: a deep navy mark (avg opaque rgb(37,36,115))
-   on a TRANSPARENT field — 23% of its pixels are fully transparent. Against the
-   old #fafbfd that measured 12.8:1; against var(--mantine-color-body) in dark
-   (#242424) it is 1.17:1, i.e. invisible. Switching the page background above
-   without this would have traded a white flash for a blank screen.
+/* `sshs.png` is the school crest: a circular seal — a solid navy disc (avg
+   opaque rgb(37,36,115)) carrying white lettering and a white atom, sitting on
+   a transparent square field.
 
-   The plate is the Color contract's brand-exception treatment for images:
-   "never filtered or inverted — but adapt the FRAME around them." Do not reach
-   for a CSS filter/invert on the crest itself.
+   THE WHITE PLATE THAT USED TO BE HERE IS GONE, DELIBERATELY. It was
+   `background: light-dark(transparent, var(--mantine-color-white))` plus
+   `border-radius: 50%` and `padding: 8px`, and it existed because the navy
+   measures 1.17:1 against var(--mantine-color-body) in dark (#242424) — below
+   the 3:1 non-text minimum. In practice it rendered as a hard white ring around
+   the seal in dark mode and read as a border artifact rather than as a frame.
 
-   Light mode is deliberately unchanged (`transparent`). box-sizing: border-box
-   is global (index.css), so the padding comes out of the 120px box rather than
-   growing it, and the background shows through the crest's transparent field
-   because it is painted on the <img> itself.
+   Removed on a judgement call, recorded here so it is not "fixed" back by
+   someone reading the ratio alone: 1.17:1 is a LUMINANCE metric and says
+   nothing about hue. This navy is strongly chromatic against a neutral
+   near-black, so it separates by chroma where the luminance ratio predicts it
+   would not. What is lost in dark mode is the seal's outer EDGE; the white
+   lettering and atom inside it keep full contrast either way.
 
-   The better fix is an asset, not CSS: a light-ink `sshs-dark.png` selected the
-   way useAppLogo() selects the wordmark. There is no such file today. */
+   Dropping the padding returns the rendered crest to the full 120px box (it was
+   104px with the 8px inset, since box-sizing: border-box is global via
+   index.css). `border-radius` went with it — with no background it clipped
+   nothing, because object-fit: contain never overflows the box.
+
+   STILL TRUE, and the reason a filter is not the alternative: the Color
+   contract's brand-exception rule for images is "never filtered or inverted —
+   but adapt the FRAME around them." Inverting this navy yields a pale
+   yellow-green, which is not the brand. If the dark-mode edge is ever wanted
+   back, the fix is an asset — a light-ink `sshs-dark.png` — not CSS. Note that
+   this file is root.tsx's HydrateFallback and so ships in the prerendered
+   index.html, which means such a swap must be CSS-driven off
+   [data-mantine-color-scheme] rather than useAppLogo()'s JS hook, or the
+   prerender bakes in the light choice and reintroduces the flash the .page rule
+   above exists to prevent. */
 .logo {
   height: 120px;
   width: 120px;
   object-fit: contain;
-  background: light-dark(transparent, var(--mantine-color-white));
-  border-radius: 50%;
-  padding: 8px;
   animation: pulse 2.4s ease-in-out infinite;
 }
 
