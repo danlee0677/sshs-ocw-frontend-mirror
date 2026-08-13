@@ -1,5 +1,5 @@
 import MainPageAppshell from "../../components/appshell/MainPageAppshell";
-import { Box, Container, Flex, Image, Grid, Group, Paper, SimpleGrid, Stack, Text, Title } from '@mantine/core';
+import { Box, Container, Flex, Image, Grid, Paper, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 import classes from '../../styles/shared.module.css'
 // import { ProgressCard } from './Progress'
 import { HomeBadge } from "./HomeBadge";
@@ -10,6 +10,7 @@ import z from "zod";
 import { useUserContext } from "../../libs/useUserContext";
 import { isAxiosError } from "axios";
 import { FloatingActionButton } from "../../components/home/FloatingActionButton";
+import { SubjectRow, SUBJECT_ROW_HEIGHT } from "../../components/subject/SubjectRow";
 import { calculateCurrentStreak, calculateMaxStreak } from "../../libs/utils";
 import { linkStyle } from "../../libs/styles";
 
@@ -203,39 +204,35 @@ function Home() {
                       corrected — and its `ref` was attached to three different elements
                       in one render, so it was measuring whichever mounted last. The
                       `truncate` + `miw={0}` below already does the job in pure CSS. */}
+                  {/* SubjectRow is shared with both of Profile's cards. It is what
+                      replaced this block's `w='80%'` Group — that 80% sat inside
+                      `.Vertical_align`'s `justify-content: center`, so it dropped
+                      10% off each side and pushed the thumbnails ~48px in from the
+                      Paper edge. The rows are now full width with an 8px inset.
+
+                      HEIGHT IS UNCHANGED at SUBJECT_ROW_HEIGHT (72px), which is
+                      also what `mih={72}` here always was: the thumbnail went 75 →
+                      56 precisely so that 56 + 8 + 8 lands back on 72. At 75 the
+                      new padding would have grown this card by ~76px.
+
+                      The placeholder branches stay inline — they render no subject
+                      and share nothing with SubjectRow but that height. */}
                   {paddedProgress.map((v, i) => (
                     v.subject._id ?
-                      <Box className={`${classes.Box2} ${classes.Vertical_align}`} w={'100%'} mih={72} miw={0} key={v.lesson._id}>
-                        <Group wrap='nowrap' w={'80%'} h={'100%'} miw={0}>
-                          <Link to={`/subject/${v.subject._id}`} className="block"
-                            style={{
-                              display: 'flex',       // Makes the <a> tag a flex container
-                              alignItems: 'center',  // Centers the image vertically
-                              height: '100%',        // Forces <a> to fill the Group's height
-                            }}>
-                            <Image fit="cover" w='75' h={'75'} src={v.subject.image_url} className={classes.Image1} />
-                          </Link>
-                          {/* `style={linkStyle}` replaces an inline `color: "black"` on the
-                              inner Text. Deleting that color alone was not enough: nothing
-                              in index.css or Mantine's baseline resets anchors, so these
-                              would have fallen back to UA link blue + underline.
-                              linkStyle's `color: 'inherit'` is scheme-safe. */}
-                          <Stack gap={0} miw={0}>
-                            <Link to={`/subject/${v.subject._id}`} style={linkStyle}>
-                              <Text truncate fw={'bold'}>{v.subject.title}</Text>
-                            </Link>
-                            <Link to={`/lesson/${v.lesson._id}`} style={linkStyle}>
-                              <Text truncate>{v.lesson.title}</Text>
-                            </Link>
-                          </Stack>
-                        </Group>
-                      </Box>
+                      <SubjectRow
+                        key={v.lesson._id}
+                        to={`/subject/${v.subject._id}`}
+                        imageUrl={v.subject.image_url}
+                        title={v.subject.title}
+                        subtitle={v.lesson.title}
+                        subtitleTo={`/lesson/${v.lesson._id}`}
+                      />
                       : (i == 0 ?
-                        <Box w="100%" mih={72} className={`${classes.Vertical_align}`} key={i}>
+                        <Box w="100%" mih={SUBJECT_ROW_HEIGHT} className={`${classes.Vertical_align}`} key={i}>
                           <Text>다양한 강의를 수강해보세요!</Text>
                         </Box>
                         :
-                        <Box w="100%" mih={72} miw={0} key={i} />
+                        <Box w="100%" mih={SUBJECT_ROW_HEIGHT} miw={0} key={i} />
                       )
                   ))}
                   {/* `mt="auto"` pins this to the bottom of the column no matter how many

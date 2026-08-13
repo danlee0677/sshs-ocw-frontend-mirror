@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, Stack, TextInput, Flex, Title, Image, Group, Text, Loader, ThemeIcon, Modal, ScrollArea, Space, Box, PillsInput, Pill, Combobox, useCombobox, CheckIcon, Switch } from "@mantine/core";
+import { Button, Stack, TextInput, Flex, Title, Image, Group, Text, Loader, ThemeIcon, Modal, ScrollArea, Space, Box, PillsInput, Pill, Combobox, useCombobox, CheckIcon, Switch, Textarea } from "@mantine/core";
 import { useDisclosure, useListState, useMediaQuery } from "@mantine/hooks";
 import { MOBILE_QUERY, TAP_TARGET, TOUCH_QUERY } from "../../libs/styles";
 import { type Subject } from "../../libs/types";
@@ -312,7 +312,7 @@ function SubjectEditor({ mode, initialContent, userRole }: SubjectEditorProps) {
                     align={{ base: 'stretch', md: 'flex-start' }}
                     gap="md"
                   >
-                  <Stack w={{ base: '100%', md: '30%' }} gap="xs" align="center">
+                  <Stack w={{ base: '100%', md: '30%' }} gap="xs" align="stretch">
                     <Image w={{ base: 120, sm: 160 }} src={imageUrl || PLACEHOLDER_SUBJECT.image_url}></Image>
                     { user.roles.includes('admin') && <Group>
                         <Switch defaultChecked={initialContent?.teacher_certified || false} name="teacher_certified" />
@@ -343,8 +343,8 @@ function SubjectEditor({ mode, initialContent, userRole }: SubjectEditorProps) {
 
                     <TextInput defaultValue={initialContent.title} placeholder="변경할 과목 제목을 입력하세요(예: 2025 고급프로그래밍 강좌)"
                       name="title" required />
-                    <TextInput placeholder="과목 설명을 수정하세요" defaultValue={initialContent.description}
-                      name="description" required />
+                    <Textarea placeholder="과목 설명을 수정하세요" defaultValue={initialContent.description}
+                      name="description" required autosize />
 
                     <Combobox store={combobox} onOptionSubmit={handleValueSelect} >
                       <Combobox.DropdownTarget>
@@ -397,16 +397,16 @@ function SubjectEditor({ mode, initialContent, userRole }: SubjectEditorProps) {
                   {actionData?.error && (
                     <Text c="red" ta="center" fw="bold">{actionData.error}</Text>
                   )}
-                  <Stack gap="md" w={{ base: '100%', sm: '80%', md: '50%' }} maw={600}>
+                  <Stack gap="md" w={{ base: '100%', sm: '80%', md: '50%' }} maw={600} >
                     <input type="hidden" value="false" name="teacher_certified" readOnly/>
                     <Title order={3}>과목 이름 입력</Title>
                     <TextInput placeholder="과목 이름을 입력하세요(예: 일반물리학)"
                       defaultValue="" name="title" required />
                     <Title order={3}>과목 설명 입력</Title>
-                    <TextInput
+                    <Textarea
                       classNames={{ input: classes.DescriptionInput }}
                       placeholder="간단한 과목 설명을 입력하세요"
-                      defaultValue="" name="description" required />
+                      defaultValue="" name="description" required autosize/>
 
                     <Combobox store={combobox} onOptionSubmit={handleValueSelect}>
                       <Combobox.DropdownTarget>

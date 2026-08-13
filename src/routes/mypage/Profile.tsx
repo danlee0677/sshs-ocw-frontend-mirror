@@ -1,12 +1,13 @@
-import { Avatar, Box, Button, Container, Flex, Grid, Group, Image, Pagination, ScrollArea, Select, SimpleGrid, Space, Stack, Table, Text, Title, useComputedColorScheme } from "@mantine/core";
+import { Avatar, Box, Button, Container, Flex, Grid, Group, Pagination, ScrollArea, Select, SimpleGrid, Space, Stack, Text, Title, useComputedColorScheme } from "@mantine/core";
 import { recentViewSchema, streakSchema, type Streak, type User } from "../../libs/types";
 import MainPageAppshell from "../../components/appshell/MainPageAppshell";
 import { Link, useLoaderData, type LoaderFunctionArgs } from "react-router";
 import { useUserContext } from "../../libs/useUserContext";
 import { http } from "../../libs/http";
 // Page rules plus the shared chrome. Page keys win on collision — the same
-// merge SubjectViewer uses. Without `shared`, `classes.Vertical_align` and
-// `classes.Image1` below resolved to undefined.
+// merge SubjectViewer uses. `classes.JalnanGothic` is what still needs `shared`
+// here; `.Vertical_align`, `.Box2` and `.Image1` moved to SubjectRow, which
+// imports the same module directly.
 import shared from "../../styles/shared.module.css"
 import page from "./Profile.module.css"
 
@@ -20,13 +21,14 @@ const classes = { ...shared, ...page }
 // already in this route's CSS asset.
 import streakClasses from "../../components/streak/StreakBody.module.css"
 import { useState } from "react";
-import { calculateCurrentStreak, calculateMaxStreak, PLACEHOLDER_SUBJECT, PLACEHOLDER_USER } from "../../libs/utils";
+import { calculateCurrentStreak, calculateMaxStreak, PLACEHOLDER_USER } from "../../libs/utils";
 import z from "zod";
-import { getStreakColors, linkStyle } from "../../libs/styles";
+import { getStreakColors } from "../../libs/styles";
 import { notifications } from "@mantine/notifications";
 import { IconCopy, IconCopyCheck } from "@tabler/icons-react";
 import { StreakBody } from "../../components/streak/StreakBody";
 import { CustomBadge } from "../../components/badge/CustomBadge";
+import { SubjectRow } from "../../components/subject/SubjectRow";
 
 const SubjectResponseSchema = z.array(z.object({
   title: z.string(),
@@ -318,25 +320,28 @@ export default function Profile() {
                 {likedSubjects.length === 0 ? <>
                   <Text>마음에 드는 강의에 좋아요를 눌러보세요!</Text>
                 </> : <>
-                  {/* same pattern as OrderTable.tsx:74 */}
-                  <Table.ScrollContainer minWidth={320}>
-                  <Table>
-                    <Table.Thead>
-                      <Table.Tr>
-                        <Table.Th>제목</Table.Th>
-                        <Table.Th>설명</Table.Th>
-                      </Table.Tr>
-                    </Table.Thead>
-                    <Table.Tbody>
-                      {likedSubjects.slice((likedSubjectPage - 1) * likedSubjectPageCnt, likedSubjectPage * likedSubjectPageCnt).map((sub) => {
-                        return <Table.Tr key={sub._id} h="50px">
-                          <Table.Td><Link to={`/subject/${sub._id}`} style={linkStyle}>{sub.title}</Link></Table.Td>
-                          <Table.Td>{sub.description}</Table.Td>
-                        </Table.Tr>
-                      })}
-                    </Table.Tbody>
-                  </Table>
-                  </Table.ScrollContainer>
+                  {/* Was a <Table> with 제목 / 설명 columns inside a
+                      `Table.ScrollContainer minWidth={320}`. Two things went with
+                      it: the subject thumbnails were not shown at all, and the 설명
+                      column had no truncation, so a long description widened the
+                      table and put a HORIZONTAL scrollbar inside the card. The
+                      rows below truncate instead, which is why no scroll container
+                      is needed here any more.
+
+                      `subtitleTo` is deliberately omitted: both lines would point
+                      at the same subject, so the description renders as plain
+                      text. See SubjectRow. */}
+                  <Stack w="100%" gap={0}>
+                    {likedSubjects.slice((likedSubjectPage - 1) * likedSubjectPageCnt, likedSubjectPage * likedSubjectPageCnt).map((sub) => (
+                      <SubjectRow
+                        key={sub._id}
+                        to={`/subject/${sub._id}`}
+                        imageUrl={sub.image_url}
+                        title={sub.title}
+                        subtitle={sub.description}
+                      />
+                    ))}
+                  </Stack>
                   {/* `mt="auto"` on BOTH columns' pagination, not just this one.
                       SimpleGrid is `display: grid` with no `align-items`, so the
                       two cards already stretch to the same height and the taller
@@ -351,10 +356,7 @@ export default function Profile() {
                 </>}
               </Stack>
 
-              {/* Not a Table — a Stack of Box rows, so no Table.ScrollContainer
-                  applies here. Overflow is handled by miw={0} + truncate.
-
-                  No `p='xl'` here. It was an INLINE style, so it beat
+              {/* No `p='xl'` here. It was an INLINE style, so it beat
                   `.GroupBox`'s own `padding: 20px` and left this card padded 32px
                   against the liked-subjects card's 20px — two cards side by side
                   in one SimpleGrid with visibly different inner margins. */}
@@ -362,74 +364,33 @@ export default function Profile() {
                 <Title order={3} className={`${classes.JalnanGothic}`}>최근 이용한 강좌</Title>
                 {viewed.length === 0 ? <>
                   <Text>이용한 강의가 없습니다.</Text></> : <>
-                  {/* No `.Vertical_align` on this Stack. That class sets
-                      align-items AND justify-content at (0,1,0) — exactly the
-                      specificity of Mantine's own `.m_6d731127`, which declares
-                      `align-items: var(--stack-align, stretch)` — so which one won
-                      was decided by chunk order rather than intent. Both of its
-                      declarations were inert here anyway (every child is w='100%',
-                      and justify-content does nothing in an auto-height column),
-                      so dropping it changes no pixels.
-
-                      It stays on the row Box below: that is a plain <div> with no
-                      competing Mantine class, which is the only shape this class
-                      is safe on. If centring is ever wanted HERE, use Mantine's
-                      `align` prop — it lands in the inline style attribute and so
-                      cannot be tied. Settings.tsx:15 records the same fix on a
-                      Group; this was the last surviving instance. */}
+                  {/* This Stack carries NO className. It used to have
+                      `.Vertical_align`, which sets align-items and
+                      justify-content at (0,1,0) — exactly the specificity of
+                      Mantine's own `.m_6d731127` (`align-items: var(--stack-align,
+                      stretch)`) — so which one won was decided by chunk order
+                      rather than intent. Do not add it back: it now lives only on
+                      SubjectRow's plain <div>, which is the one shape it is safe
+                      on. If centring is ever wanted here, use Mantine's `align`
+                      prop, which lands in the inline style attribute and cannot be
+                      tied. Settings.tsx:15 records the same fix on a Group. */}
+                  {/* Two lines, not three — the subject DESCRIPTION that used to
+                      sit between them was dropped when this became a SubjectRow.
+                      It was the highest-variance line in the card and is what
+                      carried this column past the one beside it; it is still one
+                      click away on the subject page. `subtitleTo` points at the
+                      LESSON, which is the one thing distinguishing this list from
+                      the liked-subjects list above. */}
                   <Stack w={'100%'} gap={0}>
                     {viewed.slice((viewedPage - 1) * viewedPageCnt, viewedPage * viewedPageCnt).map((v) => (
-                      <Box key={v.lesson._id} className={`${classes.Box2} ${classes.Vertical_align}`} w={'100%'} mih={64} miw={0}>
-                        {/* `py="xs"` rather than `p="md"`: 16px top AND bottom put a
-                            hard 32px floor under every row on top of its text, which
-                            is what pushed this column past the table beside it. */}
-                        <Group wrap='nowrap' w={'80%'} px="md" py="xs">
-                          <Link to={`/subject/${v.subject._id}`} className="block"
-                            style={{
-                              display: 'flex',       // Makes the <a> tag a flex container
-                              alignItems: 'center',  // Centers the image vertically
-                            }}>
-                            {/* TWO FIXED DIMENSIONS. This was `w='auto' h='100%'`,
-                                and the whole containing-block chain above it — row
-                                Box, Group, this Link — was auto-height, so BOTH axes
-                                resolved to `auto` and the <img> fell back to its
-                                natural pixel size (474x531 for the current subject
-                                images). Rows were several hundred px tall and, worse,
-                                a DIFFERENT height per subject. `fit='contain'` was
-                                inert for the same reason: object-fit only does
-                                anything once the box is sized independently of the
-                                intrinsic ratio. `cover` now, because `contain` would
-                                letterbox a portrait source into this square.
-                                `fallbackSrc` for the same reason Avatar has `name`
-                                above — a missing image_url rendered a broken icon.
-                                `?? undefined` because subjectSchema declares
-                                image_url `.nullable()` (types.ts:75), so the
-                                constant is typed `string | null` even though its
-                                literal never is; Image's prop is `string |
-                                undefined`. Do not "simplify" it away. */}
-                            <Image fit="cover" w={56} h={56} fallbackSrc={PLACEHOLDER_SUBJECT.image_url ?? undefined}
-                              src={v.subject.image_url} className={classes.Image1} />
-                          </Link>
-                          {/* Three inline `color: "black"` removed. `style={linkStyle}`
-                              is what replaces them: nothing in index.css or Mantine's
-                              baseline resets anchors, so dropping the color alone
-                              would have left UA link blue. */}
-                          {/* Two lines, not three — the subject DESCRIPTION line
-                              was dropped. It is the highest-variance row in the
-                              card and the third line is what carried this column
-                              past the table beside it. Home.tsx:223 renders the
-                              same two links for the same reason; the description
-                              is still one click away on the subject page. */}
-                          <Stack gap={0} miw={0}>
-                            <Link to={`/subject/${v.subject._id}`} style={linkStyle}>
-                              <Text truncate fw={'bold'}>{v.subject.title}</Text>
-                            </Link>
-                            <Link to={`/lesson/${v.lesson._id}`} style={linkStyle}>
-                              <Text truncate>{v.lesson.title}</Text>
-                            </Link>
-                          </Stack>
-                        </Group>
-                      </Box>
+                      <SubjectRow
+                        key={v.lesson._id}
+                        to={`/subject/${v.subject._id}`}
+                        imageUrl={v.subject.image_url}
+                        title={v.subject.title}
+                        subtitle={v.lesson.title}
+                        subtitleTo={`/lesson/${v.lesson._id}`}
+                      />
                     ))}
                   </Stack>
                   {/* OUTSIDE the row Stack, so it is a direct flex child of the
