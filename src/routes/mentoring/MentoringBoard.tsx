@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLoaderData } from "react-router";
-import { Card, Container, Group, Image, Pagination, Pill, ScrollArea, SimpleGrid, Stack, Text, Title } from "@mantine/core";
+import { Card, Container, Group, Image, Pagination, Pill, SimpleGrid, Stack, Text, Title } from "@mantine/core";
 import z from "zod";
 import { http } from "../../libs/http";
 import { mentoringBoardSchema, type MentoringBoard } from "../../libs/types";
@@ -20,18 +20,17 @@ export default function MentoringBoardPage() {
   const { mentorings } = useLoaderData<typeof clientLoader>();
   return (
     <MainPageAppshell>
-      <ScrollArea w="100%" h="100%">
-        {/* Bare Container, no `size`: root.tsx sets the default to CONTENT_MAX_WIDTH
-            (1200); size="lg" would silently mean 1140. Before this, the grid was
-            `w="80%"` of an UNCAPPED viewport, so on a 1920px screen it ran to
-            ~1536px while Home, Profile, SubjectViewer and SearchResult all stopped
-            at 1200 — invisible on a laptop, obvious side by side on a wide screen.
-            No h="100%": ScrollArea's viewport wrapper is `display: table` with no
-            definite height, so a percentage height would resolve to `auto` anyway. */}
-        <Container w="100%">
-          <MentoringBoardContent mentorings={mentorings} />
-        </Container>
-      </ScrollArea>
+      {/* Bare Container, no `size`: root.tsx sets the default to CONTENT_MAX_WIDTH
+          (1200); size="lg" would silently mean 1140. Before this, the grid was
+          `w="80%"` of an UNCAPPED viewport, so on a 1920px screen it ran to
+          ~1536px while Home, Profile, SubjectViewer and SearchResult all stopped
+          at 1200 — invisible on a laptop, obvious side by side on a wide screen.
+          No h="100%": the shell's ScrollArea content wrapper has `height: auto`,
+          so a percentage height would resolve to `auto` anyway. The shell owns
+          the scroll container — do not add one back. */}
+      <Container w="100%">
+        <MentoringBoardContent mentorings={mentorings} />
+      </Container>
     </MainPageAppshell>
   );
 }

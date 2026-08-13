@@ -589,8 +589,15 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
        bar spans the full width, so capping only the content detaches the bar from
        what it acts on, and the markdown/preview split is the one place in the app
        where extra width is functional rather than decorative (1200 would leave
-       each pane ~590px on a 1920 screen). Recorded so Prompt 24 does not "fix" it. */
-    <MainPageAppshell>
+       each pane ~590px on a 1920 screen). Recorded so Prompt 24 does not "fix" it.
+
+       `showFooter={false}`: the shell owns the page scroller for ordinary routes
+       now, so it can put AppFooter inside it. This editor opts out and keeps the
+       ScrollArea below, because the sticky action bar and the RTE toolbar pinned
+       under it are positioned against THIS viewport — the offsets measured above.
+       Nesting them in a second scroller pins them against the wrong scrollport
+       and slides the toolbar back under the bar, the bug already fixed once. */
+    <MainPageAppshell showFooter={false}>
       <ScrollArea w="100%" h="100%">
         <Modal
           opened={cacheDecision === 'pending'}

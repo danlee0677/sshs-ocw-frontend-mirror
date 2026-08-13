@@ -46,6 +46,71 @@
   min-width: 0;
 }
 
+/* ------------------------------ the centralized page scroll container ------ */
+
+/*
+ * The page body inside the shell's ScrollArea — everything ABOVE AppFooter.
+ *
+ * WHAT THIS BUYS. Every page is at least one full screen tall, so AppFooter
+ * always starts below the fold and has to be scrolled to, however short the
+ * content is. It is the `mih` idea applied to the body alone.
+ *
+ * The earlier version put `min-height: 100%` on the ScrollArea's `content` part
+ * and made it a flex column with this box as `flex: 1 0 auto`. That gives the
+ * opposite result: the COLUMN is one screen tall, so the body absorbs the slack
+ * and the footer lands exactly on the fold — visible on /settings without
+ * scrolling at all.
+ *
+ * WHY VIEWPORT UNITS AND NOT `100%`. Moving that `100%` down here would be a
+ * silent no-op. A percentage height resolves only against a containing block
+ * with a DEFINITE height, and this box's containing block is Mantine's `content`
+ * div (.m_b1336c6), which declares only `min-width: 100%` — its height is
+ * `auto`. The chain is definite exactly one level higher and no further:
+ *
+ *   AppShell.Main    height: 100dvh (inline), border-box, padding-top
+ *                    calc(--app-shell-header-offset + --app-shell-padding)
+ *                    = 56px + 0px      -> content box 100dvh - 56px   DEFINITE
+ *   ScrollArea root  h="100%"                                         DEFINITE
+ *   viewport         height: 100%  (Mantine .m_c0783ff9)              DEFINITE
+ *   content          height: auto                                     NOT
+ *   this box         -- so `100%` here resolves to nothing
+ *
+ * It is the same trap the page files record at Home.tsx:102 and Profile.tsx:171
+ * (their stated REASON — a `display: table` wrapper — is stale: that rule is on
+ * `.m_f8f631dd`, a class no element receives in @mantine/core 8.3.18. The
+ * rendered wrapper is `.m_b1336c6`. Their conclusion still holds.)
+ *
+ * A dvh calc sidesteps the chain entirely: it depends on no ancestor, so it
+ * cannot be broken by a future restructure of the shell.
+ *
+ * WHY THE VARIABLES, NOT `56px`. --app-shell-header-offset and
+ * --app-shell-padding are written into AppShell's own inline root styles
+ * (assign-header-variables.mjs:37, assign-padding-variables.mjs:26), so they
+ * inherit down to here. Restating HEADER_HEIGHT in CSS is the second-source-of-
+ * truth bug that src/libs/styles.ts exists to prevent.
+ *
+ * `* 2` on the padding because Main pads top AND bottom by it
+ * (AppShell.css:115-118). Inert today — AppShell's default `padding` is 0 and
+ * this shell passes none — but correct if that ever changes, as is the footer
+ * offset term for an AppShell.Footer this component does not currently use.
+ *
+ * `dvh`, not `vh`: `vh` counts the mobile URL bar that is not actually on
+ * screen, which would push the footer further down than one real screenful.
+ *
+ * COST, accepted deliberately: every page now has overflow, including short
+ * ones — "the footer is never visible at first sight" and "short pages do not
+ * scroll" cannot both be true. Mantine's ScrollArea defaults to `type="hover"`
+ * (ScrollArea.mjs:28), so nothing is painted until the user scrolls or hovers.
+ */
+.mainScrollBody {
+  min-height: calc(
+    100dvh
+    - var(--app-shell-header-offset, 0rem)
+    - var(--app-shell-footer-offset, 0rem)
+    - var(--app-shell-padding, 0rem) * 2
+  );
+}
+
 /*
  * The category-link group in the header.
  *

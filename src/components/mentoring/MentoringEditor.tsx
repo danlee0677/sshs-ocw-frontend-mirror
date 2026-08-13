@@ -528,8 +528,13 @@ export default function MentoringEditor({
        sticky action bar spans the full width, so capping only the content
        detaches the bar from what it acts on, and the markdown/preview split is
        the one place where extra width is functional. Recorded so Prompt 24 does
-       not "fix" it. */
-    <MainPageAppshell>
+       not "fix" it.
+
+       `showFooter={false}`, matching LessonEditor and SubjectEditor: the shell
+       owns the page scroller for ordinary routes now so it can hold AppFooter,
+       and the sticky action bar plus the RTE toolbar beneath it are positioned
+       against THIS viewport. A second, outer scroller would break both. */
+    <MainPageAppshell showFooter={false}>
       <ScrollArea w="100%" h="100%">
         <Modal
           opened={cacheDecision === 'pending'}

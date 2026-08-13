@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useFetcher } from "react-router";
-import { Title, TextInput, Button, Group, Container, ScrollArea, Stack } from "@mantine/core";
+import { Title, TextInput, Button, Group, Container, Stack } from "@mantine/core";
 import { http } from "../../libs/http";
 import { userSchema } from "../../libs/types";
 import { AxiosError } from "axios";
@@ -47,63 +47,61 @@ export default function AdminPage() {
 
   return (
     <MainPageAppshell>
-      <ScrollArea w="100%" h="100%">
-        {/* Was `<Box p="md" w="100%">` — content at 100% of an UNCAPPED
-          * viewport, the last page in the app without a cap. Bare
-          * <Container>, no `size` prop: the theme default is
-          * CONTENT_MAX_WIDTH (1200); `size="lg"` would silently mean 1140.
-          * `py`, not `p` — the Container's own `px: 'md'` supplies the
-          * horizontal half, and leaving `p` would double it. `justify="center"`
-          * dropped from the Stack: with content-sized children and no definite
-          * height it centres nothing. */}
-        <Container w="100%" py="md">
-          <Stack w="100%">
-            <Title order={2} mb="lg">
-              관리자 페이지
-            </Title>
+      {/* Was `<Box p="md" w="100%">` — content at 100% of an UNCAPPED
+        * viewport, the last page in the app without a cap. Bare
+        * <Container>, no `size` prop: the theme default is
+        * CONTENT_MAX_WIDTH (1200); `size="lg"` would silently mean 1140.
+        * `py`, not `p` — the Container's own `px: 'md'` supplies the
+        * horizontal half, and leaving `p` would double it. `justify="center"`
+        * dropped from the Stack: with content-sized children and no definite
+        * height it centres nothing. */}
+      <Container w="100%" py="md">
+        <Stack w="100%">
+          <Title order={2} mb="lg">
+            관리자 페이지
+          </Title>
 
-            <fetcher.Form key={formKey} method="post" action="/action/admin/roles">
-              {/* `wrap="wrap"` is Mantine's default, stated explicitly because
-                * the default alone does not survive a `flex` on a child: the
-                * `flex={1}` below resolves to `flex: 1 1 0%`, and a flex-basis
-                * of 0 means the LINE NEVER BREAKS — the item shrinks toward
-                * zero instead of wrapping. That is the MentoringViewer defect
-                * from Prompt 16. `miw={200}` is what makes the wrap actually
-                * happen, so the two ship together. */}
-              <Group align="flex-start" wrap="wrap">
-                <TextInput
-                  name="userId"
-                  placeholder="사용자 ID"
-                  maxLength={64}
-                  error={fetcher.data?.error}
-                  flex={1}
-                  miw={200}
-                />
-                <Button
-                  type="submit"
-                  name="intent"
-                  value="grant"
-                  loading={isLoading}
-                  w={{ base: '100%', xs: 'auto' }}
-                >
-                  Creator 부여
-                </Button>
-                <Button
-                  type="submit"
-                  name="intent"
-                  value="revoke"
-                  loading={isLoading}
-                  color="red"
-                  variant="light"
-                  w={{ base: '100%', xs: 'auto' }}
-                >
-                  Creator 제거
-                </Button>
-              </Group>
-            </fetcher.Form>
-          </Stack>
-        </Container>
-      </ScrollArea>
+          <fetcher.Form key={formKey} method="post" action="/action/admin/roles">
+            {/* `wrap="wrap"` is Mantine's default, stated explicitly because
+              * the default alone does not survive a `flex` on a child: the
+              * `flex={1}` below resolves to `flex: 1 1 0%`, and a flex-basis
+              * of 0 means the LINE NEVER BREAKS — the item shrinks toward
+              * zero instead of wrapping. That is the MentoringViewer defect
+              * from Prompt 16. `miw={200}` is what makes the wrap actually
+              * happen, so the two ship together. */}
+            <Group align="flex-start" wrap="wrap">
+              <TextInput
+                name="userId"
+                placeholder="사용자 ID"
+                maxLength={64}
+                error={fetcher.data?.error}
+                flex={1}
+                miw={200}
+              />
+              <Button
+                type="submit"
+                name="intent"
+                value="grant"
+                loading={isLoading}
+                w={{ base: '100%', xs: 'auto' }}
+              >
+                Creator 부여
+              </Button>
+              <Button
+                type="submit"
+                name="intent"
+                value="revoke"
+                loading={isLoading}
+                color="red"
+                variant="light"
+                w={{ base: '100%', xs: 'auto' }}
+              >
+                Creator 제거
+              </Button>
+            </Group>
+          </fetcher.Form>
+        </Stack>
+      </Container>
     </MainPageAppshell>
   );
 }

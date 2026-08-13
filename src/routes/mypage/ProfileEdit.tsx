@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLoaderData, useNavigate, redirect, type LoaderFunctionArgs } from "react-router";
-import { Avatar, Button, Group, Image, Loader, Modal, Paper, ScrollArea, Stack, Text, Textarea, ThemeIcon } from "@mantine/core";
+import { Avatar, Button, Group, Image, Loader, Modal, Paper, Stack, Text, Textarea, ThemeIcon } from "@mantine/core";
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
 import { Dropzone, IMAGE_MIME_TYPE } from "@mantine/dropzone";
@@ -199,65 +199,63 @@ export default function ProfileEdit() {
 
   return (
     <MainPageAppshell>
-      <ScrollArea h="100%" w="100%">
-        <Stack align="center" py="xl">
-          <Paper withBorder p="xl" w="100%" maw={500}>
-            <Stack align="center" gap="md">
-              <Avatar src={pfpUrl} size={120} radius="100%" />
-              <Button type="button" variant="outline" onClick={handleOpenModal}>
-                프로필 사진 변경
-              </Button>
+      <Stack align="center" py="xl">
+        <Paper withBorder p="xl" w="100%" maw={500}>
+          <Stack align="center" gap="md">
+            <Avatar src={pfpUrl} size={120} radius="100%" />
+            <Button type="button" variant="outline" onClick={handleOpenModal}>
+              프로필 사진 변경
+            </Button>
 
-              {/* fullScreen below `sm`: this modal carries a 200px Dropzone
-                  and a 250px cropper preview, which do not fit a windowed
-                  `size="lg"` sheet on a phone. Same treatment all three Phase 4
-                  editors got for the same block; this is the fourth copy. */}
-              <Modal
-                opened={opened}
-                onClose={handleClose}
-                title="프로필 사진 업로드"
-                centered
-                size="lg"
-                fullScreen={isPhone}
-                closeOnClickOutside={activeStep !== 'uploading'}
-                withCloseButton={activeStep !== 'uploading'}
+            {/* fullScreen below `sm`: this modal carries a 200px Dropzone
+                and a 250px cropper preview, which do not fit a windowed
+                `size="lg"` sheet on a phone. Same treatment all three Phase 4
+                editors got for the same block; this is the fourth copy. */}
+            <Modal
+              opened={opened}
+              onClose={handleClose}
+              title="프로필 사진 업로드"
+              centered
+              size="lg"
+              fullScreen={isPhone}
+              closeOnClickOutside={activeStep !== 'uploading'}
+              withCloseButton={activeStep !== 'uploading'}
+            >
+              {activeStep === 'select' && renderSelectStep()}
+              {activeStep === 'verify' && renderVerifyStep()}
+              {activeStep === 'uploading' && renderUploadingStep()}
+              {activeStep === 'success' && renderSuccessStep()}
+            </Modal>
+
+            <Textarea
+              label="소개글"
+              placeholder="프로필 소개를 작성해보세요!"
+              value={description}
+              onChange={(e) => setDescription(e.currentTarget.value)}
+              autosize
+              minRows={3}
+              maxRows={8}
+              w="100%"
+              description={
+                <Text size="xs" c={overLimit ? "red" : "dimmed"}>{wordCount} / 100 자</Text>
+              }
+            />
+
+            <Group w="100%" justify="flex-end">
+              <Button
+                variant="outline"
+                onClick={() => navigate(`/profile/${pageUserId}`)}
+                disabled={submitting}
               >
-                {activeStep === 'select' && renderSelectStep()}
-                {activeStep === 'verify' && renderVerifyStep()}
-                {activeStep === 'uploading' && renderUploadingStep()}
-                {activeStep === 'success' && renderSuccessStep()}
-              </Modal>
-
-              <Textarea
-                label="소개글"
-                placeholder="프로필 소개를 작성해보세요!"
-                value={description}
-                onChange={(e) => setDescription(e.currentTarget.value)}
-                autosize
-                minRows={3}
-                maxRows={8}
-                w="100%"
-                description={
-                  <Text size="xs" c={overLimit ? "red" : "dimmed"}>{wordCount} / 100 자</Text>
-                }
-              />
-
-              <Group w="100%" justify="flex-end">
-                <Button
-                  variant="outline"
-                  onClick={() => navigate(`/profile/${pageUserId}`)}
-                  disabled={submitting}
-                >
-                  취소
-                </Button>
-                <Button onClick={handleSubmit} loading={submitting} disabled={overLimit}>
-                  저장
-                </Button>
-              </Group>
-            </Stack>
-          </Paper>
-        </Stack>
-      </ScrollArea>
+                취소
+              </Button>
+              <Button onClick={handleSubmit} loading={submitting} disabled={overLimit}>
+                저장
+              </Button>
+            </Group>
+          </Stack>
+        </Paper>
+      </Stack>
     </MainPageAppshell>
   );
 }

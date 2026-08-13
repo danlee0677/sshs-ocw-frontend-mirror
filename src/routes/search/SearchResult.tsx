@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Form, useLoaderData, useLocation, useNavigate, type LoaderFunctionArgs } from "react-router";
-import { Badge, Button, Checkbox, CheckIcon, Collapse, Combobox, Container, Flex, Group, Pagination, Pill, PillsInput, ScrollArea, Stack, Table, Tabs, Text, TextInput, UnstyledButton, useCombobox } from "@mantine/core";
+import { Badge, Button, Checkbox, CheckIcon, Collapse, Combobox, Container, Flex, Group, Pagination, Pill, PillsInput, Stack, Table, Tabs, Text, TextInput, UnstyledButton, useCombobox } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { IconChevronDown } from "@tabler/icons-react";
 import { useableTags } from "../../libs/utils";
@@ -193,297 +193,307 @@ function SearchContent({ searchResult, searchParams }: { searchResult: ResultTyp
   // unchecked), and Tabs accepts value={null}.
   const activeTab = selectedTab ?? availableTabs[0] ?? null;
 
+  /*
+   * The Form below carries `width: "100%"` and NO `height: "100%"`.
+   *
+   * The height used to be there. Under the old per-page ScrollArea it resolved
+   * to `auto` and did nothing, because its parent — the ScrollArea content
+   * wrapper — is itself `height: auto`. Now that MainPageAppshell owns the
+   * scroller and lays its content out in a flex column, that parent becomes
+   * definite for the first time, and the rule would start clipping a long
+   * result list on a short viewport. Dropping it preserves today's rendering
+   * rather than changing it.
+   */
   return (
-    <ScrollArea h="100%" w="100%" scrollbarSize={10}>
-      <Form method="get" style={{ width: "100%", height: "100%" }}>
-        { /* hidden inputs */}
-        {tags.map((tag) =>
-          <input type="hidden" name="tags" value={encodeURIComponent(tag)} key={`hidden-${tag}`} />)
-        }
-        <input type="hidden" name="advanced" value="on" />
+    <Form method="get" style={{ width: "100%" }}>
+      { /* hidden inputs — never gate these on a media query; unmounting a field
+           inside <Form method="get"> silently changes what gets submitted. */}
+      {tags.map((tag) =>
+        <input type="hidden" name="tags" value={encodeURIComponent(tag)} key={`hidden-${tag}`} />)
+      }
+      <input type="hidden" name="advanced" value="on" />
 
-        {/* Bare Container, no `size`: root.tsx defaults it to CONTENT_MAX_WIDTH
-            (1200) plus px='md', matching Home and Profile. `size="lg"` would
-            silently mean 1140. It sits INSIDE the Form and AFTER the hidden
-            inputs, so it wraps the layout without touching what gets submitted.
-            The Flex below uses `py`, not `p` — the horizontal half would
-            otherwise double up with the Container's own px. */}
-        <Container w="100%">
-          {/* Was `w="90%"` containing an 80% and a 25% column — 105%, so the filter
-              sidebar was pushed past the right edge at every width. */}
-          <Flex
-            w="100%"
-            h="100%"
-            py="md"
-            gap="md"
-            direction={{ base: 'column', md: 'row' }}
-            align={{ base: 'stretch', md: 'flex-start' }}>
-          <Stack w={{ base: '100%', md: '72%' }}>
-            <Flex w={'100%'} gap="xs" justify="center" align="center">
-              <TextInput
-                name="keyword"
-                placeholder="검색어를 입력해 주세요."
-                maxLength={20}
-                defaultValue={searchParams.keyword}
-                flex={1}
-                className={`${classes.searchBar}`} />
-              <Button type="submit" variant="outline" style={{ flex: '0 0 auto' }} className={classes.searchButton}>검색</Button>
-            </Flex>
-
-            <Group gap="md" w={'100%'} justify="center">
-              {/* was w='80%' nested inside another w='80%' Stack — the triple-nested
-                  percentages are why results rendered so narrow */}
-              <Tabs w={'100%'} value={activeTab} onChange={(v) => { if (v) { setSelectedTab(v as TabValue); setPage(1); } }} keepMounted={false}>
-                {/* 3 Korean tabs overflow below 360px */}
-                <Tabs.List style={{ flexWrap: 'nowrap', overflowX: 'auto' }}>
-                  {searchParams.subjectTitle && (
-                    <Tabs.Tab value="subjectTitle">과목 제목</Tabs.Tab>
-                  )}
-                  {searchParams.subjectDescription && (
-                    <Tabs.Tab value="subjectDescription">과목 내용</Tabs.Tab>
-                  )}
-                  {searchParams.lessonTitle && (
-                    <Tabs.Tab value="lessonTitle">강의 제목</Tabs.Tab>
-                  )}
-                </Tabs.List>
-
-                {searchParams.subjectTitle && (
-                  <Tabs.Panel value="subjectTitle">
-                    <Stack gap="md">
-                      <Table.ScrollContainer minWidth={340}>
-                      <Table highlightOnHover verticalSpacing="sm">
-                        <Table.Thead>
-                          <Table.Tr>
-                            <Table.Th w={TITLE_WIDTH} c="dimmed" fz="sm">제목</Table.Th>
-                            <Table.Th w={LINK_WIDTH} c="dimmed" fz="sm">링크</Table.Th>
-                          </Table.Tr>
-                        </Table.Thead>
-                        <Table.Tbody>
-                          {filteredSubjectTitle.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE).map((val) => {
-                            return <Table.Tr key={val._id}>
-                              <Table.Td className={classes.resultTitle} onClick={() => navigate(`/subject/${val._id}`)}>
-                                <Group gap="xs" wrap="nowrap">
-                                  {/* Badge, not Pill: Pill has no `color` prop and no 'light' variant, so both
-                                      props were silently ignored and this rendered plain grey. */}
-                                  {val.teacher_certified && <Badge color="green" variant="light" size="sm">인증</Badge>}
-                                  {texthighlight(val.title, searchParams.keyword)}
-                                </Group>
-                              </Table.Td>
-                              <Table.Td>
-                                <Button type="button" variant="subtle" size="sm" onClick={() => navigate(`/subject/${val._id}`)}>바로가기</Button>
-                              </Table.Td>
-                            </Table.Tr>
-                          })}
-                        </Table.Tbody>
-                      </Table>
-                      </Table.ScrollContainer>
-                      {Math.ceil(filteredSubjectTitle.length / ITEMS_PER_PAGE) > 1 && (
-                        <Pagination total={Math.ceil(filteredSubjectTitle.length / ITEMS_PER_PAGE)} value={page} onChange={setPage} />
-                      )}
-                    </Stack>
-                  </Tabs.Panel>
-                )}
-
-                {searchParams.subjectDescription && (
-                  <Tabs.Panel value="subjectDescription">
-                    <Stack gap="md">
-                      <Table.ScrollContainer minWidth={340}>
-                      <Table highlightOnHover verticalSpacing="sm">
-                        <Table.Thead>
-                          <Table.Tr>
-                            <Table.Th w={TITLE_WIDTH} c="dimmed" fz="sm">내용</Table.Th>
-                            <Table.Th w={LINK_WIDTH} c="dimmed" fz="sm">링크</Table.Th>
-                          </Table.Tr>
-                        </Table.Thead>
-                        <Table.Tbody>
-                          {filteredSubjectDescription.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE).map((val) => {
-                            return <Table.Tr key={val._id}>
-                              <Table.Td className={classes.resultTitle} onClick={() => navigate(`/subject/${val._id}`)}>
-                                <Group gap="xs" wrap="nowrap">
-                                  {/* Badge, not Pill: Pill has no `color` prop and no 'light' variant, so both
-                                      props were silently ignored and this rendered plain grey. */}
-                                  {val.teacher_certified && <Badge color="green" variant="light" size="sm">인증</Badge>}
-                                  {texthighlight(val.description, searchParams.keyword)}
-                                </Group>
-                              </Table.Td>
-                              <Table.Td>
-                                <Button type="button" variant="subtle" size="sm" onClick={() => navigate(`/subject/${val._id}`)}>바로가기</Button>
-                              </Table.Td>
-                            </Table.Tr>
-                          })}
-                        </Table.Tbody>
-                      </Table>
-                      </Table.ScrollContainer>
-                      {Math.ceil(filteredSubjectDescription.length / ITEMS_PER_PAGE) > 1 && (
-                        <Pagination total={Math.ceil(filteredSubjectDescription.length / ITEMS_PER_PAGE)} value={page} onChange={setPage} />
-                      )}
-                    </Stack>
-                  </Tabs.Panel>
-                )}
-
-                {searchParams.lessonTitle && (
-                  <Tabs.Panel value="lessonTitle">
-                    <Stack gap="md">
-                      <Table.ScrollContainer minWidth={340}>
-                      <Table highlightOnHover verticalSpacing="sm">
-                        <Table.Thead>
-                          <Table.Tr>
-                            <Table.Th w={TITLE_WIDTH} c="dimmed" fz="sm">제목</Table.Th>
-                            <Table.Th w={LINK_WIDTH} c="dimmed" fz="sm">링크</Table.Th>
-                          </Table.Tr>
-                        </Table.Thead>
-                        <Table.Tbody>
-                          {searchResult.lessonTitle.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE).map((val) => {
-                            return <Table.Tr key={val._id}>
-                              <Table.Td className={classes.resultTitle} onClick={() => navigate(`/lesson/${val._id}`)}>{texthighlight(val.title, searchParams.keyword)}</Table.Td>
-                              <Table.Td>
-                                <Button type="button" variant="subtle" size="sm" onClick={() => navigate(`/lesson/${val._id}`)}>바로가기</Button>
-                              </Table.Td>
-                            </Table.Tr>
-                          })}
-                        </Table.Tbody>
-                      </Table>
-                      </Table.ScrollContainer>
-
-                      {Math.ceil(searchResult.lessonTitle.length / ITEMS_PER_PAGE) > 1 && (
-                        <Group justify="center" w="100%">
-                          <Pagination total={Math.ceil(searchResult.lessonTitle.length / ITEMS_PER_PAGE)} value={page} onChange={setPage} />
-                        </Group>
-                      )}
-
-                    </Stack>
-                  </Tabs.Panel>
-                )}
-              </Tabs>
-            </Group>
-          </Stack>
-
-          {/* ONE sidebar instance, never conditionally unmounted: every control below
-              lives inside <Form method="get">, and an unmounted input is not submitted.
-
-              This deliberately does NOT render two copies behind
-              visibleFrom/hiddenFrom. Those compile to `display: none !important`, and
-              display:none inputs ARE still submitted — so a single instance already
-              satisfies the never-unmount rule, while two copies would submit two
-              values per name. The checkboxes are uncontrolled (defaultChecked, no
-              onChange), so the copies would diverge the moment a user toggled the
-              visible one, and the loader's searchParams.get() takes the FIRST match —
-              which could be the stale hidden copy. Only the disclosure chrome is
-              responsive.
-
-              Three ways to break this:
-              - Do NOT add `keepMounted` to the Collapse. It keeps the closed panel at
-                height 0 but still focusable, putting five invisible checkboxes into
-                the mobile tab order.
-              - Do NOT set a BLANKET `transitionDuration={0}`, and do NOT enable
-                `theme.respectReducedMotion`. Collapse.mjs reads
-                  `if (duration === 0) return opened ? <Box>{children}</Box> : null`
-                so a zero duration on a CLOSED panel is a real unmount, silently
-                dropping all five fields from every search. Mantine defaults
-                respectReducedMotion to false and root.tsx does not override it, so
-                this is safe only by default. The conditional zero below is a
-                different thing — see the comment on the Collapse itself.
-              - Do NOT swap Collapse for Accordion. AccordionPanel has no keepMounted
-                escape hatch and renders a Collapse internally, hitting the same branch.
-
-              `filtersOpen` resets to closed after each search because SearchContent is
-              remounted via key={location.search}. That is intended. */}
-          <Stack w={{ base: '100%', md: '28%' }} className={classes.GroupBox} p="md" gap="sm">
-            <UnstyledButton
-              hiddenFrom="md"
-              onClick={() => setFiltersOpen((o) => !o)}
-              aria-expanded={filtersExpanded}
-              aria-controls="search-filters"
-              py="xs">
-              <Group justify="space-between" wrap="nowrap">
-                <Text fw={500}>검색 옵션</Text>
-                <IconChevronDown
-                  size={18}
-                  style={{
-                    transform: filtersExpanded ? 'rotate(180deg)' : undefined,
-                    transition: 'transform 150ms ease',
-                  }} />
-              </Group>
-            </UnstyledButton>
-
-            {/* `in` carries two different meanings — a user tapping the disclosure, and
-                the viewport crossing 992px — and only the first should animate. Resizing
-                past the breakpoint used to spring the whole panel open.
-
-                Zero duration here does NOT contradict the rule above. Collapse returns
-                `null` only when the duration is 0 AND the panel is closed; `filtersExpanded &&`
-                makes that pair unreachable BY CONSTRUCTION rather than by relying on
-                `isDesktopFilters` implying `filtersExpanded` further up the file. Keep
-                both terms even though the second is currently redundant — the redundancy
-                is what survives an edit to `filtersExpanded`, and the failure it guards
-                against is invisible (the fields simply stop being submitted).
-
-                Verified: the checkboxes are NOT remounted when the duration flips. Both
-                Collapse branches render a Box at the same position, so React reuses the
-                DOM node and the uncontrolled inputs keep their values across a resize.
-
-                This handles the mobile -> desktop direction only. The other direction is
-                handled at the source, by the state carry-over next to `filtersOpen`
-                above: `in` never changes on the way down, so there is no animation to
-                suppress. BOTH mechanisms are load-bearing — remove either and the
-                animation returns in that one direction. */}
-            <Collapse
-              in={filtersExpanded}
-              transitionDuration={filtersExpanded && isDesktopFilters ? 0 : 200}
-              id="search-filters">
-              <Stack w="100%" gap="md">
-                <Stack gap="xs" w="100%">
-                  {/* color="white" iconColor="black" removed from all five: already low
-                      contrast on a light card, and in dark mode a white blob with an
-                      invisible black check. The theme primary handles both schemes. */}
-                  <Checkbox name="subjectTitle" classNames={{ label: classes.CheckBoxLabel, body: classes.CheckBox }}
-                    label="과목 제목" defaultChecked={searchParams.subjectTitle} />
-                  <Checkbox name="subjectDescription" classNames={{ label: classes.CheckBoxLabel, body: classes.CheckBox }}
-                    label="과목 내용" defaultChecked={searchParams.subjectDescription} />
-                  <Checkbox name="lessonTitle" classNames={{ label: classes.CheckBoxLabel, body: classes.CheckBox }}
-                    label="강의 제목" defaultChecked={searchParams.lessonTitle} />
-                  <Checkbox name="or" classNames={{ label: classes.CheckBoxLabel, body: classes.CheckBox }}
-                    label="태그 or로 검색" defaultChecked={searchParams.or} />
-                  <Checkbox name="teacherCertified" classNames={{ label: classes.CheckBoxLabel, body: classes.CheckBox }}
-                    label="교사 인증 과목만" defaultChecked={searchParams.teacherCertified} />
-                </Stack>
-
-              <Flex w="100%" justify="center">
-                <Combobox store={combobox} onOptionSubmit={handleValueSelect}>
-                  <Combobox.DropdownTarget>
-                    <PillsInput onClick={() => combobox.openDropdown()} w="80%">
-                      <Pill.Group>
-                        {displayTags}
-
-                        <Combobox.EventsTarget>
-                          <PillsInput.Field
-                            onFocus={() => combobox.openDropdown()}
-                            onBlur={() => combobox.closeDropdown()}
-                            onChange={() => {
-                              combobox.updateSelectedOptionIndex();
-                            }}
-                            placeholder={tags.length > 0 ? "" : "태그를 입력해 주세요"}
-                          />
-                        </Combobox.EventsTarget>
-                      </Pill.Group>
-                    </PillsInput>
-                  </Combobox.DropdownTarget>
-
-                  <Combobox.Dropdown>
-                    <Combobox.Options>
-                      {options.length > 0 ? options : <Combobox.Empty>Nothing found...</Combobox.Empty>}
-                    </Combobox.Options>
-                  </Combobox.Dropdown>
-                </Combobox>
-              </Flex>
-              </Stack>
-            </Collapse>
-          </Stack>
-
-
+      {/* Bare Container, no `size`: root.tsx defaults it to CONTENT_MAX_WIDTH
+          (1200) plus px='md', matching Home and Profile. `size="lg"` would
+          silently mean 1140. It sits INSIDE the Form and AFTER the hidden
+          inputs, so it wraps the layout without touching what gets submitted.
+          The Flex below uses `py`, not `p` — the horizontal half would
+          otherwise double up with the Container's own px. */}
+      <Container w="100%">
+        {/* Was `w="90%"` containing an 80% and a 25% column — 105%, so the filter
+            sidebar was pushed past the right edge at every width. */}
+        {/* `h="100%"` dropped alongside the Form's, and for the same reason. */}
+        <Flex
+          w="100%"
+          py="md"
+          gap="md"
+          direction={{ base: 'column', md: 'row' }}
+          align={{ base: 'stretch', md: 'flex-start' }}>
+        <Stack w={{ base: '100%', md: '72%' }}>
+          <Flex w={'100%'} gap="xs" justify="center" align="center">
+            <TextInput
+              name="keyword"
+              placeholder="검색어를 입력해 주세요."
+              maxLength={20}
+              defaultValue={searchParams.keyword}
+              flex={1}
+              className={`${classes.searchBar}`} />
+            <Button type="submit" variant="outline" style={{ flex: '0 0 auto' }} className={classes.searchButton}>검색</Button>
           </Flex>
-        </Container>
-      </Form>
-    </ScrollArea>
+
+          <Group gap="md" w={'100%'} justify="center">
+            {/* was w='80%' nested inside another w='80%' Stack — the triple-nested
+                percentages are why results rendered so narrow */}
+            <Tabs w={'100%'} value={activeTab} onChange={(v) => { if (v) { setSelectedTab(v as TabValue); setPage(1); } }} keepMounted={false}>
+              {/* 3 Korean tabs overflow below 360px */}
+              <Tabs.List style={{ flexWrap: 'nowrap', overflowX: 'auto' }}>
+                {searchParams.subjectTitle && (
+                  <Tabs.Tab value="subjectTitle">과목 제목</Tabs.Tab>
+                )}
+                {searchParams.subjectDescription && (
+                  <Tabs.Tab value="subjectDescription">과목 내용</Tabs.Tab>
+                )}
+                {searchParams.lessonTitle && (
+                  <Tabs.Tab value="lessonTitle">강의 제목</Tabs.Tab>
+                )}
+              </Tabs.List>
+
+              {searchParams.subjectTitle && (
+                <Tabs.Panel value="subjectTitle">
+                  <Stack gap="md">
+                    <Table.ScrollContainer minWidth={340}>
+                    <Table highlightOnHover verticalSpacing="sm">
+                      <Table.Thead>
+                        <Table.Tr>
+                          <Table.Th w={TITLE_WIDTH} c="dimmed" fz="sm">제목</Table.Th>
+                          <Table.Th w={LINK_WIDTH} c="dimmed" fz="sm">링크</Table.Th>
+                        </Table.Tr>
+                      </Table.Thead>
+                      <Table.Tbody>
+                        {filteredSubjectTitle.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE).map((val) => {
+                          return <Table.Tr key={val._id}>
+                            <Table.Td className={classes.resultTitle} onClick={() => navigate(`/subject/${val._id}`)}>
+                              <Group gap="xs" wrap="nowrap">
+                                {/* Badge, not Pill: Pill has no `color` prop and no 'light' variant, so both
+                                    props were silently ignored and this rendered plain grey. */}
+                                {val.teacher_certified && <Badge color="green" variant="light" size="sm">인증</Badge>}
+                                {texthighlight(val.title, searchParams.keyword)}
+                              </Group>
+                            </Table.Td>
+                            <Table.Td>
+                              <Button type="button" variant="subtle" size="sm" onClick={() => navigate(`/subject/${val._id}`)}>바로가기</Button>
+                            </Table.Td>
+                          </Table.Tr>
+                        })}
+                      </Table.Tbody>
+                    </Table>
+                    </Table.ScrollContainer>
+                    {Math.ceil(filteredSubjectTitle.length / ITEMS_PER_PAGE) > 1 && (
+                      <Pagination total={Math.ceil(filteredSubjectTitle.length / ITEMS_PER_PAGE)} value={page} onChange={setPage} />
+                    )}
+                  </Stack>
+                </Tabs.Panel>
+              )}
+
+              {searchParams.subjectDescription && (
+                <Tabs.Panel value="subjectDescription">
+                  <Stack gap="md">
+                    <Table.ScrollContainer minWidth={340}>
+                    <Table highlightOnHover verticalSpacing="sm">
+                      <Table.Thead>
+                        <Table.Tr>
+                          <Table.Th w={TITLE_WIDTH} c="dimmed" fz="sm">내용</Table.Th>
+                          <Table.Th w={LINK_WIDTH} c="dimmed" fz="sm">링크</Table.Th>
+                        </Table.Tr>
+                      </Table.Thead>
+                      <Table.Tbody>
+                        {filteredSubjectDescription.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE).map((val) => {
+                          return <Table.Tr key={val._id}>
+                            <Table.Td className={classes.resultTitle} onClick={() => navigate(`/subject/${val._id}`)}>
+                              <Group gap="xs" wrap="nowrap">
+                                {/* Badge, not Pill: Pill has no `color` prop and no 'light' variant, so both
+                                    props were silently ignored and this rendered plain grey. */}
+                                {val.teacher_certified && <Badge color="green" variant="light" size="sm">인증</Badge>}
+                                {texthighlight(val.description, searchParams.keyword)}
+                              </Group>
+                            </Table.Td>
+                            <Table.Td>
+                              <Button type="button" variant="subtle" size="sm" onClick={() => navigate(`/subject/${val._id}`)}>바로가기</Button>
+                            </Table.Td>
+                          </Table.Tr>
+                        })}
+                      </Table.Tbody>
+                    </Table>
+                    </Table.ScrollContainer>
+                    {Math.ceil(filteredSubjectDescription.length / ITEMS_PER_PAGE) > 1 && (
+                      <Pagination total={Math.ceil(filteredSubjectDescription.length / ITEMS_PER_PAGE)} value={page} onChange={setPage} />
+                    )}
+                  </Stack>
+                </Tabs.Panel>
+              )}
+
+              {searchParams.lessonTitle && (
+                <Tabs.Panel value="lessonTitle">
+                  <Stack gap="md">
+                    <Table.ScrollContainer minWidth={340}>
+                    <Table highlightOnHover verticalSpacing="sm">
+                      <Table.Thead>
+                        <Table.Tr>
+                          <Table.Th w={TITLE_WIDTH} c="dimmed" fz="sm">제목</Table.Th>
+                          <Table.Th w={LINK_WIDTH} c="dimmed" fz="sm">링크</Table.Th>
+                        </Table.Tr>
+                      </Table.Thead>
+                      <Table.Tbody>
+                        {searchResult.lessonTitle.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE).map((val) => {
+                          return <Table.Tr key={val._id}>
+                            <Table.Td className={classes.resultTitle} onClick={() => navigate(`/lesson/${val._id}`)}>{texthighlight(val.title, searchParams.keyword)}</Table.Td>
+                            <Table.Td>
+                              <Button type="button" variant="subtle" size="sm" onClick={() => navigate(`/lesson/${val._id}`)}>바로가기</Button>
+                            </Table.Td>
+                          </Table.Tr>
+                        })}
+                      </Table.Tbody>
+                    </Table>
+                    </Table.ScrollContainer>
+
+                    {Math.ceil(searchResult.lessonTitle.length / ITEMS_PER_PAGE) > 1 && (
+                      <Group justify="center" w="100%">
+                        <Pagination total={Math.ceil(searchResult.lessonTitle.length / ITEMS_PER_PAGE)} value={page} onChange={setPage} />
+                      </Group>
+                    )}
+
+                  </Stack>
+                </Tabs.Panel>
+              )}
+            </Tabs>
+          </Group>
+        </Stack>
+
+        {/* ONE sidebar instance, never conditionally unmounted: every control below
+            lives inside <Form method="get">, and an unmounted input is not submitted.
+
+            This deliberately does NOT render two copies behind
+            visibleFrom/hiddenFrom. Those compile to `display: none !important`, and
+            display:none inputs ARE still submitted — so a single instance already
+            satisfies the never-unmount rule, while two copies would submit two
+            values per name. The checkboxes are uncontrolled (defaultChecked, no
+            onChange), so the copies would diverge the moment a user toggled the
+            visible one, and the loader's searchParams.get() takes the FIRST match —
+            which could be the stale hidden copy. Only the disclosure chrome is
+            responsive.
+
+            Three ways to break this:
+            - Do NOT add `keepMounted` to the Collapse. It keeps the closed panel at
+              height 0 but still focusable, putting five invisible checkboxes into
+              the mobile tab order.
+            - Do NOT set a BLANKET `transitionDuration={0}`, and do NOT enable
+              `theme.respectReducedMotion`. Collapse.mjs reads
+                `if (duration === 0) return opened ? <Box>{children}</Box> : null`
+              so a zero duration on a CLOSED panel is a real unmount, silently
+              dropping all five fields from every search. Mantine defaults
+              respectReducedMotion to false and root.tsx does not override it, so
+              this is safe only by default. The conditional zero below is a
+              different thing — see the comment on the Collapse itself.
+            - Do NOT swap Collapse for Accordion. AccordionPanel has no keepMounted
+              escape hatch and renders a Collapse internally, hitting the same branch.
+
+            `filtersOpen` resets to closed after each search because SearchContent is
+            remounted via key={location.search}. That is intended. */}
+        <Stack w={{ base: '100%', md: '28%' }} className={classes.GroupBox} p="md" gap="sm">
+          <UnstyledButton
+            hiddenFrom="md"
+            onClick={() => setFiltersOpen((o) => !o)}
+            aria-expanded={filtersExpanded}
+            aria-controls="search-filters"
+            py="xs">
+            <Group justify="space-between" wrap="nowrap">
+              <Text fw={500}>검색 옵션</Text>
+              <IconChevronDown
+                size={18}
+                style={{
+                  transform: filtersExpanded ? 'rotate(180deg)' : undefined,
+                  transition: 'transform 150ms ease',
+                }} />
+            </Group>
+          </UnstyledButton>
+
+          {/* `in` carries two different meanings — a user tapping the disclosure, and
+              the viewport crossing 992px — and only the first should animate. Resizing
+              past the breakpoint used to spring the whole panel open.
+
+              Zero duration here does NOT contradict the rule above. Collapse returns
+              `null` only when the duration is 0 AND the panel is closed; `filtersExpanded &&`
+              makes that pair unreachable BY CONSTRUCTION rather than by relying on
+              `isDesktopFilters` implying `filtersExpanded` further up the file. Keep
+              both terms even though the second is currently redundant — the redundancy
+              is what survives an edit to `filtersExpanded`, and the failure it guards
+              against is invisible (the fields simply stop being submitted).
+
+              Verified: the checkboxes are NOT remounted when the duration flips. Both
+              Collapse branches render a Box at the same position, so React reuses the
+              DOM node and the uncontrolled inputs keep their values across a resize.
+
+              This handles the mobile -> desktop direction only. The other direction is
+              handled at the source, by the state carry-over next to `filtersOpen`
+              above: `in` never changes on the way down, so there is no animation to
+              suppress. BOTH mechanisms are load-bearing — remove either and the
+              animation returns in that one direction. */}
+          <Collapse
+            in={filtersExpanded}
+            transitionDuration={filtersExpanded && isDesktopFilters ? 0 : 200}
+            id="search-filters">
+            <Stack w="100%" gap="md">
+              <Stack gap="xs" w="100%">
+                {/* color="white" iconColor="black" removed from all five: already low
+                    contrast on a light card, and in dark mode a white blob with an
+                    invisible black check. The theme primary handles both schemes. */}
+                <Checkbox name="subjectTitle" classNames={{ label: classes.CheckBoxLabel, body: classes.CheckBox }}
+                  label="과목 제목" defaultChecked={searchParams.subjectTitle} />
+                <Checkbox name="subjectDescription" classNames={{ label: classes.CheckBoxLabel, body: classes.CheckBox }}
+                  label="과목 내용" defaultChecked={searchParams.subjectDescription} />
+                <Checkbox name="lessonTitle" classNames={{ label: classes.CheckBoxLabel, body: classes.CheckBox }}
+                  label="강의 제목" defaultChecked={searchParams.lessonTitle} />
+                <Checkbox name="or" classNames={{ label: classes.CheckBoxLabel, body: classes.CheckBox }}
+                  label="태그 or로 검색" defaultChecked={searchParams.or} />
+                <Checkbox name="teacherCertified" classNames={{ label: classes.CheckBoxLabel, body: classes.CheckBox }}
+                  label="교사 인증 과목만" defaultChecked={searchParams.teacherCertified} />
+              </Stack>
+
+            <Flex w="100%" justify="center">
+              <Combobox store={combobox} onOptionSubmit={handleValueSelect}>
+                <Combobox.DropdownTarget>
+                  <PillsInput onClick={() => combobox.openDropdown()} w="80%">
+                    <Pill.Group>
+                      {displayTags}
+
+                      <Combobox.EventsTarget>
+                        <PillsInput.Field
+                          onFocus={() => combobox.openDropdown()}
+                          onBlur={() => combobox.closeDropdown()}
+                          onChange={() => {
+                            combobox.updateSelectedOptionIndex();
+                          }}
+                          placeholder={tags.length > 0 ? "" : "태그를 입력해 주세요"}
+                        />
+                      </Combobox.EventsTarget>
+                    </Pill.Group>
+                  </PillsInput>
+                </Combobox.DropdownTarget>
+
+                <Combobox.Dropdown>
+                  <Combobox.Options>
+                    {options.length > 0 ? options : <Combobox.Empty>Nothing found...</Combobox.Empty>}
+                  </Combobox.Options>
+                </Combobox.Dropdown>
+              </Combobox>
+            </Flex>
+            </Stack>
+          </Collapse>
+        </Stack>
+
+
+        </Flex>
+      </Container>
+    </Form>
   )
 }

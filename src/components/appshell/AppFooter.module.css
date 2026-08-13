@@ -1,0 +1,146 @@
+/*
+ * Footer chrome. Adapted from the Mantine UI "Footer links" example
+ * (ui.mantine.dev/component/footer-links), with four deliberate deviations
+ * from that source — each marked below with WAS:.
+ *
+ * Same conventions as Appshell.module.css:
+ *   - every scheme-dependent color goes through `light-dark()`, which is a
+ *     PostCSS transform and therefore CANNOT be moved to an inline `bg=` or
+ *     `style=` prop (see subjectViewer.module.css);
+ *   - every `:hover` is gated on `(hover: hover) and (pointer: fine)`, and
+ *     anything whose only affordance is hover gets a touch counterpart;
+ *   - `$mantine-breakpoint-*` is substituted by postcss-simple-vars and must
+ *     stay in sync with BREAKPOINTS in src/libs/styles.ts.
+ */
+
+.footer {
+  /* WAS: `margin-top: 120px`. Dropped, not reduced. MainPageAppshell wraps the
+   * page in a flex column with a `100dvh - header` min-height so this sits
+   * flush at the bottom of a short page; a top margin reopens exactly the gap
+   * that column exists to close, and adds dead space on long pages too. */
+  padding-top: calc(var(--mantine-spacing-xl) * 2);
+  padding-bottom: calc(var(--mantine-spacing-xl) * 2);
+  /* gray-0 / dark-6 rather than --mantine-color-body: the body IS dark-7 in
+   * dark mode, so reusing it would make the footer invisible as a band. One
+   * step lighter reads as a distinct surface in both schemes. */
+  background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
+  border-top: 1px solid light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-5));
+}
+
+.inner {
+  display: flex;
+  justify-content: space-between;
+
+  @media (max-width: $mantine-breakpoint-sm) {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+.logo {
+  max-width: 200px;
+
+  @media (max-width: $mantine-breakpoint-sm) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+.description {
+  margin-top: 5px;
+
+  @media (max-width: $mantine-breakpoint-sm) {
+    margin-top: var(--mantine-spacing-xs);
+    text-align: center;
+  }
+}
+
+.groups {
+  /* WAS: `display: flex; flex-wrap: wrap` plus
+   * `@media (max-width: sm) { display: none }` — the example hides its entire
+   * sitemap on every phone, which is the one thing a sitemap must not do. A
+   * grid keeps all three columns and reflows them 2-up instead; the Korean
+   * labels are short enough to fit at 360px without ellipsing. */
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--mantine-spacing-xl);
+
+  @media (max-width: $mantine-breakpoint-sm) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    margin-top: var(--mantine-spacing-xl);
+  }
+}
+
+/* WAS: a fixed `width: 160px`. The grid track owns the width now; `min-width: 0`
+ * stops a long label from forcing the track past its 1fr share. */
+.wrapper {
+  min-width: 0;
+}
+
+.title {
+  /* WAS: `font-family: Outfit, ...`. The theme font is Pretendard; naming a
+   * font that is not loaded here would silently fall back anyway. */
+  font-size: var(--mantine-font-size-lg);
+  font-weight: 500;
+  margin-bottom: calc(var(--mantine-spacing-xs) / 2);
+  color: light-dark(var(--mantine-color-black), var(--mantine-color-white));
+}
+
+.link {
+  display: block;
+  /* These are react-router <Link>s, so without an explicit color they would
+   * render in UA link blue — the same reason `linkStyle` exists in styles.ts. */
+  text-decoration: none;
+  color: light-dark(var(--mantine-color-gray-6), var(--mantine-color-dark-1));
+  font-size: var(--mantine-font-size-sm);
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+
+/* WAS: a bare `&:hover` nested in .link. Gated per the contract in the
+ * Appshell.module.css header — on a touch device a bare :hover sticks after a
+ * tap and leaves one link permanently highlighted. */
+@media (hover: hover) and (pointer: fine) {
+  .link:hover {
+    color: var(--mantine-color-text);
+    text-decoration: underline;
+  }
+}
+
+/* Hover is the only affordance above, so touch needs its own. The 44px floor is
+ * TAP_TARGET from styles.ts, gated on TOUCH_QUERY so a mouse does not pay the
+ * extra height across a dense link list. */
+@media (pointer: coarse) {
+  .link {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+  }
+}
+
+.afterFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--mantine-spacing-xl);
+  padding-top: var(--mantine-spacing-xl);
+  border-top: 1px solid light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-4));
+
+  @media (max-width: $mantine-breakpoint-sm) {
+    flex-direction: column;
+  }
+}
+
+/* Replaces the example's `.social` slot. */
+.version {
+  font-family: var(--mantine-font-family-monospace);
+  padding: 2px var(--mantine-spacing-xs);
+  border-radius: var(--mantine-radius-sm);
+  background-color: light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-5));
+
+  @media (max-width: $mantine-breakpoint-sm) {
+    margin-top: var(--mantine-spacing-xs);
+  }
+}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useFetcher, useLoaderData, useNavigate, type ActionFunctionArgs, type LoaderFunctionArgs } from "react-router";
-import { Badge, Box, Container, Grid, Stack, Title, UnstyledButton, Text, Image, Pagination, Space, Pill, Group, ScrollArea } from "@mantine/core";
+import { Badge, Box, Container, Grid, Stack, Title, UnstyledButton, Text, Image, Pagination, Space, Pill, Group } from "@mantine/core";
 import { IconHeart, IconPencilPlus } from "@tabler/icons-react";
 import { http } from "../../libs/http";
 import { permissionCheckSchema, subjectSchema, type Subject, type User } from "../../libs/types";
@@ -65,11 +65,10 @@ export default function SubjectViewer() {
 
   return (
     <MainPageAppshell>
-      {/* AppShell.Main is `overflow: hidden`, so each page owns its own scroll
-        * container. Without this the page clips instead of scrolling. */}
-      <ScrollArea w="100%" h="100%">
-        <SubjectContent subject={subject} user={user} canEdit={canEdit} key={subject._id} />
-      </ScrollArea>
+      {/* No ScrollArea: MainPageAppshell owns the one page-level scroll
+        * container now, so that it can place AppFooter below the content
+        * inside it. Adding one back here nests two scrollbars. */}
+      <SubjectContent subject={subject} user={user} canEdit={canEdit} key={subject._id} />
     </MainPageAppshell>
   )
 }

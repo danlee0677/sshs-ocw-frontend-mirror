@@ -264,9 +264,15 @@ function SubjectEditor({ mode, initialContent, userRole }: SubjectEditorProps) {
      * Main. Counting <ScrollArea> tokens per file cannot catch the inverted
      * case — which is why this page was recorded as compliant.
      *
+     * `showFooter={false}` is what keeps that true. The shell now owns the page
+     * scroller for the eleven ordinary routes so it can put AppFooter inside it;
+     * the editors opt out and keep the ScrollArea below. Dropping the prop would
+     * nest this one inside the shell's — two scrollbars, and a site footer on a
+     * full-screen editing surface.
+     *
      * No <Container>: see the comment on the Box below.
      */
-    <MainPageAppshell>
+    <MainPageAppshell showFooter={false}>
       <ScrollArea h="100%" w="100%">
         <Form action="/action/subject/submit" method={mode === "edit" ? "patch" : "post"}>
           {/* No <Container> cap here, deliberately, and this is an exception to

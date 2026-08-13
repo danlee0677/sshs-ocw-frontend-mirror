@@ -9,16 +9,8 @@ import { isUser } from "../../libs/utils";
 import { useUserContext } from "../../libs/useUserContext";
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import { ColorSchemeToggle, ColorSchemeToggleFull } from "./ColorSchemeToggle";
-
-const links = [
-  { link: '/search?tags=Math', label: '수학'},
-  { link: '/search?tags=Physics', label: '물리' },
-  { link: '/search?tags=Chemistry', label: '화학' },
-  { link: '/search?tags=Biology', label: '생명과학' },
-  { link: '/search?tags=Earth+Science', label: '지구과학' },
-  { link: '/search?tags=Informatics', label: '정보' },
-  { link: '/mentoring/board', label: '오프라인 멘토링' },
-];
+import { HEADER_LINKS } from "../../libs/navLinks";
+import AppFooter from "./AppFooter";
 
 /**
  * The search field, used inline in the header and again inside the Drawer.
@@ -82,9 +74,26 @@ interface MainPageAppshellProps {
    * NOT gated by it — hiding both is the bug fixed below.
    */
   showSearch?: boolean;
+  /**
+   * Render AppFooter, and with it the shell-owned page scroll container.
+   *
+   * `false` restores the OLD contract verbatim — `children` are placed straight
+   * into AppShell.Main and must bring their own ScrollArea. Its only callers are
+   * the three editors (SubjectEditor, LessonEditor, MentoringEditor), which back
+   * all six create/edit routes.
+   *
+   * That opt-out is not cosmetic. LessonEditor and MentoringEditor pin a
+   * RichTextEditor toolbar beneath an action bar whose height they MEASURE at
+   * runtime, both `position: sticky` against their own ScrollArea viewport.
+   * Nesting them inside a second scroller would pin them against the wrong
+   * scrollport and slide the toolbar under the action bar — a bug LessonEditor
+   * already documents having fixed once. A marketing-style footer on a
+   * full-screen editing surface is not worth reopening it.
+   */
+  showFooter?: boolean;
 }
 
-function MainPageAppshell({ children, showSearch = true }: MainPageAppshellProps) {
+function MainPageAppshell({ children, showSearch = true, showFooter = true }: MainPageAppshellProps) {
   const { user } = useUserContext();
   const fetcher = useFetcher();
   const [opened, { toggle, close }] = useDisclosure(false);
@@ -123,7 +132,7 @@ function MainPageAppshell({ children, showSearch = true }: MainPageAppshellProps
   // `close` on every link: tapping a category used to navigate and leave the
   // Drawer open over the new page. Calling it when the Drawer is already shut
   // (the header copies) is a no-op.
-  const items = links.map((link) =>
+  const items = HEADER_LINKS.map((link) =>
     <Link
       key={link.label}
       to={link.link}
@@ -280,17 +289,44 @@ function MainPageAppshell({ children, showSearch = true }: MainPageAppshellProps
         * subtracting the header a second time leaves a dead strip at the bottom
         * of every page.
         *
-        * `overflow: hidden` means each page scrolls inside its own ScrollArea —
-        * do not add a second one. All 14 consumers now have exactly one;
-        * Settings.tsx and SubjectViewer.tsx were the last two without, and
-        * clipped at short viewports until they were wrapped.
+        * `overflow: hidden`, so exactly one scroll container must exist below
+        * it — and WHEN `showFooter` IS TRUE, THE SHELL OWNS IT. Pages pass
+        * plain content and must NOT wrap it in a ScrollArea of their own; a
+        * second one nests two scrollbars and strands the footer inside the
+        * inner viewport, where it can never reach the bottom of the page.
         *
-        * "Page-level" is the operative word: Profile.tsx has a second, NESTED
-        * ScrollArea inside its badge list, which is an inner list scroller and is
-        * allowed. Counting `<ScrollArea>` tokens per file mis-flags it.
+        * It used to be the other way round: each of the 11 route files wrapped
+        * itself. That could not carry a footer, because anything the shell
+        * rendered after `{children}` landed OUTSIDE the page's scroller and
+        * became a permanently visible bar eating viewport height. Moving the
+        * scroller up here is what lets AppFooter scroll with the content — and
+        * new routes inherit it without knowing it exists.
+        *
+        * `showFooter={false}` keeps the OLD contract for the three editors,
+        * whose sticky toolbars measure against their own viewport. See the prop.
+        *
+        * "Page-level" is the operative word: Profile.tsx keeps a NESTED
+        * ScrollArea inside its badge list, which is an inner list scroller and
+        * is still allowed. Counting `<ScrollArea>` tokens per file mis-flags it.
+        *
+        * `scrollbarSize={10}` came from SearchResult, the only page that set
+        * one; the other ten move 12px -> 10px, which is the consistent choice
+        * now that a single scrollbar serves them all.
         */}
       <AppShell.Main style={{ height: "100dvh", overflow: "hidden" }}>
-        {children}
+        {showFooter ? (
+          <ScrollArea w="100%" h="100%" scrollbarSize={10}>
+            {/* `.mainScrollBody` carries a one-screen min-height, so AppFooter
+              * always begins below the fold and has to be scrolled to — even on
+              * a page as short as /settings. Plain block flow, no flex column:
+              * see Appshell.module.css for why the floor is in dvh rather than
+              * the `100%` that an ancestor would need to make definite. */}
+            <div className={classes.mainScrollBody}>{children}</div>
+            <AppFooter />
+          </ScrollArea>
+        ) : (
+          children
+        )}
       </AppShell.Main>
     </AppShell>)
 }
