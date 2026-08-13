@@ -24,6 +24,25 @@
    These names deliberately do not collide with anything in shared.module.css —
    SubjectViewer merges the two objects as `{ ...shared, ...page }`, so a shared
    key of the same name would be silently overwritten. */
+/* The ROW is the flex container — not a wrapper inside it.
+
+   This used to be an inner `<Flex h="100%" align="center">`, which centred
+   nothing: a percentage height resolves against the containing block's `height`,
+   and the row sets only `min-height` (mih={56}), so `height` is still `auto` and
+   `h="100%"` computed to `auto` too. The Flex was therefore exactly its own
+   content height, centring the text inside a box that already fitted it, and
+   normal block layout put the leftover min-height slack UNDERNEATH — the title
+   sat at the top of the row.
+
+   Same finding as `.LogOutButton` in Appshell.module.css: `min-height` alone
+   centres nothing, the box has to BE the flex container. `justify-content`
+   reproduces the old wrapper's `justify="center"` exactly. */
+.lessonRow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .rowEven {
     background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
 }

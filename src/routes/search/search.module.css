@@ -53,36 +53,41 @@
    the hover rule alone would leave them looking like plain text on every phone,
    so the accent color is permanent and survives the gate; the underline is the
    touch counterpart, re-derived against the base state rather than copied. */
-/* Contrast measured against the surfaces these actually sit on — a Table.Td at
+/* Behaves as a STANDARD LINK: link-blue, underlined on hover, colour unchanged.
+   An element that shifts hue on hover reads as a button, not a link.
+
+   --mantine-color-anchor is the app's own anchor token (blue-6 light / blue-4
+   dark in the built CSS) and follows primaryShade, so it tracks a theme change
+   and contains no numbered shade to exempt from the shade gate.
+
+   Contrast measured against the surfaces these actually sit on — a Table.Td at
    Mantine's table font size (sm, 14px), so the 4.5:1 small-text threshold
-   applies, not 3:1.
+   applies, not 3:1:
 
                             light vs #fff    dark vs #242424
-     base  was blue-7/4       4.20 FAIL          6.27
-     hover was blue-6/6       4.60               4.36 FAIL
-     base  now  blue-8/4      5.02               6.27
-     hover now  blue-9/3      6.09               7.90
+     base  was  blue-7/4       4.20 FAIL          6.27
+     hover was  blue-6/6       4.60               4.36 FAIL
+     base  now  anchor         4.60               6.27
 
-   Two separate defects. The DARK HOVER one is the recorded find: a bare
-   numbered shade meant hovering a result made the title DARKER in dark mode,
-   6.27 -> 4.36. It fails only on hover, only in one scheme, which is why the
-   Phase 2 dark-mode pass missed it.
+   Two real defects are being retired here. The DARK HOVER one was the recorded
+   find: a bare numbered shade made hovering a result title DARKER in dark mode,
+   6.27 -> 4.36. It failed only on hover, only in one scheme, which is why the
+   Phase 2 dark-mode pass did not see it. The LIGHT BASE one was recorded
+   nowhere: blue-7 on white is 4.20:1, below AA, in the shipped and in-use
+   scheme — it survived four phases because the dark pass looked for dark breaks
+   and light was assumed to be the working baseline.
 
-   The LIGHT BASE one was not recorded anywhere: blue-7 on white is 4.20:1,
-   below AA, in the shipped and in-use scheme. It survived four phases because
-   the dark pass looked for dark breaks and light was assumed to be the working
-   baseline. blue-8 clears it at 5.02 and is one perceptual step darker.
-
-   Both hover values now INTENSIFY in their own scheme — darker on light,
-   lighter on dark — which is the direction the bare blue-6 got backwards. */
+   The anchor token clears both. Light is 0.4 below the blue-8 briefly used
+   here; that is accepted deliberately, because 4.60 clears the threshold and
+   matching the token every other link in the app uses is worth more than
+   headroom that is already sufficient. */
 .resultTitle {
     cursor: pointer;
-    color: light-dark(var(--mantine-color-blue-8), var(--mantine-color-blue-4));
+    color: var(--mantine-color-anchor);
 }
 
 @media (hover: hover) and (pointer: fine) {
     .resultTitle:hover {
-        color: light-dark(var(--mantine-color-blue-9), var(--mantine-color-blue-3));
         text-decoration: underline;
     }
 }

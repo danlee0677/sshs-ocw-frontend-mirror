@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useFetcher, useLoaderData, useNavigate, type ActionFunctionArgs, type LoaderFunctionArgs } from "react-router";
-import { Badge, Container, Grid, Stack, Title, UnstyledButton, Flex, Text, Image, Pagination, Space, Pill, Group, ScrollArea } from "@mantine/core";
+import { Badge, Box, Container, Grid, Stack, Title, UnstyledButton, Text, Image, Pagination, Space, Pill, Group, ScrollArea } from "@mantine/core";
 import { IconHeart, IconPencilPlus } from "@tabler/icons-react";
 import { http } from "../../libs/http";
 import { permissionCheckSchema, subjectSchema, type Subject, type User } from "../../libs/types";
@@ -187,23 +187,24 @@ function SubjectContent({ subject, user, canEdit }: { subject: Subject; user: Us
               return (
                 lesson._id ?
                   /* was h="66.4px": mih + vertical padding lets long Korean titles wrap
-                     to a second line instead of clipping */
+                     to a second line instead of clipping.
+
+                     `classes.lessonRow` makes the row itself the flex container. The
+                     inner `<Flex h="100%">` this replaces could not centre anything —
+                     see the comment on the rule. */
                   <UnstyledButton mih={56} w="100%" py="xs" px="md" key={lesson._id}
-                    className={stripe}
+                    className={`${stripe} ${classes.lessonRow}`}
                     style={{ color: "inherit" }}
                     component={Link} to={`/lesson/${lesson._id}`}>
-                    <Flex h="100%" w="100%" justify="center" align={'center'}>
-                      <Text className={`${classes.JalnanGothic}`}>{lesson.title}</Text>
-                    </Flex>
+                    <Text className={`${classes.JalnanGothic}`}>{lesson.title}</Text>
                   </UnstyledButton>
                   :
-                  <UnstyledButton mih={56} w="100%" py="xs" px="md" key={`placeholder-${i}`}
-                    className={stripe}
-                    style={{ color: "inherit" }}>
-                    <Flex h="100%" w="100%" justify="center" align={'center'}>
-                      <Text className={`${classes.JalnanGothic}`}>{lesson.title}</Text>
-                    </Flex>
-                  </UnstyledButton>
+                  /* Box, not UnstyledButton: the padding rows have no `to` and an empty
+                     label, so as a button they were focusable no-ops in the tab order. */
+                  <Box mih={56} w="100%" py="xs" px="md" key={`placeholder-${i}`}
+                    className={`${stripe} ${classes.lessonRow}`}>
+                    <Text className={`${classes.JalnanGothic}`}>{lesson.title}</Text>
+                  </Box>
               )
             })}
             <Space h="sm" />

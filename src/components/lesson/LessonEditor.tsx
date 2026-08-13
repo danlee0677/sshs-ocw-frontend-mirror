@@ -2,7 +2,7 @@ import { Form, useActionData, useNavigation } from "react-router";
 import MainPageAppshell from "../appshell/MainPageAppshell";
 import { useUserContext } from "../../libs/useUserContext";
 
-import React, { type SetStateAction, useEffect, useState, useRef } from "react";
+import React, { type SetStateAction, useEffect, useLayoutEffect, useState, useRef } from "react";
 import { Button, Group, ScrollArea, Stack, Textarea, Text, Divider, Paper, Modal, Image as ImageComponent, Loader, ThemeIcon, TextInput, Switch, Box, Flex } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import { useEditor } from '@tiptap/react'
@@ -33,7 +33,7 @@ import { uploadImage, PLACEHOLDER_MARKDOWN, PLACEHOLDER_LESSON } from "../../lib
 import { useDebounce } from "../../libs/useDebounce";
 import type { JSONContent } from "@tiptap/core";
 import { MOBILE_QUERY, TAP_TARGET, TOUCH_QUERY } from "../../libs/styles";
-import { useDisclosure, useElementSize, useMediaQuery } from "@mantine/hooks";
+import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone';
 import { IconCheck, IconPhoto, IconUpload, IconX } from "@tabler/icons-react";
 
@@ -87,11 +87,17 @@ function handleMarkdownChange(isMarkdown: boolean, setIsMarkdown: React.Dispatch
  * A constant cannot be right at every width regardless: the action bar holds a
  * Group of six-plus controls that WRAPS, so its height is 61px on a desktop and
  * ~240px on a 360px phone. `stickyOffset` takes a number or a string, never a
- * responsive object. Hence useElementSize on the bar — it reports
- * `borderBoxSize[0].blockSize`, so the `p="sm"` padding and the 1px
- * `borderBottom` are already included and no arithmetic is needed.
+ * responsive object. So the bar is measured — but NOT through React state; see
+ * the ResizeObserver in the component below for why. The value arrives as the
+ * custom property `--rte-bar-height`, which this passes straight through.
+ *
+ * `rem()` returns any string it cannot parse as a number unchanged (verified in
+ * @mantine/core/esm/core/utils/units-converters/rem.mjs), and `var(--rte-bar-height)`
+ * has no comma and no space, so Mantine emits it verbatim as
+ * `--rte-sticky-offset` and the toolbar's `top: var(--rte-sticky-offset, 0px)`
+ * resolves through to it.
  */
-function EditorToolbar({ stickyOffset }: { stickyOffset: number }) {
+function EditorToolbar({ stickyOffset }: { stickyOffset: string }) {
   return (
     <RichTextEditor.Toolbar sticky stickyOffset={stickyOffset}>
       <RichTextEditor.ControlsGroup>
@@ -161,12 +167,42 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
 
   /*
    * Measures the sticky action bar so the editor toolbar can pin directly
-   * beneath it at every width — see the comment on EditorToolbar. The `|| 60`
-   * covers the single frame before the ResizeObserver first fires; 60 is the
-   * one-row desktop height, so the pre-measurement state is the correct
-   * desktop state rather than 0.
+   * beneath it at every width — see the comment on EditorToolbar.
+   *
+   * WRITTEN STRAIGHT TO THE DOM, NOT THROUGH REACT STATE. This was
+   * `useElementSize()`, and that shipped a visible defect: a ResizeObserver
+   * callback runs after layout and BEFORE paint, but a setState from it is
+   * scheduled as a macrotask, so React's commit lands a frame later. For that
+   * one frame the toolbar is pinned at the PREVIOUS bar height.
+   *
+   * The bug is asymmetric, which is what made it easy to miss. When the bar
+   * GAINS a row (viewport narrowing) the stale offset is too small and the
+   * toolbar tucks under the bar, which is opaque and at z-index 100 — nothing
+   * shows. When the bar LOSES a row (widening 360 -> 1440) the stale offset is
+   * too large and opens a ~40px gap between the two, with the scrolling editor
+   * content visible through it. Observed as a flash during the Phase 5 sweep.
+   *
+   * Setting the custom property inside the RO callback is picked up by that
+   * same paint, so no stale frame exists. Do NOT "simplify" this back to
+   * useElementSize. No RO loop risk either: the property only affects the
+   * toolbar's `top`, which changes no observed element's box.
    */
-  const { ref: barRef, height: barHeight } = useElementSize();
+  const scopeRef = useRef<HTMLFormElement>(null);
+  const barRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    const bar = barRef.current;
+    const scope = scopeRef.current;
+    if (!bar || !scope) return;
+    const ro = new ResizeObserver(([entry]) => {
+      // borderBoxSize, as useElementSize reported: the bar's p="sm" and its 1px
+      // borderBottom are already counted, so no arithmetic is needed.
+      const h = entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height;
+      scope.style.setProperty('--rte-bar-height', `${h}px`);
+    });
+    ro.observe(bar);
+    return () => ro.disconnect();
+  }, []);
 
   /*
    * Modal `fullScreen` is a plain boolean and `size` is not responsive either,
@@ -618,7 +654,16 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
             content wrapper, which is `display: table; min-width: 100%` and has no
             definite height, so a percentage height resolved to `auto` anyway.
             MentoringEditor's Form already omitted it. */}
-        <Form method={mode === "create" ? "post" : "patch"} style={{ width: '100%' }}
+        {/* `--rte-bar-height` is seeded here and overwritten by the ResizeObserver
+            above. The seed is load-bearing, not tidiness: an undefined custom
+            property makes the toolbar's `top` invalid at computed-value time, so
+            it falls back to `auto` and the toolbar stops sticking entirely —
+            exactly the `--docs-header-height` bug Prompt 19 fixed. 60px is the
+            one-row desktop height, so the pre-measurement frame is the correct
+            desktop state rather than 0. */}
+        <Form method={mode === "create" ? "post" : "patch"}
+          ref={scopeRef}
+          style={{ width: '100%', '--rte-bar-height': '60px' } as React.CSSProperties}
           action="/action/lesson/submit">
           {/* The action bar is deliberately allowed to WRAP rather than scroll
               horizontally or hide controls behind a Menu — Prompt 19's own rule
@@ -700,7 +745,7 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
                 <Divider orientation="vertical" visibleFrom="md" style={{ alignSelf: 'stretch' }} />
                 <Paper withBorder style={{ flex: 1 }} w="100%">
                   <RichTextEditor editor={editor} style={{ minHeight: 400 }}>
-                    <EditorToolbar stickyOffset={barHeight || 60} />
+                    <EditorToolbar stickyOffset="var(--rte-bar-height)" />
                     <RichTextEditor.Content />
                   </RichTextEditor>
                 </Paper>
@@ -708,7 +753,7 @@ export default function LessonEditor({ mode, initialContent, tiptapCached, markd
             ) : (
               <Paper withBorder>
                 <RichTextEditor editor={editor} style={{ minHeight: 400 }}>
-                  <EditorToolbar stickyOffset={barHeight || 60} />
+                  <EditorToolbar stickyOffset="var(--rte-bar-height)" />
                   <RichTextEditor.Content />
                 </RichTextEditor>
               </Paper>)
