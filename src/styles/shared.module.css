@@ -93,17 +93,33 @@
 
 /* ------------------------------------------------------------------- layout */
 
-.flex1 {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
+/* REMOVED — `.flex1`. A centred flex column with no consumer anywhere in src/;
+   `classes.flex1` appeared in no TSX file. Same category as the `.BigGroupBox`
+   deletion recorded at the top of Profile.module.css. Note that a dead rule in a
+   CSS Module is INVISIBLE to both tsc and ESLint — `classes.foo` on a name that
+   does not exist is `undefined`, not an error, and the reverse (a rule nobody
+   reads) has no signal at all. They only go when someone greps.
 
-.Inline {
-    display: inline;
-}
+   STILL DEAD, deliberately left: `.Inline` (`display: inline`) has no consumer
+   either. Not removed here only because this change was scoped to `.flex1`. */
 
+/* FOR PLAIN `Box`/`<div>` ONLY. Do NOT put this on a Mantine `Stack`, `Group` or
+   `Flex`.
+
+   All three of those declare `align-items` and `justify-content` themselves —
+   e.g. Stack's `.m_6d731127 { align-items: var(--stack-align, stretch) }` — from
+   a single class selector, so (0,1,0), exactly this rule's specificity. Nothing
+   breaks the tie except which stylesheet Vite happens to emit last, which is a
+   property of the build output rather than of anything anyone wrote.
+
+   Use Mantine's own `align` / `justify` props instead. They set `--stack-align`
+   and friends in the element's INLINE style attribute, which no class can lose
+   to. Settings.tsx:15 records this fix on a Group; Profile.tsx records it on the
+   최근 이용한 강좌 row Stack, which was the last surviving instance.
+
+   Where a class really is required — a media query, a pseudo-selector, anything
+   props cannot express — double the selector instead of hoping for source order,
+   as `.ProfileCard.ProfileCard` does below. */
 .Vertical_align {
     display: flex;
     align-items: center;

@@ -99,7 +99,7 @@ function AppFooter() {
         <div className={classes.logo}>
           <Title order={2}>SSHS TIPS</Title>
           <Text size="xs" c="dimmed" className={classes.description}>
-            서울과학고등학교 Teachers-In-Peers
+            서울과학고등학교 Teachers-in-Peers
           </Text>
         </div>
         <div className={classes.groups}>{groups}</div>

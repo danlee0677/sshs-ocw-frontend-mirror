@@ -1,4 +1,4 @@
-import { Box, Button, Container, Flex, Grid, Group, Image, Pagination, ScrollArea, Select, SimpleGrid, Space, Stack, Table, Text, Title, useComputedColorScheme } from "@mantine/core";
+import { Avatar, Box, Button, Container, Flex, Grid, Group, Image, Pagination, ScrollArea, Select, SimpleGrid, Space, Stack, Table, Text, Title, useComputedColorScheme } from "@mantine/core";
 import { recentViewSchema, streakSchema, type Streak, type User } from "../../libs/types";
 import MainPageAppshell from "../../components/appshell/MainPageAppshell";
 import { Link, useLoaderData, type LoaderFunctionArgs } from "react-router";
@@ -20,7 +20,7 @@ const classes = { ...shared, ...page }
 // already in this route's CSS asset.
 import streakClasses from "../../components/streak/StreakBody.module.css"
 import { useState } from "react";
-import { calculateCurrentStreak, calculateMaxStreak, PLACEHOLDER_USER } from "../../libs/utils";
+import { calculateCurrentStreak, calculateMaxStreak, PLACEHOLDER_SUBJECT, PLACEHOLDER_USER } from "../../libs/utils";
 import z from "zod";
 import { getStreakColors, linkStyle } from "../../libs/styles";
 import { notifications } from "@mantine/notifications";
@@ -183,7 +183,50 @@ export default function Profile() {
             <Grid gutter="lg" p={{ base: 'md', sm: 'xl' }} w="100%" mih={{ base: 'auto', sm: 320 }}>
               <Grid.Col span={{ base: 12, sm: 3 }}>
                 <Flex justify={{ base: 'center', sm: 'flex-start' }}>
-                  <Image w={{ base: 96, sm: '100%' }} src={pageUser.pfp_url} />
+                  {/* Avatar, not Image. Three things come from it that `Image`
+                      cannot give without hand-rolling them:
+                        - the circle is STRUCTURAL — the root is `overflow: hidden`
+                          + `border-radius: var(--avatar-radius, 1000px)` and the
+                          inner <img> is already `object-fit: cover; width/height:
+                          100%`. So no `radius`, no `fit` and no `aspect-ratio`
+                          hack, and it holds for any source ratio;
+                        - `pfp_url` can be "" (PLACEHOLDER_USER, which the loader
+                          spreads into `retUser`), which rendered a BROKEN IMAGE
+                          icon here. Avatar swaps in its placeholder span —
+                          initials from `name`, sized `calc(--avatar-size / 2.5)`,
+                          so it tracks the clamp below for free;
+                        - it matches the header (MainPageAppshell:204, :213) and
+                          ProfileEdit:205, which were already Avatars.
+
+                      SIZE. One diameter for every picture, so it can no longer be
+                      the source's aspect ratio in disguise. It must still be
+                      FLUID: Avatar's root sets `min-width: var(--avatar-size)` and
+                      refuses to shrink, so a flat 258px would overflow this
+                      Grid.Col, which is only ~142px wide at the `sm` breakpoint.
+
+                      The clamp reproduces what `w={{ base: 96, sm: '100%' }}`
+                      rendered before. Working the chain down — Box px="md",
+                      Container (max 1200, px="md"), Grid p="xl", gutter="lg"
+                      (-12/side), Grid.Col span 3 (-12/side) — the column content
+                      width is `0.25 * viewport - 50px` while the Container is
+                      below its cap, and a flat 258px once it caps at 1232px. The
+                      lower bound is the old `base` value.
+
+                      SPACES IN THE STRING ARE LOAD-BEARING. `getSize` routes this
+                      through `isNumberLike`, which returns true here only because
+                      the value contains spaces; it then reaches `rem()`, whose
+                      first branch passes anything starting with `clamp(` through
+                      verbatim. Written without spaces it fails that test, is
+                      treated as a THEME KEY, and emits
+                      `var(--avatar-size-clamp(96px,...))` — an invalid
+                      declaration that silently falls back to the 38px `md`
+                      default. */}
+                  <Avatar
+                    src={pageUser.pfp_url}
+                    name={pageUser.username}
+                    alt={`${pageUser.username}의 프로필 사진`}
+                    size="clamp(96px, calc(25vw - 50px), 258px)"
+                  />
                 </Flex>
               </Grid.Col>
               <Grid.Col span={{ base: 12, sm: 5 }}>
@@ -294,7 +337,14 @@ export default function Profile() {
                     </Table.Tbody>
                   </Table>
                   </Table.ScrollContainer>
-                  <Group w="100%" justify="center">
+                  {/* `mt="auto"` on BOTH columns' pagination, not just this one.
+                      SimpleGrid is `display: grid` with no `align-items`, so the
+                      two cards already stretch to the same height and the taller
+                      one sets it. Pinning both paginations to the card bottom is
+                      what makes the leftover space read as deliberate padding
+                      instead of one column trailing off. Same pattern, and the
+                      same reason, as Home.tsx:241. */}
+                  <Group w="100%" justify="center" mt="auto">
                     <Pagination total={Math.max(1, Math.ceil(likedSubjects.length / likedSubjectPageCnt))}
                       value={likedSubjectPage} onChange={setLikedSubjectPage} />
                   </Group>
@@ -302,31 +352,77 @@ export default function Profile() {
               </Stack>
 
               {/* Not a Table — a Stack of Box rows, so no Table.ScrollContainer
-                  applies here. Overflow is handled by miw={0} + truncate. */}
-              <Stack className={classes.GroupBox} p={'xl'}>
+                  applies here. Overflow is handled by miw={0} + truncate.
+
+                  No `p='xl'` here. It was an INLINE style, so it beat
+                  `.GroupBox`'s own `padding: 20px` and left this card padded 32px
+                  against the liked-subjects card's 20px — two cards side by side
+                  in one SimpleGrid with visibly different inner margins. */}
+              <Stack className={classes.GroupBox}>
                 <Title order={3} className={`${classes.JalnanGothic}`}>최근 이용한 강좌</Title>
                 {viewed.length === 0 ? <>
                   <Text>이용한 강의가 없습니다.</Text></> : <>
-                  <Stack w={'100%'} className={`${classes.Vertical_align}`} gap={0}>
+                  {/* No `.Vertical_align` on this Stack. That class sets
+                      align-items AND justify-content at (0,1,0) — exactly the
+                      specificity of Mantine's own `.m_6d731127`, which declares
+                      `align-items: var(--stack-align, stretch)` — so which one won
+                      was decided by chunk order rather than intent. Both of its
+                      declarations were inert here anyway (every child is w='100%',
+                      and justify-content does nothing in an auto-height column),
+                      so dropping it changes no pixels.
+
+                      It stays on the row Box below: that is a plain <div> with no
+                      competing Mantine class, which is the only shape this class
+                      is safe on. If centring is ever wanted HERE, use Mantine's
+                      `align` prop — it lands in the inline style attribute and so
+                      cannot be tied. Settings.tsx:15 records the same fix on a
+                      Group; this was the last surviving instance. */}
+                  <Stack w={'100%'} gap={0}>
                     {viewed.slice((viewedPage - 1) * viewedPageCnt, viewedPage * viewedPageCnt).map((v) => (
-                      <Box key={v.lesson._id} className={`${classes.Box2} ${classes.Vertical_align}`} w={'100%'} mih={'80px'} miw={0}>
-                        <Group wrap='nowrap' w={'80%'} h={'100%'} p="md">
+                      <Box key={v.lesson._id} className={`${classes.Box2} ${classes.Vertical_align}`} w={'100%'} mih={64} miw={0}>
+                        {/* `py="xs"` rather than `p="md"`: 16px top AND bottom put a
+                            hard 32px floor under every row on top of its text, which
+                            is what pushed this column past the table beside it. */}
+                        <Group wrap='nowrap' w={'80%'} px="md" py="xs">
                           <Link to={`/subject/${v.subject._id}`} className="block"
                             style={{
                               display: 'flex',       // Makes the <a> tag a flex container
                               alignItems: 'center',  // Centers the image vertically
-                              height: '100%',        // Forces <a> to fill the Group's height
                             }}>
-                            <Image fit='contain' w={'auto'} h={"100%"} src={v.subject.image_url} className={classes.Image1} />
+                            {/* TWO FIXED DIMENSIONS. This was `w='auto' h='100%'`,
+                                and the whole containing-block chain above it — row
+                                Box, Group, this Link — was auto-height, so BOTH axes
+                                resolved to `auto` and the <img> fell back to its
+                                natural pixel size (474x531 for the current subject
+                                images). Rows were several hundred px tall and, worse,
+                                a DIFFERENT height per subject. `fit='contain'` was
+                                inert for the same reason: object-fit only does
+                                anything once the box is sized independently of the
+                                intrinsic ratio. `cover` now, because `contain` would
+                                letterbox a portrait source into this square.
+                                `fallbackSrc` for the same reason Avatar has `name`
+                                above — a missing image_url rendered a broken icon.
+                                `?? undefined` because subjectSchema declares
+                                image_url `.nullable()` (types.ts:75), so the
+                                constant is typed `string | null` even though its
+                                literal never is; Image's prop is `string |
+                                undefined`. Do not "simplify" it away. */}
+                            <Image fit="cover" w={56} h={56} fallbackSrc={PLACEHOLDER_SUBJECT.image_url ?? undefined}
+                              src={v.subject.image_url} className={classes.Image1} />
                           </Link>
                           {/* Three inline `color: "black"` removed. `style={linkStyle}`
                               is what replaces them: nothing in index.css or Mantine's
                               baseline resets anchors, so dropping the color alone
                               would have left UA link blue. */}
+                          {/* Two lines, not three — the subject DESCRIPTION line
+                              was dropped. It is the highest-variance row in the
+                              card and the third line is what carried this column
+                              past the table beside it. Home.tsx:223 renders the
+                              same two links for the same reason; the description
+                              is still one click away on the subject page. */}
                           <Stack gap={0} miw={0}>
                             <Link to={`/subject/${v.subject._id}`} style={linkStyle}>
                               <Text truncate fw={'bold'}>{v.subject.title}</Text>
-                              <Text truncate>{v.subject.description}</Text>
                             </Link>
                             <Link to={`/lesson/${v.lesson._id}`} style={linkStyle}>
                               <Text truncate>{v.lesson.title}</Text>
@@ -335,12 +431,20 @@ export default function Profile() {
                         </Group>
                       </Box>
                     ))}
-                    <Space h="md" />
-                    <Group w="100%" justify="center">
-                      <Pagination value={viewedPage} onChange={setViewedPage}
-                        total={Math.max(1, Math.ceil(viewed.length / viewedPageCnt))} />
-                    </Group>
-                  </Stack></>}
+                  </Stack>
+                  {/* OUTSIDE the row Stack, so it is a direct flex child of the
+                      card — the fragment around it adds no DOM node. That
+                      placement is what makes `mt="auto"` work: the card Stack is
+                      the box SimpleGrid stretches to the row height, so it is the
+                      only ancestor here with a definite height for an auto margin
+                      to absorb. Left inside the row Stack (auto height) the margin
+                      would resolve to zero and pin nothing. The `<Space h="md" />`
+                      that used to sit here went with it — the card Stack's own
+                      `gap` already supplies that separation. */}
+                  <Group w="100%" justify="center" mt="auto">
+                    <Pagination value={viewedPage} onChange={setViewedPage}
+                      total={Math.max(1, Math.ceil(viewed.length / viewedPageCnt))} />
+                  </Group></>}
               </Stack>
             </SimpleGrid>
           </Container>
