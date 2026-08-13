@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, Stack, TextInput, Flex, Title, Image, Group, Text, Loader, ThemeIcon, Modal, ScrollArea, Space, Box, PillsInput, Pill, Combobox, useCombobox, CheckIcon, Switch, Textarea } from "@mantine/core";
+import { Button, Stack, TextInput, Container, Grid, Title, Image, Group, Text, Loader, ThemeIcon, Modal, ScrollArea, Space, PillsInput, Pill, Combobox, useCombobox, CheckIcon, Switch, Textarea } from "@mantine/core";
 import { useDisclosure, useListState, useMediaQuery } from "@mantine/hooks";
 import { MOBILE_QUERY, TAP_TARGET, TOUCH_QUERY } from "../../libs/styles";
 import { type Subject } from "../../libs/types";
@@ -270,18 +270,35 @@ function SubjectEditor({ mode, initialContent, userRole }: SubjectEditorProps) {
      * nest this one inside the shell's — two scrollbars, and a site footer on a
      * full-screen editing surface.
      *
-     * No <Container>: see the comment on the Box below.
+     * The <Container> below is the page cap; see the comment on it.
      */
     <MainPageAppshell showFooter={false}>
       <ScrollArea h="100%" w="100%">
         <Form action="/action/subject/submit" method={mode === "edit" ? "patch" : "post"}>
-          {/* No <Container> cap here, deliberately, and this is an exception to
-              Definition of done item 5 rather than an oversight. The editors are
-              authoring surfaces: the create/edit forms sit beside a lesson table
-              that already has its own ScrollContainer, and capping the content at
-              1200 while the page chrome runs full width reads as a detached
-              column. Recorded so Prompt 24's sweep does not "fix" it. */}
-          <Box w="100%" h="100%" p="md">
+          {/* This USED TO BE an uncapped `<Box w="100%" p="md">`, documented as a
+              deliberate exception to Definition of done item 5 on the grounds that
+              an authoring surface should run full width. That was REVERSED, and
+              the reason is worth keeping so it does not get restored from history:
+              this page mirrors SubjectViewer — same two columns, same content, and
+              you switch between them with the pencil button — but the viewer is
+              capped at 1200 and this was not, so the pair jumped in width and
+              position on every toggle. Worse, the columns summed to 30% + 50% =
+              80% of an UNCAPPED viewport with no `justify`, so all 20% of the
+              slack fell on the right and the block sat visibly left of centre;
+              at 1920 it ran 1888px wide.
+
+              Bare <Container>, no `size`: root.tsx defaults it to
+              CONTENT_MAX_WIDTH (1200) plus px='md'. `size="lg"` would silently
+              mean 1140. `py`, not `p` — the Container's own px supplies the
+              horizontal half and `p` would double it to 32. No `h="100%"`:
+              nothing above has a definite height, so it resolved to `auto`.
+
+              This wraps BOTH branches. The only effect on create mode is above a
+              1232px viewport, where its column goes 600 -> 584 as `maw={600}`
+              stops being the binding constraint; below that the container width
+              and the old Box content width are both `viewport - 32`, so nothing
+              moves. */}
+          <Container w="100%" py="md">
             {/* hidden inputs */}
             <input type="hidden" name="subjectId" value={initialContent?._id || ""} />
             <input type="hidden" name="imageUrl" value={imageUrl} />
@@ -290,7 +307,7 @@ function SubjectEditor({ mode, initialContent, userRole }: SubjectEditorProps) {
 
             {
               mode === "edit" && initialContent ? // edit
-                /* The error moved OUT of the Flex. As a direct child of a row
+                /* The error moved OUT of the columns. As a direct child of a row
                    flex container it rendered as a third COLUMN beside the two
                    content columns rather than as a message above them, stealing
                    horizontal space from both exactly when the submit had
@@ -299,22 +316,36 @@ function SubjectEditor({ mode, initialContent, userRole }: SubjectEditorProps) {
                   {actionData?.error && (
                     <Text c="red" ta="center" fw="bold">{actionData.error}</Text>
                   )}
-                  {/* `direction` responsive rather than a fixed row: at 320px the
-                      30/50 split gave the left column 96px. `justify="center"` is
-                      gone — on a column axis it centres the wrong thing, and the
-                      columns now sum to the full width on their own.
-                      `align` must be flex-start on the row axis or Flex stretches
-                      both columns to the taller one, dragging the image column's
-                      controls down; the same fix Defect A needed on SubjectViewer. */}
-                  <Flex
-                    w="100%"
-                    direction={{ base: 'column', md: 'row' }}
-                    align={{ base: 'stretch', md: 'flex-start' }}
-                    gap="md"
-                  >
-                  <Stack w={{ base: '100%', md: '30%' }} gap="xs" align="stretch">
-                    <Image w={{ base: 120, sm: 160 }} src={imageUrl || PLACEHOLDER_SUBJECT.image_url}></Image>
-                    { user.roles.includes('admin') && <Group>
+                  {/* Grid, not the Flex that used to be here — the SAME 4/8 split
+                      SubjectViewer uses, so toggling between the viewer and this
+                      editor does not move the columns. The Flex carried hand-tuned
+                      `md: '30%'` and `md: '50%'` widths, which sum to 80% and stop
+                      summing again whenever the gap changes; Grid owns the gutter
+                      math, so 4 + 8 = 12 is the whole row by construction and there
+                      is no leftover slack to bias the pair leftwards. `span: 12`
+                      replaces the responsive `direction` — at 320px the old 30/50
+                      split gave the left column 96px.
+
+                      `align="flex-start"` preserves the Flex's `md: 'flex-start'`:
+                      without it Grid stretches both columns to the taller one,
+                      dragging the image column's controls down. Same fix Defect A
+                      needed on SubjectViewer. */}
+                  <Grid gutter="md" w="100%" align="flex-start">
+                  <Grid.Col span={{ base: 12, md: 4 }}>
+                  {/* `align` stays STRETCH. It is what makes the buttons and every
+                      input span the column, and flipping it to `center` to centre
+                      the two items below would collapse the TextInput, Textarea and
+                      PillsInput to their content width. The image and the switch
+                      are centred individually instead. */}
+                  <Stack w="100%" gap="xs" align="stretch">
+                    {/* `mx="auto"`: Mantine's Image is display:block with an explicit
+                        width here, so auto inline margins split the free space.
+                        Stretch cannot reach it — it has a fixed `w` — which is why
+                        it used to pin to the column's left edge. */}
+                    <Image mx="auto" w={{ base: 120, sm: 160 }} src={imageUrl || PLACEHOLDER_SUBJECT.image_url}></Image>
+                    {/* Plain string `justify`, not a responsive object: Group rejects
+                        those (Flex accepts them). Centred at every width is intended. */}
+                    { user.roles.includes('admin') && <Group justify="center">
                         <Switch defaultChecked={initialContent?.teacher_certified || false} name="teacher_certified" />
                         <Text>Teacher Certified</Text>
                       </Group>}
@@ -373,10 +404,13 @@ function SubjectEditor({ mode, initialContent, userRole }: SubjectEditorProps) {
                       </Combobox.Dropdown>
                     </Combobox>
                   </Stack>
+                  </Grid.Col>
+
                   {/* `h="100%"` dropped: the parent no longer has a definite
                       height, so a percentage height resolved to `auto` anyway —
                       it read as a constraint that did not exist. */}
-                  <Stack w={{ base: '100%', md: '50%' }} gap={0} align="center">
+                  <Grid.Col span={{ base: 12, md: 8 }}>
+                  <Stack w="100%" gap={0} align="center">
                     <Title order={2} className={classes.JalnanGothic} m={"xl"}>목록</Title>
 
                     <OrderTable state={state} handlers={handlers} navigate={navigate} subjectId={initialContent._id} />
@@ -387,7 +421,8 @@ function SubjectEditor({ mode, initialContent, userRole }: SubjectEditorProps) {
                     </Group>
                     <Space h="sm" />
                   </Stack>
-                  </Flex>
+                  </Grid.Col>
+                  </Grid>
                 </Stack>
                 : // create
                 /* Create mode was not addressed by any prompt. Same error-as-a-
@@ -440,7 +475,7 @@ function SubjectEditor({ mode, initialContent, userRole }: SubjectEditorProps) {
                   </Stack>
                 </Stack>
             }
-          </Box>
+          </Container>
         </Form>
       </ScrollArea>
     </MainPageAppshell>
