@@ -7,11 +7,11 @@
    `@media (hover: hover) and (pointer: fine)` gate the Hover contract requires.
    Same outcome main.module.css and setting.module.css reached. */
 import classes from '../../styles/shared.module.css'
-import { Button, Flex, Group, Image, Stack, Space, Text, Title } from "@mantine/core";
+import { Button, Flex, Group, Image, Stack, Space, Text } from "@mantine/core";
 import { Link } from 'react-router';
 import { useMediaQuery } from '@mantine/hooks';
 import { TAP_TARGET, TOUCH_QUERY } from '../../libs/styles';
-import logo from "@/assets/sshs.png"
+import { useAppLogo } from '../../components/appshell/useAppLogo';
 
 export default function NewUser({ setStep }: { setStep: React.Dispatch<React.SetStateAction<number>> }) {
   // `undefined` on a mouse, 44 on a finger — see TOUCH_QUERY. This button is a
@@ -46,8 +46,7 @@ export default function NewUser({ setStep }: { setStep: React.Dispatch<React.Set
       >
         <Stack w={{ base: '90%', md: '40%' }} justify="center" align="center">
           <Group>
-            <Image src={logo} h={'50px'} w={'50px'}></Image>
-            <Title className={classes.JalnanGothic}>SSHS TIPS</Title>
+            <Image src={useAppLogo()} h={'50px'} ></Image>
           </Group>
           {/* Was classes.Text1, whose `width: 70%` compounded with this Stack's
               own width down to ~63% of a 360px screen. shared.Text1 is read by
