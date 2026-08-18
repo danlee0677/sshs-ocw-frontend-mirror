@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useFetcher, useLoaderData, useNavigate, type ActionFunctionArgs, type LoaderFunctionArgs } from "react-router";
-import { Badge, Box, Container, Grid, Stack, Title, UnstyledButton, Text, Image, Pagination, Space, Pill, Group } from "@mantine/core";
-import { IconHeart, IconPencilPlus } from "@tabler/icons-react";
+import { Alert, Badge, Box, Container, Grid, Stack, Title, UnstyledButton, Text, Image, Pagination, Space, Pill, Group } from "@mantine/core";
+import { IconAlertTriangle, IconHeart, IconPencilPlus } from "@tabler/icons-react";
 import { http } from "../../libs/http";
 import { permissionCheckSchema, subjectSchema, type Subject, type User } from "../../libs/types";
 import MainPageAppshell from "../../components/appshell/MainPageAppshell";
@@ -118,6 +118,24 @@ function SubjectContent({ subject, user, canEdit }: { subject: Subject; user: Us
        than Home and Profile. The column split is left as-is on purpose, so the
        page keeps its current proportions and merely stops growing past 1200. */
     <Container w="100%">
+      {/* Sits above <Grid>, as a direct child of Container — NOT inside it. A
+          banner dropped straight into a row container renders as an extra
+          column; see the same note on the error text in SubjectEditor.
+
+          `color` + `variant="light"` for the same reason as the Badge below:
+          it resolves to --mantine-color-yellow-light / -light-color, which
+          steps with the color scheme. No hex, no bg/c pair. */}
+      {subject.hidden_lesson_count > 0 && (
+        <Alert
+          mt="md"
+          color="yellow"
+          variant="light"
+          icon={<IconAlertTriangle />}
+          title="열람 제한"
+        >
+          학생 계정(sshs.hs.kr)이 아니어서 강의를 열람할 수 없습니다
+        </Alert>
+      )}
       {/* Grid, not the Flex that used to be here, and the same Grid the migration
           already chose for Home and Profile. The old columns were `md: '30%'` and
           `md: '50%'` — 80% of the Container, so this page rendered visibly narrower

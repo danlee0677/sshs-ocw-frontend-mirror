@@ -80,7 +80,11 @@ export const subjectSchema = z.object({
   contents: z.array(z.object({
     _id: z.string(),
     title: z.string(),
-  }))
+  })),
+  // Lessons the server withheld from `contents` because they are student_only
+  // and this user failed the access check. `.default(0)` keeps the schema
+  // parseable against a backend that predates the field.
+  hidden_lesson_count: z.number().default(0),
 })
 
 export type Subject = z.infer<typeof subjectSchema>
