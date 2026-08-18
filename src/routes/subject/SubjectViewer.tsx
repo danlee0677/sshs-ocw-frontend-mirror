@@ -133,7 +133,7 @@ function SubjectContent({ subject, user, canEdit }: { subject: Subject; user: Us
           icon={<IconAlertTriangle />}
           title="열람 제한"
         >
-          학생 계정(sshs.hs.kr)이 아니어서 강의를 열람할 수 없습니다
+          학생 계정(sshs.hs.kr)이 아니어서 일부 강의를 열람할 수 없습니다
         </Alert>
       )}
       {/* Grid, not the Flex that used to be here, and the same Grid the migration
