@@ -9,7 +9,7 @@ import { isUser } from "../../libs/utils";
 import { useUserContext } from "../../libs/useUserContext";
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import { ColorSchemeToggle, ColorSchemeToggleFull } from "./ColorSchemeToggle";
-import { HEADERa_LINKS } from "../../libs/navLinks";
+import { HEADER_LINKS } from "../../libs/navLinks";
 import AppFooter from "./AppFooter";
 
 /**
