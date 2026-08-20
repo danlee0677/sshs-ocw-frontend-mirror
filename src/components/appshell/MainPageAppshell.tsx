@@ -9,7 +9,7 @@ import { isUser } from "../../libs/utils";
 import { useUserContext } from "../../libs/useUserContext";
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import { ColorSchemeToggle, ColorSchemeToggleFull } from "./ColorSchemeToggle";
-import { HEADER_LINKS, MENTOR_RECRUIT, isMentorRecruitOpen } from "../../libs/navLinks";
+import { HEADERa_LINKS } from "../../libs/navLinks";
 import AppFooter from "./AppFooter";
 
 /**
@@ -122,8 +122,7 @@ function MainPageAppshell({ children, showSearch = true, showFooter = true }: Ma
 
   // Scheme-aware logo; see useAppLogo. Used by both the header and the Drawer title.
   const logo = useAppLogo();
-  const recruitOpen = isMentorRecruitOpen();
-  
+
   useEffect(() => {
     if (isDesktopNav) {
       close();
@@ -181,21 +180,9 @@ function MainPageAppshell({ children, showSearch = true, showFooter = true }: Ma
             <Button component={Link} to={"/"} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0, flexShrink: 0 }}>
               <Image alt="logo" h={36} w="auto" src={logo} />
             </Button>
-          <Group ml="xl" gap={5} className={classes.links} visibleFrom="lg">
-            {items}
-            {recruitOpen && (
-              <Button
-                component="a"
-                href={MENTOR_RECRUIT.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                size="xs"
-                ml={4}
-              >
-                {MENTOR_RECRUIT.label}
-              </Button>
-            )}
-          </Group>
+            <Group ml="xl" gap={5} className={classes.links} visibleFrom="lg">
+              {items}
+            </Group>
           </Group>
           <Group wrap="nowrap">
             {showSearch && (
@@ -274,20 +261,6 @@ function MainPageAppshell({ children, showSearch = true, showFooter = true }: Ma
               <ColorSchemeToggleFull />
             </Box>
             <Stack py="md">{items}</Stack>
-            {recruitOpen && (
-              <Button
-                component="a"
-                href={MENTOR_RECRUIT.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={close}
-                fullWidth
-                size="md"
-                mt="sm"
-              >
-                {MENTOR_RECRUIT.label}
-              </Button>
-            )}
             {!isUser(user) && (
               <>
                 <Divider my="sm" />
