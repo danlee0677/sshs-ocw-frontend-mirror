@@ -9,7 +9,7 @@ import { isUser } from "../../libs/utils";
 import { useUserContext } from "../../libs/useUserContext";
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import { ColorSchemeToggle, ColorSchemeToggleFull } from "./ColorSchemeToggle";
-import { HEADER_LINKS } from "../../libs/navLinks";
+import { HEADER_LINKS, MENTOR_RECRUIT, isMentorRecruitOpen } from "../../libs/navLinks";
 import AppFooter from "./AppFooter";
 
 /**
@@ -123,6 +123,12 @@ function MainPageAppshell({ children, showSearch = true, showFooter = true }: Ma
   // Scheme-aware logo; see useAppLogo. Used by both the header and the Drawer title.
   const logo = useAppLogo();
 
+  /*
+   * 모집 마감 여부. 렌더마다 새로 계산하므로 자정을 넘겨도 다음 네비게이션에서
+   * 자동으로 반영된다. 마감이 지나면 헤더와 Drawer의 버튼이 함께 사라진다.
+   */
+  const recruitOpen = isMentorRecruitOpen();
+
   useEffect(() => {
     if (isDesktopNav) {
       close();
@@ -182,6 +188,25 @@ function MainPageAppshell({ children, showSearch = true, showFooter = true }: Ma
             </Button>
             <Group ml="xl" gap={5} className={classes.links} visibleFrom="lg">
               {items}
+              {/* 카테고리 링크와 같은 `visibleFrom="lg"` 그룹 안에 둔다. 밖으로
+                * 빼면 헤더 가로 예산(~1180px)에 항목이 하나 더 붙어 위 주석의
+                * 브레이크포인트를 다시 재야 한다. 안에 두면 링크들과 함께
+                * all-or-nothing으로 접히므로 기존 계산이 그대로 유효하다.
+                *
+                * `<a>`이지 `<Link>`가 아니다 — 외부 도메인이라 클라이언트
+                * 라우팅 대상이 아니다. `_blank`에는 `rel="noopener"`가 필수. */}
+              {recruitOpen && (
+                <Button
+                  component="a"
+                  href={MENTOR_RECRUIT.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  size="xs"
+                  ml={4}
+                >
+                  {MENTOR_RECRUIT.label}
+                </Button>
+              )}
             </Group>
           </Group>
           <Group wrap="nowrap">
@@ -261,6 +286,24 @@ function MainPageAppshell({ children, showSearch = true, showFooter = true }: Ma
               <ColorSchemeToggleFull />
             </Box>
             <Stack py="md">{items}</Stack>
+            {/* 헤더 사본이 `visibleFrom="lg"`이므로 1200px 미만에서는 이쪽이
+              * 유일한 신청 경로다. 학생 대부분이 폰으로 보므로 실질적인 본체.
+              * `onClick={close}`는 다른 Drawer 링크들과 동일한 규칙 — 새 탭이
+              * 열린 뒤 원래 탭에 Drawer가 남아 있으면 안 된다. */}
+            {recruitOpen && (
+              <Button
+                component="a"
+                href={MENTOR_RECRUIT.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={close}
+                fullWidth
+                size="md"
+                mt="sm"
+              >
+                {MENTOR_RECRUIT.label}
+              </Button>
+            )}
             {!isUser(user) && (
               <>
                 <Divider my="sm" />
