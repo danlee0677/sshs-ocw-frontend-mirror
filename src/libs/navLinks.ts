@@ -60,7 +60,7 @@ export const HEADER_LINKS: NavLink[] = [...SUBJECT_LINKS, MENTORING_BOARD_LINK];
  * 모집 끝났다고 배너 내리러 다시 들어올 필요 없음.
  */
 export const MENTOR_RECRUIT = {
-  href: 'https://forms.gle/여기에폼즈주소',
+  href: 'https://docs.google.com/forms/d/e/1FAIpQLSelhrLcbIbvUjSeC-NuaLtxQGQL7Y6cz5Ob9icszl0uGsThrg/viewform?usp=dialog',
   label: '멘토 신청',
   /** 접수 마지막 날의 23:59:59 (KST). */
   deadline: new Date('2026-09-30T23:59:59+09:00'),
