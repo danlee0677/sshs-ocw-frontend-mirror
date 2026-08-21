@@ -49,3 +49,23 @@ export const MENTORING_BOARD_LINK: NavLink = {
  * breakpoint if you do.
  */
 export const HEADER_LINKS: NavLink[] = [...SUBJECT_LINKS, MENTORING_BOARD_LINK];
+
+/**
+ * 멘토 모집 신청 (총무부).
+ *
+ * NavLink가 아님: 그쪽 `link`는 "never an absolute URL" 계약이라 외부 폼즈
+ * 주소를 넣을 수 없다. 외부 목적지는 <a href>로 나가야 하므로 타입을 분리한다.
+ *
+ * deadline이 지나면 헤더/Drawer에서 알아서 사라진다.
+ * 모집 끝났다고 배너 내리러 다시 들어올 필요 없음.
+ */
+export const MENTOR_RECRUIT = {
+  href: 'https://forms.gle/여기에폼즈주소',
+  label: '멘토 신청',
+  /** 접수 마지막 날의 23:59:59 (KST). */
+  deadline: new Date('2026-09-30T23:59:59+09:00'),
+} as const;
+
+export function isMentorRecruitOpen(now: Date = new Date()): boolean {
+  return now <= MENTOR_RECRUIT.deadline;
+}
