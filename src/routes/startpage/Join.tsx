@@ -80,7 +80,11 @@ export default function Join({ setStep, errorMessage }: JoinProps) {
             Reaching for `shared.Title` would have been `undefined`: CSS Modules
             are per-file scoped and a missing key fails silently. */}
         <Title className={shared.JalnanGothic} ta="center">사용할 닉네임을 입력해 주세요</Title>
-        <TextInput placeholder='닉네임 입력'
+        {/* aria-label 추가: 접근 가능한 이름이 placeholder뿐이었습니다.
+            placeholder는 글자를 입력하는 순간 사라지므로, 스크린리더는 이
+            칸을 그냥 "편집창"이라고만 읽게 됩니다. 바로 위 Title이 같은
+            내용을 이미 보여주고 있어 시각적 label 대신 aria-label을 씁니다. */}
+        <TextInput placeholder='닉네임 입력' aria-label='닉네임'
           value={username} error={localError}
           onChange={(e) => setUsername(e.currentTarget.value)}
           onKeyDown={(e) => e.key === "Enter" && handleCheckAndSubmit()}

@@ -36,7 +36,10 @@ const theme = createTheme({
 
 export function Layout({ children }: { children: React.ReactNode; }) {
   return (
-    <html lang="en">
+    // lang="en"이었습니다. 화면의 모든 글자가 한국어인데 브라우저에는
+    // 영어 문서라고 알려주고 있어서, 스크린리더가 영어 발음 규칙으로
+    // 한국어를 읽으려 했습니다. 브라우저 번역과 검색엔진 색인에도 영향이 있습니다.
+    <html lang="ko">
       <head>
         <meta charSet="UTF-8" />
         <meta

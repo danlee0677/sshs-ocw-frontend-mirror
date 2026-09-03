@@ -1,145 +1,133 @@
-/* The one place the Color contract's BRAND EXCEPTION applies.
-   .Google / .Kakao / .Naver backgrounds do NOT invert — Google's guidelines
-   require the white/neutral button, and Kakao yellow and Naver green are
-   trademarked marks. Everything AROUND them has to adapt instead, and the
-   important consequence is that "adapt" here means "stay put", not "flip":
-   a fill that is bright in both schemes needs a foreground that is dark in
-   both schemes. Every scheme-independent value below is deliberate, and each
-   one carries the measurement that justifies it.
+/* 브랜드 예외: .Google / .Kakao / .Naver 배경과 전경색은 라이트/다크에서
+   반전하지 않습니다. 구글 가이드라인은 컬러 G가 흰 배경 위에 있을 것을 요구하고,
+   카카오 옐로우와 네이버 그린은 상표입니다. 반전하지 않는 fill 위에는
+   반전하지 않는 전경색을 써야 하므로 아래 color 값들도 두 스킴에서 동일합니다.
 
-   REMOVED — the @font-face for JalnanGothic and `.Title`. The face was a third
-   copy of shared.module.css's block (and, like join's, lacked font-display:
-   swap, so which behaviour applied on /login depended on chunk order). `.Title`
-   was character-for-character shared's `.JalnanGothic`. Login.tsx now imports
-   the shared module and uses that export — which is also what keeps the face
-   reachable for `.LoginButton`'s font-family below, since a CSS module import
-   with no used bindings is tree-shaken.
-
-   REMOVED — `.IconContainer`. It was dead: this module has exactly one importer
-   and Login.tsx has no back button. The live copy is join.module.css's. */
+   기존 파일에서 바뀐 점
+   - font-family: 'JalnanGothic' 제거. 랜딩·홈 모두 잘난고딕은 제목에만 쓰고
+     본문은 테마 폰트(Pretendard)입니다. 버튼 라벨은 본문입니다.
+   - border: 4px solid black 제거. 밝은 브랜드 fill 자체가 페이지와의 분리를
+     담당합니다. 구글만 흰 배경이라 가이드라인대로 1px 테두리를 유지합니다.
+   - 네이버 rgb(44,223,44) → #03C75A, 카카오 rgb(255,221,0) → #FEE500.
+     둘 다 공식 브랜드 컬러이며 기존 값은 가이드라인 위반이었습니다.
+   - border-radius 5px → 12px. 카카오 가이드라인이 컨테이너 radius를
+     12px로 명시합니다. 세 버튼을 통일해 정렬을 유지합니다.
+   - 구글 테두리 #dadce0 → #747775. 공식 SVG의 stroke 값이자
+     현행 가이드라인 표기값입니다(#dadce0은 구버전).
+   - hover의 translate(0,-5px) + scale(1.02) 제거. 랜딩·홈 어디에도
+     들어올리는 hover가 없습니다. 배경 톤 변화만 남깁니다.
+   - focus-visible 링 추가. 기존에는 키보드 포커스 표시가 없었습니다. */
 
 .LoginButton {
-    /* Named properties, and now a shorter list than before. The hover used to
-       animate width/height/font-size because it GREW the button; that growth is
-       gone (see .LoginButton:hover), so only the transform survives.
-
-       background-color is here on purpose. It is the only property the three
-       brand :hover rules change, and the earlier transition sweep's named list
-       omitted it, so those three snapped where they used to fade. It belongs on
-       this BASE rule — adding a second `transition` to each brand rule would
-       re-assert `transition-property: all` for as long as the pointer is over
-       the button, which is the bug the sweep existed to kill. background-color
-       is paint-only, so it cannot tween the layout box. */
-    transition: transform 0.3s, background-color 0.3s;
-    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
     width: 100%;
-    height: 50px;
-    border-radius: 5px;
+    height: 48px;
+    padding: 0 16px;
+    border: none;
+    border-radius: 12px;
+    font-size: var(--mantine-font-size-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease, opacity 0.15s ease;
+}
 
-    /* Was `4px rgb(182,182,182) solid` — a light gray that vanished against a
-       light page AND against .Google's white fill, which is the bug.
+/* 세 로고의 원본 비율이 서로 다릅니다(구글 G는 정사각, 카카오 말풍선은
+   가로로 넓음). object-fit: contain이 20x20 상자 안에서 비율을 지켜주며,
+   구글 가이드라인의 "preserve the aspect ratio" 요구도 이걸로 충족됩니다. */
+.LogoImg {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 auto;
+    object-fit: contain;
+}
 
-       This is deliberately var(--mantine-color-black) and NOT
-       var(--mantine-color-text). The plan told us to follow the precedent set by
-       shared.module.css's `.selectBox` outline, which used the latter. That
-       precedent does not transfer, and the reason is structural: `.selectBox`'s
-       fill was light-dark(blue-2, blue-9), so it INVERTED, and a text-colored
-       outline stays opposed to an inverting fill in both schemes. These fills
-       deliberately do not invert, so --mantine-color-text (#000 light, #c9c9c9
-       dark) would go near-invisible in dark mode on all three:
-
-       (`.selectBox` itself no longer exists — it styled an onboarding tile
-       picker that was cut in 8964474, and was deleted once that was confirmed.
-       The rule is restated here because the REASONING is what matters and this
-       is now the only place in the codebase that depends on it: a fill that does
-       not invert needs a foreground that does not invert.)
-
-         border vs fill        light (#000)    dark (#c9c9c9)
-         .Google  white          21.0 : 1        1.66 : 1   FAIL
-         .Kakao   #FFDD00        15.6 : 1        1.23 : 1   FAIL
-         .Naver   rgb(44,223,44) 11.7 : 1        1.08 : 1   FAIL
-
-       A fixed black border clears 11.7:1 against every fill in both schemes.
-       It is low-contrast against the dark page itself, which is correct — the
-       bright fill is what separates the button from the page; this outline's
-       job is to edge the fill. */
-    border: 4px solid var(--mantine-color-black);
-
-    /* Same reasoning as the border, and this one the original prompt already
-       had right: intentionally NOT var(--mantine-color-text), which would
-       invert to near-white on a white Google button. Measured against the three
-       fills, identical in both schemes: 21.0 : 1, 15.6 : 1, 11.7 : 1. */
-    color: var(--mantine-color-black);
-
+/* 로고 폭(20) + gap(10) = 30px 만큼 상쇄해야 라벨이 버튼 정중앙에 옵니다.
+   상쇄하지 않으면 로고 때문에 라벨이 밀려 세 버튼이 어긋나 보입니다. */
+.Label {
+    flex: 1;
     text-align: center;
-    font-family: 'JalnanGothic';
-    font-size: 15px;
+    margin-left: -30px;
 }
 
+.LoginButton:active {
+    transform: scale(0.99);
+}
+
+/* UnstyledButton은 Mantine의 버튼 포커스 링을 가져오지 않으므로 직접 지정합니다.
+   --mantine-primary-color-filled는 테마의 primaryShade를 따라갑니다. */
+.LoginButton:focus-visible {
+    outline: 2px solid var(--mantine-primary-color-filled);
+    outline-offset: 2px;
+}
+
+/* OAuth 이동 대기 상태. 누른 버튼은 라벨이 '이동 중…'으로 바뀌고,
+   나머지 둘은 흐려집니다. */
+.LoginButton:disabled {
+    cursor: default;
+}
+
+.LoginButton[data-idle] {
+    opacity: 0.5;
+}
+
+/* 구글은 흰 배경이라 라이트 모드에서 페이지와 구분되지 않습니다.
+   box-shadow inset은 border와 달리 박스 크기를 바꾸지 않아
+   세 버튼의 높이가 정확히 일치합니다.
+   가이드라인 Light 테마 규격: Fill #FFFFFF / Stroke #747775 1px inside / Font #1F1F1F */
 .Google {
-    background-color: white;
+    background-color: #ffffff;
+    color: #1f1f1f;
+    box-shadow: inset 0 0 0 1px #747775;
 }
 
+/* 카카오 규격: 컨테이너 #FEE500 / 심볼 #000000 / 레이블 #000000 85% */
 .Kakao {
-    background-color: rgb(255, 221, 0);
+    background-color: #FEE500;
+    color: rgba(0, 0, 0, 0.85);
 }
 
-/* NOTE, reported not changed: this is not Naver's brand green, which is #03C75A.
-   Correcting a brand color is a product decision, not a migration one. */
 .Naver {
-    background-color: rgb(44, 223, 44);
+    background-color: #03C75A;
+    color: #ffffff;
 }
 
-/* Every hover gated on a real hover-capable pointer — on touch, :hover sticks
-   after a tap and reads as a stuck selection.
-
-   HOVER CONTRACT CLASSIFICATION: all four rules below are SURFACE-ONLY (a
-   background tint plus a scale/lift). Nothing here is the sole reveal of a
-   label, and nothing is the sole signal that the element is clickable — the
-   labels are permanent text and `cursor: pointer` sits on the BASE rule above,
-   not in here. So these need gating and NO `@media (hover: none)` counterpart.
-   Stated explicitly rather than left implied, per the contract. */
+/* 터치 기기에서 :hover는 탭 후에도 남아 선택된 것처럼 보이므로 게이팅합니다.
+   :not(:disabled)는 이동 대기 중 hover가 먹지 않게 합니다. */
 @media (hover: hover) and (pointer: fine) {
-    .LoginButton:hover {
-        /* No `transition` here: the base rule governs both directions, and a
-           duplicate would re-assert transition-property: all.
-
-           REMOVED `color: white`. It was an existing bug in LIGHT mode too, and
-           worse than reported — it failed on all three hover fills, not just
-           Google's, and Google's hover fill is lightgray rather than white:
-
-             hover fill                white      black
-             .Google  #D3D3D3          1.50:1     14.0:1
-             .Kakao   rgb(167,147,0)   3.12:1      6.74:1
-             .Naver   rgb(11,169,11)   3.14:1      6.69:1
-
-           The text is 17px here, so 4.5:1 applies and white misses on all
-           three. Black is the only value that clears them, which is what the
-           base rule already sets — so per-brand hover colors would have been
-           the same color written three times. Deleting the override is the fix.
-
-           REMOVED width: 104% / height: 53px / font-size: 17px. The button is
-           width: 100% inside a centred Stack, so 104% pushed 2% past each edge —
-           overflow currently swallowed by index.css's `overflow-x: clip`
-           backstop, which is scheduled for removal. scale() is composed INTO the
-           existing translate rather than added beside it: `transform` is a
-           single property, so a second declaration would replace the lift
-           instead of combining with it. */
-        transform: translate(0px, -5px) scale(1.02);
+    .Google:not(:disabled):hover {
+        background-color: #f7f8f8;
     }
 
-    /* Was `lightgray`. Kept as a slight darkening, per the brand exception —
-       and deliberately NOT wrapped in light-dark(), which would make the hover
-       invert on a button whose base fill does not. */
-    .Google:hover {
-        background-color: var(--mantine-color-gray-3);
+    .Kakao:not(:disabled):hover {
+        background-color: #F0D800;
     }
 
-    .Kakao:hover {
-        background-color: rgb(167, 147, 0);
+    .Naver:not(:disabled):hover {
+        background-color: #02B350;
     }
+}
 
-    .Naver:hover {
-        background-color: rgb(11, 169, 11);
-    }
+/* Home.tsx의 .ProfileCard와 같은 강조 표면.
+   클래스명을 두 번 쓴 것은 Mantine Paper의 배경색을 이기기 위한 것으로,
+   shared.module.css의 .ProfileCard.ProfileCard와 같은 관습입니다.
+   blue-light는 반투명 틴트라 light-dark() 없이 두 스킴 모두에서 색조를 유지합니다
+   (라이트 #e9f3fd / 다크 #243341).
+   강조 없이 중립 카드로 두려면 Login.tsx에서 className만 빼면 됩니다. */
+.LoginCard.LoginCard {
+    background-color: var(--mantine-color-blue-light);
+}
+
+/* 신규 가입자 이름. username에 길이 제한이 없어(백엔드 미구현) 화면을 방어합니다.
+   keep-all은 한국어 어절을 보존하고, overflow-wrap: anywhere는 띄어쓰기 없는
+   긴 문자열이 가로로 삐져나가는 것을 막습니다. 둘 다 있어야 합니다. */
+.NewUserName {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
 }
