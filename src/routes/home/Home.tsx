@@ -134,9 +134,9 @@ function Home() {
                       {/* Flex, not Group: Group's `justify` is a plain JustifyContent
                           and rejects a responsive object; Flex's accepts one. */}
                       <Flex gap="xs" wrap="wrap" justify={{ base: 'center', sm: 'flex-start' }}>
-                        <HomeBadge type={1} />
-                        <HomeBadge type={2} />
-                        <HomeBadge type={3} />
+                        {user.achievement.map((badgeId) => (
+                          <HomeBadge key={badgeId} id={badgeId} />
+                        ))}
                       </Flex>
                     </Stack>
                   </Flex>
