@@ -1,145 +1,162 @@
-/* The one place the Color contract's BRAND EXCEPTION applies.
-   .Google / .Kakao / .Naver backgrounds do NOT invert — Google's guidelines
-   require the white/neutral button, and Kakao yellow and Naver green are
-   trademarked marks. Everything AROUND them has to adapt instead, and the
-   important consequence is that "adapt" here means "stay put", not "flip":
-   a fill that is bright in both schemes needs a foreground that is dark in
-   both schemes. Every scheme-independent value below is deliberate, and each
-   one carries the measurement that justifies it.
+.authShell {
+  --ink: #111a3a;
+  --muted: #69728e;
+  --line: rgba(17, 26, 58, 0.12);
+  position: relative;
+  overflow: hidden;
+  background: #f7f9fd;
+  color: var(--ink);
+  padding-top: clamp(28px, 7vh, 72px);
+  padding-bottom: 28px;
+}
 
-   REMOVED — the @font-face for JalnanGothic and `.Title`. The face was a third
-   copy of shared.module.css's block (and, like join's, lacked font-display:
-   swap, so which behaviour applied on /login depended on chunk order). `.Title`
-   was character-for-character shared's `.JalnanGothic`. Login.tsx now imports
-   the shared module and uses that export — which is also what keeps the face
-   reachable for `.LoginButton`'s font-family below, since a CSS module import
-   with no used bindings is tree-shaken.
+.authShell::before,
+.authShell::after {
+  position: absolute;
+  content: '';
+  pointer-events: none;
+}
 
-   REMOVED — `.IconContainer`. It was dead: this module has exactly one importer
-   and Login.tsx has no back button. The live copy is join.module.css's. */
+.authShell::before {
+  width: 42vw;
+  height: 42vw;
+  min-width: 360px;
+  min-height: 360px;
+  border: 1px solid rgba(48, 95, 220, 0.13);
+  border-radius: 50%;
+  top: -18vw;
+  right: -8vw;
+  animation: drift 14s ease-in-out infinite;
+}
 
+.authShell::after {
+  width: 22px;
+  height: 22px;
+  left: 12%;
+  bottom: 18%;
+  border-radius: 50%;
+  background: #c9ef58;
+  box-shadow: 0 0 0 10px rgba(201, 239, 88, 0.18), 0 0 42px rgba(201, 239, 88, 0.5);
+  animation: float 5s ease-in-out infinite;
+}
+
+.orbit,
+.orbitSmall {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.orbit {
+  width: 620px;
+  height: 620px;
+  left: -260px;
+  bottom: -330px;
+  border: 1px solid rgba(48, 95, 220, 0.14);
+  box-shadow: 0 0 0 46px rgba(48, 95, 220, 0.025), 0 0 0 92px rgba(48, 95, 220, 0.02);
+  animation: driftReverse 18s ease-in-out infinite;
+}
+
+.orbitSmall {
+  width: 9px;
+  height: 9px;
+  top: 18%;
+  left: 18%;
+  background: #315edb;
+  box-shadow: 0 0 22px 5px rgba(49, 94, 219, 0.28);
+}
+
+.authPanel {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 430px);
+  padding: 48px 46px 38px;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 30px 80px rgba(39, 55, 106, 0.13), 0 3px 12px rgba(39, 55, 106, 0.06);
+  backdrop-filter: blur(18px);
+  animation: panelIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.brand,
+.copy,
+.providers,
+.footerNote {
+  animation-fill-mode: both;
+}
+
+.revealOne { animation: reveal 0.7s 0.12s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.revealTwo { animation: reveal 0.7s 0.25s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.revealThree { animation: reveal 0.7s 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.revealFour { animation: reveal 0.7s 0.62s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+.logoFrame {
+  display: grid;
+  width: 92px;
+  height: 92px;
+  place-items: center;
+  border-radius: 28px;
+  background: #111a3a;
+  box-shadow: 0 14px 28px rgba(17, 26, 58, 0.24);
+  transform: rotate(-5deg);
+  transition: transform 0.35s ease;
+}
+
+.logoFrame:hover { transform: rotate(0deg) scale(1.04); }
+.logo { width: 72px; height: 72px; object-fit: contain; transform: rotate(5deg); }
+.eyebrow { margin-top: 19px; color: #7b849d; font-size: 10px; font-weight: 700; letter-spacing: 0.17em; }
+.copy { width: 100%; margin-top: 34px; }
+.copy h1 { margin: 0; color: var(--ink); font-size: clamp(2rem, 6vw, 2.65rem); letter-spacing: 0.05em; }
+.subtitle { margin-top: 19px; color: var(--ink); font-size: 18px; font-weight: 700; }
+.description { margin-top: 7px; color: var(--muted); font-size: 13px; }
+
+.providers { margin-top: 32px; }
 .LoginButton {
-    /* Named properties, and now a shorter list than before. The hover used to
-       animate width/height/font-size because it GREW the button; that growth is
-       gone (see .LoginButton:hover), so only the transform survives.
-
-       background-color is here on purpose. It is the only property the three
-       brand :hover rules change, and the earlier transition sweep's named list
-       omitted it, so those three snapped where they used to fade. It belongs on
-       this BASE rule — adding a second `transition` to each brand rule would
-       re-assert `transition-property: all` for as long as the pointer is over
-       the button, which is the bug the sweep existed to kill. background-color
-       is paint-only, so it cannot tween the layout box. */
-    transition: transform 0.3s, background-color 0.3s;
-    cursor: pointer;
-    width: 100%;
-    height: 50px;
-    border-radius: 5px;
-
-    /* Was `4px rgb(182,182,182) solid` — a light gray that vanished against a
-       light page AND against .Google's white fill, which is the bug.
-
-       This is deliberately var(--mantine-color-black) and NOT
-       var(--mantine-color-text). The plan told us to follow the precedent set by
-       shared.module.css's `.selectBox` outline, which used the latter. That
-       precedent does not transfer, and the reason is structural: `.selectBox`'s
-       fill was light-dark(blue-2, blue-9), so it INVERTED, and a text-colored
-       outline stays opposed to an inverting fill in both schemes. These fills
-       deliberately do not invert, so --mantine-color-text (#000 light, #c9c9c9
-       dark) would go near-invisible in dark mode on all three:
-
-       (`.selectBox` itself no longer exists — it styled an onboarding tile
-       picker that was cut in 8964474, and was deleted once that was confirmed.
-       The rule is restated here because the REASONING is what matters and this
-       is now the only place in the codebase that depends on it: a fill that does
-       not invert needs a foreground that does not invert.)
-
-         border vs fill        light (#000)    dark (#c9c9c9)
-         .Google  white          21.0 : 1        1.66 : 1   FAIL
-         .Kakao   #FFDD00        15.6 : 1        1.23 : 1   FAIL
-         .Naver   rgb(44,223,44) 11.7 : 1        1.08 : 1   FAIL
-
-       A fixed black border clears 11.7:1 against every fill in both schemes.
-       It is low-contrast against the dark page itself, which is correct — the
-       bright fill is what separates the button from the page; this outline's
-       job is to edge the fill. */
-    border: 4px solid var(--mantine-color-black);
-
-    /* Same reasoning as the border, and this one the original prompt already
-       had right: intentionally NOT var(--mantine-color-text), which would
-       invert to near-white on a white Google button. Measured against the three
-       fills, identical in both schemes: 21.0 : 1, 15.6 : 1, 11.7 : 1. */
-    color: var(--mantine-color-black);
-
-    text-align: center;
-    font-family: 'JalnanGothic';
-    font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 54px;
+  padding: 0 18px;
+  border: 1px solid transparent;
+  border-radius: 15px;
+  color: #111a3a;
+  font-family: Pretendard, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
 }
-
-.Google {
-    background-color: white;
-}
-
-.Kakao {
-    background-color: rgb(255, 221, 0);
-}
-
-/* NOTE, reported not changed: this is not Naver's brand green, which is #03C75A.
-   Correcting a brand color is a product decision, not a migration one. */
-.Naver {
-    background-color: rgb(44, 223, 44);
-}
-
-/* Every hover gated on a real hover-capable pointer — on touch, :hover sticks
-   after a tap and reads as a stuck selection.
-
-   HOVER CONTRACT CLASSIFICATION: all four rules below are SURFACE-ONLY (a
-   background tint plus a scale/lift). Nothing here is the sole reveal of a
-   label, and nothing is the sole signal that the element is clickable — the
-   labels are permanent text and `cursor: pointer` sits on the BASE rule above,
-   not in here. So these need gating and NO `@media (hover: none)` counterpart.
-   Stated explicitly rather than left implied, per the contract. */
+.LoginButton:focus-visible { outline: 3px solid rgba(49, 94, 219, 0.35); outline-offset: 3px; }
+.providerMark { display: grid; width: 25px; height: 25px; flex: 0 0 25px; place-items: center; border-radius: 8px; background: rgba(255, 255, 255, 0.7); font-size: 14px; font-weight: 800; }
+.Google { border-color: var(--line); background: #fff; box-shadow: 0 6px 14px rgba(24, 35, 75, 0.07); }
+.Kakao { background: #fee500; }
+.Naver { background: #03c75a; }
 @media (hover: hover) and (pointer: fine) {
-    .LoginButton:hover {
-        /* No `transition` here: the base rule governs both directions, and a
-           duplicate would re-assert transition-property: all.
+  .LoginButton:hover { transform: translateY(-3px); box-shadow: 0 12px 22px rgba(24, 35, 75, 0.14); filter: brightness(0.98); }
+}
+.footerNote { margin-top: 30px; color: #8b94ab; font-size: 11px; }
+.footerNote span { padding: 0 5px; color: #c2c8d6; }
 
-           REMOVED `color: white`. It was an existing bug in LIGHT mode too, and
-           worse than reported — it failed on all three hover fills, not just
-           Google's, and Google's hover fill is lightgray rather than white:
+@keyframes panelIn { from { opacity: 0; transform: translateY(26px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes reveal { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes drift { 0%, 100% { transform: translate(0, 0) rotate(0deg); } 50% { transform: translate(-28px, 20px) rotate(8deg); } }
+@keyframes driftReverse { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(24px, -18px); } }
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
 
-             hover fill                white      black
-             .Google  #D3D3D3          1.50:1     14.0:1
-             .Kakao   rgb(167,147,0)   3.12:1      6.74:1
-             .Naver   rgb(11,169,11)   3.14:1      6.69:1
+@media (max-width: 480px) {
+  .authPanel { padding: 38px 22px 30px; border-radius: 24px; }
+  .copy { margin-top: 28px; }
+  .subtitle { font-size: 16px; }
+  .providers { margin-top: 26px; }
+}
 
-           The text is 17px here, so 4.5:1 applies and white misses on all
-           three. Black is the only value that clears them, which is what the
-           base rule already sets — so per-brand hover colors would have been
-           the same color written three times. Deleting the override is the fix.
+@media (max-height: 850px) {
+  .authShell { align-items: flex-start; }
+}
 
-           REMOVED width: 104% / height: 53px / font-size: 17px. The button is
-           width: 100% inside a centred Stack, so 104% pushed 2% past each edge —
-           overflow currently swallowed by index.css's `overflow-x: clip`
-           backstop, which is scheduled for removal. scale() is composed INTO the
-           existing translate rather than added beside it: `transform` is a
-           single property, so a second declaration would replace the lift
-           instead of combining with it. */
-        transform: translate(0px, -5px) scale(1.02);
-    }
-
-    /* Was `lightgray`. Kept as a slight darkening, per the brand exception —
-       and deliberately NOT wrapped in light-dark(), which would make the hover
-       invert on a button whose base fill does not. */
-    .Google:hover {
-        background-color: var(--mantine-color-gray-3);
-    }
-
-    .Kakao:hover {
-        background-color: rgb(167, 147, 0);
-    }
-
-    .Naver:hover {
-        background-color: rgb(11, 169, 11);
-    }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }

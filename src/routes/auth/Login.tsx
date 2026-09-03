@@ -1,4 +1,4 @@
-import { Flex, Stack, Title, UnstyledButton } from '@mantine/core'
+import { Box, Flex, Image, Stack, Text, Title, UnstyledButton } from '@mantine/core'
 import { redirect, useLoaderData, type LoaderFunctionArgs } from 'react-router';
 /* Separate bindings, not a merged `classes` object — only one rule is needed
    from the shared module. The import is also what keeps shared.module.css alive
@@ -10,6 +10,7 @@ import shared from '../../styles/shared.module.css'
 import classes from './login.module.css'
 import { z } from 'zod'
 import { http } from '../../libs/http';
+import appLogo from '../../assets/sshs.png';
 
 export async function clientLoader({ request }: LoaderFunctionArgs) {
   try {
@@ -41,34 +42,46 @@ function Login() {
   }
 
   return (
-    <>
-      {/* mih, not h: a fixed height plus align/justify center pushes any overflow
-          above the container's top edge, where body scroll cannot reach it — and
-          the isNew branch below adds a long Korean title that wraps to several
-          lines on a phone. 100vw also included the desktop scrollbar width. */}
-      <Flex mih='100dvh' w='100%' justify={"center"} align={"center"} py="xl" px="md">
-        {/* Was w='30vw' — 96px at 320px, narrower than every one of the three
-            Korean button labels, and the single worst number in this file.
-            maw is not inert here: it binds across the 768–992px band, where
-            60% exceeds 480. No mx="auto" — the parent Flex already centres. */}
-        <Stack w={{ base: '100%', sm: '60%', md: 400 }} maw={480} justify={"center"} align={"center"}>
-          {/* shared.JalnanGothic replaces the local `.Title`, which was the same
-              single font-family declaration. */}
-          <Title className={shared.JalnanGothic} ta="center">SSHS TIPS</Title>
-          {isNew ?
-            <Title order={4} className={shared.JalnanGothic} ta="center">{username} 님, 연동하여 사용할 계정을 선택해 주세요</Title>
-            :
-            <></>}
-          <UnstyledButton className={`${classes.LoginButton} ${classes.Google}`} onClick={() => handleLogin("google")}>구글 계정으로 로그인</UnstyledButton>
-          {/* Was a raw <button> between two UnstyledButtons carrying the same
-              three classes, so it missed Mantine's button reset and could render
-              subtly differently from its neighbours. No <Form> wraps these, so
-              there was never a submit hazard — this is consistency only. */}
-          <UnstyledButton className={`${classes.LoginButton} ${classes.Kakao}`} onClick={() => handleLogin("kakao")}>카카오 계정으로 로그인</UnstyledButton>
-          <UnstyledButton className={`${classes.LoginButton} ${classes.Naver}`} onClick={() => handleLogin("naver")}>네이버 계정으로 로그인</UnstyledButton>
+    <Flex className={classes.authShell} mih="100dvh" w="100%" justify="center" align="center" px="md">
+      <Box className={classes.orbit} aria-hidden="true" />
+      <Box className={classes.orbitSmall} aria-hidden="true" />
+      <Box className={classes.authPanel}>
+        <Stack align="center" gap={0}>
+          <Box className={`${classes.brand} ${classes.revealOne}`}>
+            <Box className={classes.logoFrame}>
+              <Image src={appLogo} alt="SSHS" className={classes.logo} />
+            </Box>
+            <Text className={classes.eyebrow}>SEOUL SCIENCE HIGH SCHOOL</Text>
+          </Box>
+
+          <Box className={`${classes.copy} ${classes.revealTwo}`}>
+            <Title className={shared.JalnanGothic} ta="center">SSHS TIPS</Title>
+            <Text className={classes.subtitle} ta="center">
+              {isNew ? `${username} 님, 환영합니다` : '다시, 공부를 시작해볼까요?'}
+            </Text>
+            <Text className={classes.description} ta="center">
+              {isNew ? '연동할 계정을 선택해주세요' : '학교 생활과 공부에 필요한 이야기를 만나보세요'}
+            </Text>
+          </Box>
+
+          <Stack className={`${classes.providers} ${classes.revealThree}`} gap="sm" w="100%">
+            <UnstyledButton className={`${classes.LoginButton} ${classes.Google}`} onClick={() => handleLogin("google")}>
+              <span className={classes.providerMark}>G</span><span>구글 계정으로 계속하기</span>
+            </UnstyledButton>
+            <UnstyledButton className={`${classes.LoginButton} ${classes.Kakao}`} onClick={() => handleLogin("kakao")}>
+              <span className={classes.providerMark}>k</span><span>카카오 계정으로 계속하기</span>
+            </UnstyledButton>
+            <UnstyledButton className={`${classes.LoginButton} ${classes.Naver}`} onClick={() => handleLogin("naver")}>
+              <span className={classes.providerMark}>N</span><span>네이버 계정으로 계속하기</span>
+            </UnstyledButton>
+          </Stack>
+
+          <Text className={`${classes.footerNote} ${classes.revealFour}`} ta="center">
+            SSHS TIPS <span>·</span> 학생들을 위한 학습 커뮤니티
+          </Text>
         </Stack>
-      </Flex>
-    </>
+      </Box>
+    </Flex>
   )
 }
 
