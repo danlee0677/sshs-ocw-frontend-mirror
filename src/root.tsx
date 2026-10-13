@@ -44,6 +44,7 @@ export function Layout({ children }: { children: React.ReactNode; }) {
           content="width=device-width, initial-scale=1.0, viewport-fit=cover"
         />
         <title>SSHS TIPS</title>
+        <link rel="icon" type="image/png" href="/sshs.png" />
         {/* Placement is load-bearing. This emits a small blocking inline script
             that reads localStorage and stamps data-mantine-color-scheme onto
             <html> BEFORE first paint. Rendered after the stylesheet <Links />,
