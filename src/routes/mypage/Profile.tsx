@@ -47,6 +47,8 @@ export async function clientLoader({ params }: LoaderFunctionArgs) {
       username: z.string(),
       pfp_url: z.string(),
       description: z.string(),
+      // default: a backend older than this field must not crash the profile page
+      achievement: z.array(z.number()).default([]),
     }).safeParse(userRes.data);
 
     if (!userParsed.success) throw new Error("Failed to parse user from server");
@@ -57,6 +59,7 @@ export async function clientLoader({ params }: LoaderFunctionArgs) {
       pfp_url: userParsed.data.pfp_url,
       username: userParsed.data.username,
       description: userParsed.data.description,
+      achievement: userParsed.data.achievement,
     }
 
     const [likedRes, progressRes, streakRes] = await Promise.all([
@@ -254,10 +257,10 @@ export default function Profile() {
                       against the removed 400px and now has no definite parent. */}
                   <ScrollArea w={'100%'} h={{ base: 200, sm: '100%' }}>
                     <Stack p={'xs'} gap={0}>
-                      {/* FIXME (pre-existing, outside this migration's scope): reads
-                          `user` (the logged-in viewer) where `pageUser` is meant, so a
-                          visitor sees their own badges on someone else's profile. */}
-                      {user?.achievement.map((badgeId) => (
+                      {/* `pageUser`, not `user`: `user` is the logged-in VIEWER, so
+                          reading it showed the visitor's own badges on someone else's
+                          profile. The loader now fills achievement from /api/user/:id. */}
+                      {pageUser.achievement.map((badgeId) => (
                         <CustomBadge key={badgeId} id={badgeId}></CustomBadge>
                       ))}
                     </Stack>
