@@ -22,20 +22,22 @@ export async function clientLoader({ request }: LoaderFunctionArgs) {
     if (err instanceof Response) throw err;
     const url = new URL(request.url);
 
-    const parsed = z.object({ new: z.string().optional(), username: z.string().optional() })
+    const parsed = z.object({ new: z.string().optional(), username: z.string().optional(), error: z.string().optional() })
       .safeParse(Object.fromEntries(url.searchParams));
 
     const isNew = parsed.success && parsed.data.new === "1";
     const username = parsed.success && parsed.data.username ?
       decodeURIComponent(parsed.data.username) : ""
-    return { isNew, username };
+    // Set by the backend OAuth callback on a non-signup failure (see authRouter redirectLoginError)
+    const loginError = parsed.success && parsed.data.error ? parsed.data.error : null;
+    return { isNew, username, loginError };
   }
 }
 
 type Method = "google" | "kakao" | "naver"
 
 function Login() {
-  const { isNew, username } = useLoaderData<typeof clientLoader>();
+  const { isNew, username, loginError } = useLoaderData<typeof clientLoader>();
 
   const handleLogin = (method: Method) => {
     window.location.assign(`${import.meta.env.VITE_API_URL}/api/auth/login/${method}?username=${encodeURIComponent(username)}`)
@@ -63,6 +65,12 @@ function Login() {
               {isNew ? '연동할 계정을 선택해주세요' : '학교 생활과 공부에 필요한 이야기를 만나보세요'}
             </Text>
           </Box>
+
+          {loginError && (
+            <Text c="red" fw={500} ta="center" mb="sm">
+              로그인에 실패했습니다. 다시 시도해주세요.
+            </Text>
+          )}
 
           <Stack className={`${classes.providers} ${classes.revealThree}`} gap="sm" w="100%">
             <UnstyledButton className={`${classes.LoginButton} ${classes.Google}`} onClick={() => handleLogin("google")}>
