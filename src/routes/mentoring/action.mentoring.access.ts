@@ -26,7 +26,8 @@ export async function clientAction({ request }: ActionFunctionArgs) {
 
       await http.post(`${import.meta.env.VITE_API_URL}/api/permission`, {
         userId: parsed.data.userId,
-        mentoringId: parsed.data.mentoringId,
+        // The permission API is shared with subjects: the target id goes in `subjectId`.
+        subjectId: parsed.data.mentoringId,
         role: "editor",
       });
 
