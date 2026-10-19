@@ -71,7 +71,8 @@ export default function Join({ setStep, errorMessage }: JoinProps) {
           <Text c="red" fw={500} ta="center">
             { errorMessage === "NoUsername" ? "존재하지 않는 유저입니다. 회원가입을 해주세요." : 
               (errorMessage === "DuplicateUsername" ? "중복 닉네임입니다. 다른 닉네임을 사용해주세요." :
-               "로그인 중 오류가 발생했습니다. 다시 시도해주세요.")}
+              (errorMessage === "InvalidUsername" ? "닉네임은 2~20자의 한글, 영문, 숫자, _만 사용할 수 있습니다." :
+               "로그인 중 오류가 발생했습니다. 다시 시도해주세요."))}
           </Text>
         )}
         {/* Was `classes.Title` — a local rule that was font-family plus

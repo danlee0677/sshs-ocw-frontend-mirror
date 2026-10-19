@@ -38,7 +38,7 @@ function Login() {
   const { isNew, username } = useLoaderData<typeof clientLoader>();
 
   const handleLogin = (method: Method) => {
-    window.location.assign(`${import.meta.env.VITE_API_URL}/api/auth/login/${method}?username=${username}`)
+    window.location.assign(`${import.meta.env.VITE_API_URL}/api/auth/login/${method}?username=${encodeURIComponent(username)}`)
   }
 
   return (
